@@ -1,6 +1,6 @@
 var s = Snap("#surface");
 
-var GRID_SPACING = 20;
+var GRID_SPACING = 40;
 var GRID_LINE_WIDTH = 1;
 
 function drawLine(x, y, direction, length) {
@@ -25,7 +25,7 @@ function drawHorizontalLines() {
 
 function linePositions(direction) {
   var arr = [];
-  for (var i = GRID_SPACING; i < wrapper()[direction === "V" ? "offsetWidth" : "offsetHeight"]; i += GRID_SPACING) {
+  for (var i = GRID_LINE_WIDTH / 2; i < wrapper()[direction === "V" ? "offsetWidth" : "offsetHeight"]; i += GRID_SPACING) {
     arr.push(i);
   }
   return arr;
@@ -37,8 +37,8 @@ function resizeWrapper() {
   var initialHeight = wrapper().offsetHeight;
   var newWidth = Math.floor(initialWidth / GRID_SPACING) * GRID_SPACING;
   var newHeight = Math.floor(initialHeight / GRID_SPACING) * GRID_SPACING;
-  document.getElementById("surface").style.width = `${newWidth}px`;
-  document.getElementById("surface").style.height = `${newHeight}px`;
+  document.getElementById("surface").style.width = `${newWidth + GRID_LINE_WIDTH}px`;
+  document.getElementById("surface").style.height = `${newHeight + GRID_LINE_WIDTH}px`;
 }
 
 function wrapper() {
@@ -53,3 +53,53 @@ function drawGrid() {
 
 drawGrid();
 window.addEventListener('resize', drawGrid);
+
+
+/* drawing rectangle */
+
+var Mouse = {
+  startCoords: [0, 0],
+  currentCoords: [0, 0],
+
+  eventCoords: function(event) {
+    var absX = event.clientX;
+    var absY = event.clientY;
+    var svgPosition = document.getElementById("surface").getBoundingClientRect();
+    var leftOffset = svgPosition.left;
+    var topOffset = svgPosition.top;
+    return [absX - leftOffset, absY - topOffset]
+  },
+
+  mousedown: function(event) {
+    Mouse.startCoords = Mouse.eventCoords(event);
+    document.getElementById("surface").addEventListener("mousemove", Mouse.move);
+  },
+
+  mouseup: function(mouseUp) {
+    document.getElementById("surface").removeEventListener("mousemove", Mouse.move);
+    console.log(`start coords: ${Mouse.startCoords}, end coords: ${Mouse.currentCoords}`)
+  },
+
+  move: function(event) {
+    Mouse.currentCoords = Mouse.eventCoords(event);
+  },
+
+  closestGridPointCoord: function(x, y) {
+
+  }
+}
+
+document.getElementById("surface").addEventListener("mouseup", Mouse.mouseup);
+document.getElementById("surface").addEventListener("mousedown", Mouse.mousedown);
+
+
+roundToPrecision: function(num, prec) {
+  var rem = (num / prec);
+  if (Math.round(rem) === Math.floor(rem)) {
+    /* round down */
+    return Math.floor(num / prec) * prec;
+  } else {
+    /* round up */
+    return Math.ceil(num / prec) * prec;
+  }
+}
