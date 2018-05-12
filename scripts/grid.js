@@ -1,61 +1,46 @@
 var Grid = (function() {
-	var GRID_SPACING = 40;
-	var GRID_LINE_WIDTH = 1;
+  var grid;
 
-	function drawLine(svgElement, x, y, direction, length) {
-		var p = svgElement.path(`M${x} ${y}${direction} ${length}`);
-		p.attr({
-			fill: "none",
-			stroke: "lightgrey",
-			strokeWidth: GRID_LINE_WIDTH
-		});
-	}
+  /* drawing rectangle */
+  function createGrid() {
+    grid = surface.rect(Mouse.x(), Mouse.y(), Mouse.width(), Mouse.height());
+    grid.attr({
+      fill: "none",
+      stroke: "blue",
+      strokeWidth: Graph.GRAPH_LINE_WIDTH
+    });
+    console.log(Mouse.initialBottomRightY);
+    return grid;
+  }
 
-	function drawVerticalLines(svgElement) {
-	  for (var x of linePositions("V")) {
-		drawLine(svgElement, x, 0, "V", wrapper().offsetHeight)
-	  }
-	}
+  function create1x1() {
+    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, Graph.GRAPH_SPACING, Graph.GRAPH_SPACING);
+    grid.attr({
+      fill: "none",
+      stroke: "blue",
+      strokeWidth: Graph.GRAPH_LINE_WIDTH
+    });
+    return grid;
+  }
 
-	function drawHorizontalLines(svgElement) {
-	  for (var y of linePositions("H")) {
-		drawLine(svgElement, 0, y, "H", wrapper().offsetWidth)
-	  }
-	}
+  function userDrawGrid() {
+    document.getElementById("surface").addEventListener("mousedown", Mouse.down);
+    document.getElementById("surface").addEventListener("mouseup", Mouse.up);
 
-	function linePositions(direction) {
-	  var arr = [];
-	  for (var i = GRID_LINE_WIDTH / 2; i < wrapper()[direction === "V" ? "offsetWidth" : "offsetHeight"]; i += GRID_SPACING) {
-		arr.push(i);
-	  }
-	  return arr;
-	}
+    Mouse.afterDown = 
+        function() {
+          grid && grid.remove();
+          create1x1();
+        };
 
-	/* height and width of wrapper should both be multiple of GRID_SPACING */
-	function resizeWrapper() {
-	  var initialWidth = wrapper().offsetWidth;
-	  var initialHeight = wrapper().offsetHeight;
-	  var newWidth = Math.floor(initialWidth / GRID_SPACING) * GRID_SPACING;
-	  var newHeight = Math.floor(initialHeight / GRID_SPACING) * GRID_SPACING;
-	  document.getElementById("surface").style.width = `${newWidth + GRID_LINE_WIDTH}px`;
-	  document.getElementById("surface").style.height = `${newHeight + GRID_LINE_WIDTH}px`;
-	}
+    Mouse.afterMove = 
+        function() {
+          grid && grid.remove();
+          createGrid();
+        }; 
+  }
 
-	function wrapper() {
-	  return document.getElementById('wrapper');
-	}
-
-	function drawGrid(svgElement) {
-	  resizeWrapper();
-	  drawVerticalLines(svgElement);
-	  drawHorizontalLines(svgElement);
-	}
-
-	return {
-		GRID_SPACING: GRID_SPACING,
-		GRID_LINE_WIDTH: GRID_LINE_WIDTH,
-		drawGrid: drawGrid,	
-	};
+  return {
+    userDrawGrid: userDrawGrid
+  };
 })();
-
-export { Grid }
