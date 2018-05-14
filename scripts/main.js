@@ -1,3 +1,5 @@
+"use strict";
+
 var surface = Snap("#surface");
 var skel;
 

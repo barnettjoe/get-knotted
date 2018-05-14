@@ -1,3 +1,5 @@
+"use strict";
+
 var Mouse = (function() {
   function relativeCoords(event) {
     var absX = event.clientX;
@@ -20,11 +22,11 @@ var Mouse = (function() {
   }
 
   function roundUp(num) {
-    return Math.ceil(num / Graph.GRAPH_SPACING) * Graph.GRAPH_SPACING + Graph.GRAPH_LINE_WIDTH / 2;
+    return Math.ceil(num / config.GRAPH_SPACING) * config.GRAPH_SPACING + config.GRAPH_LINE_WIDTH / 2;
   }
 
   function roundDown(num) {
-    return Math.floor(num / Graph.GRAPH_SPACING) * Graph.GRAPH_SPACING + Graph.GRAPH_LINE_WIDTH / 2;
+    return Math.floor(num / config.GRAPH_SPACING) * config.GRAPH_SPACING + config.GRAPH_LINE_WIDTH / 2;
   }
 
   function x() {

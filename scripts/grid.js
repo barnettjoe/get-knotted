@@ -1,3 +1,5 @@
+"use strict";
+
 var Grid = (function() {
   var grid;
 
@@ -5,20 +7,19 @@ var Grid = (function() {
   function createGrid() {
     grid = surface.rect(Mouse.x(), Mouse.y(), Mouse.width(), Mouse.height());
     grid.attr({
-      fill: "none",
-      stroke: "blue",
-      strokeWidth: Graph.GRAPH_LINE_WIDTH
+      fill: config.GRID_FILL_COLOR,
+      stroke: config.GRID_COLOR,
+      strokeWidth: config.GRAPH_LINE_WIDTH
     });
-    console.log(Mouse.initialBottomRightY);
     return grid;
   }
 
   function create1x1() {
-    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, Graph.GRAPH_SPACING, Graph.GRAPH_SPACING);
+    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, config.GRAPH_SPACING, config.GRAPH_SPACING);
     grid.attr({
-      fill: "none",
-      stroke: "blue",
-      strokeWidth: Graph.GRAPH_LINE_WIDTH
+      fill: config.GRID_FILL_COLOR,
+      stroke: config.GRID_COLOR,
+      strokeWidth: config.GRAPH_LINE_WIDTH
     });
     return grid;
   }

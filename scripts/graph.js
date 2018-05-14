@@ -1,63 +1,90 @@
+"use strict";
+
+function GraphLine(surface, x, y, direction, length) {
+	this.surface = surface;
+	this.x = x;
+	this.y = y;
+	this.direction = direction;
+	this.length = length;
+	this.draw = function() {
+					// eventually, I should incorporate snapObject methods (from Snap svg library) into my own classes...
+					this.snapObject = this.surface.path(`M${this.x} ${this.y}${this.direction} ${this.length}`);
+					this.snapObject.attr({
+						stroke: config.GRAPH_LINE_COLOR,
+						strokeWidth: config.GRAPH_LINE_WIDTH
+					});
+				};
+}
+
 var Graph = (function() {
-	var GRAPH_SPACING = 40;
-	var GRAPH_LINE_WIDTH = 1;
+	var horizontalLines = [];
+	var verticalLines = [];
 
-	function drawLine(svgElement, x, y, direction, length) {
-		var p = svgElement.path(`M${x} ${y}${direction} ${length}`);
-		p.attr({
-			fill: "none",
-			stroke: "#eaeaea",
-			strokeWidth: GRAPH_LINE_WIDTH
-		});
-		
+	function createLines(surface, direction) {
+		var arr;
+		var startCoords;
+		var directionLetter;
+		var limit;
+		var length;
+
+		if (direction === "vertical") {
+			arr = verticalLines;
+			limit = "offsetWidth";
+			length = wrapper()["offsetHeight"];
+			directionLetter = "V";
+		} else if (direction === "horizontal") {
+			arr = horizontalLines;
+			limit = "offsetHeight";
+			length = wrapper()["offsetWidth"];
+			directionLetter = "H";
+		}
+
+		for (var i = config.GRAPH_LINE_WIDTH / 2; i < wrapper()[limit]; i += config.GRAPH_SPACING) {
+			startCoords = (direction === "vertical" ? [i, 0] : [0, i]); 
+			var line = new GraphLine(surface, ...startCoords, directionLetter, length); 
+			arr.push(line);
+		}
 	}
 
-	function drawVerticalLines(svgElement) {
-	  for (var x of linePositions("V")) {
-		drawLine(svgElement, x, 0, "V", wrapper().offsetHeight)
-	  }
+	function drawVerticalLines(surface) {
+		createLines(surface, "vertical");
+
+		for (var line of verticalLines) {
+			line.draw(surface);
+		}
 	}
 
-	function drawHorizontalLines(svgElement) {
-	  for (var y of linePositions("H")) {
-		drawLine(svgElement, 0, y, "H", wrapper().offsetWidth)
-	  }
+	function drawHorizontalLines(surface) {
+		createLines(surface, "horizontal");
+
+		for (var line of horizontalLines) {
+			line.draw(surface);
+		}
 	}
 
-	function linePositions(direction) {
-	  var arr = [];
-	  for (var i = GRAPH_LINE_WIDTH / 2; i < wrapper()[direction === "V" ? "offsetWidth" : "offsetHeight"]; i += GRAPH_SPACING) {
-		arr.push(i);
-	  }
-	  return arr;
-	}
-
-	/* height and width of wrapper should both be multiple of GRAPH_SPACING */
+	/* height and width of wrapper should both be multiple of config.GRAPH_SPACING */
 	function resizeWrapper() {
-	  var initialWidth = wrapper().offsetWidth;
-	  var initialHeight = wrapper().offsetHeight;
-	  var newWidth = Math.floor(initialWidth / GRAPH_SPACING) * GRAPH_SPACING;
-	  var newHeight = Math.floor(initialHeight / GRAPH_SPACING) * GRAPH_SPACING;
-	  document.getElementById("surface").style.width = `${newWidth + GRAPH_LINE_WIDTH}px`;
-	  document.getElementById("surface").style.height = `${newHeight + GRAPH_LINE_WIDTH}px`;
-	  console.log("resizied!");
+		var initialWidth = wrapper().offsetWidth;
+		var initialHeight = wrapper().offsetHeight;
+		var newWidth = Math.floor(initialWidth / config.GRAPH_SPACING) * config.GRAPH_SPACING;
+		var newHeight = Math.floor(initialHeight / config.GRAPH_SPACING) * config.GRAPH_SPACING;
+		document.getElementById("surface").style.width = `${newWidth + config.GRAPH_LINE_WIDTH}px`;
+		document.getElementById("surface").style.height = `${newHeight + config.GRAPH_LINE_WIDTH}px`;
 	}
 
 	function wrapper() {
-	  return document.getElementById('wrapper');
+		return document.getElementById('wrapper');
 	}
 
-	function drawGraph(svgElement) {
-	  resizeWrapper();
-	  drawVerticalLines(svgElement);
-	  drawHorizontalLines(svgElement);
+	function drawGraph(surface) {
+		resizeWrapper();
+		drawVerticalLines(surface);
+		drawHorizontalLines(surface);
 	}
 
   	window.addEventListener('resize', function() { Graph.drawGraph(surface) } );
 
 	return {
-		GRAPH_SPACING: GRAPH_SPACING,
-		GRAPH_LINE_WIDTH: GRAPH_LINE_WIDTH,
 		drawGraph: drawGraph,	
 	};
 })();
