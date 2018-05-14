@@ -1,54 +1,32 @@
 "use strict";
 
-var Grid = (function() {
+function UserDefinedGrid() {
   var grid;
-
-  /* drawing rectangle */
+  
   function createGrid() {
-    var height = Mouse.height();
-    var x = Mouse.x();
-    var width = Mouse.width();
-    var y = Mouse.y();
-    grid = surface.rect(x, y, width, height);
-    grid.attr(config.grid);
-    
-    drawCrossingPoints(x, y, width, height);
-
-    return grid;
-  }
-
-  function drawCrossingPoints(x, y, width, height) {
-    crossingPoint(100, 100)
-  }
-
-  function crossingPoint(x, y) {
-    surface.circle(x, y, 5);
+    var leftmost = Math.min(Mouse.initialBox[0], Mouse.finalBox[0]);
+    var topmost = Math.min(Mouse.initialBox[1], Mouse.finalBox[1]);
+    var rightmost = Math.max(Mouse.initialBox[0], Mouse.finalBox[0]);
+    var bottommost = Math.max(Mouse.initialBox[1], Mouse.finalBox[1]);
+    grid = new Graph(leftmost, topmost, rightmost - leftmost + 1, bottommost - topmost + 1, config.grid);
   }
 
   function create1x1() {
-    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, config.graph_spacing, config.graph_spacing);
-    grid.attr(config.grid);
-    return grid;
+    grid = new Graph(...Mouse.initialBox, 1, 1, config.grid);
   }
 
-  function userDrawGrid() {
-    document.getElementById("surface").addEventListener("mousedown", Mouse.down);
-    document.addEventListener("mouseup", Mouse.up);
+  document.getElementById("surface").addEventListener("mousedown", Mouse.down);
+  document.addEventListener("mouseup", Mouse.up);
 
-    Mouse.afterDown = 
-        function() {
-          grid && grid.remove();
-          create1x1();
-        };
+  Mouse.afterDown = 
+      function() {
+        grid && grid.remove();
+        create1x1();
+      };
 
-    Mouse.afterMove = 
-        function() {
-          grid && grid.remove();
-          createGrid();
-        }; 
-  }
-
-  return {
-    userDrawGrid: userDrawGrid
-  };
-})();
+  Mouse.afterMove = 
+      function() {
+        grid && grid.remove();
+        createGrid();
+      }; 
+}

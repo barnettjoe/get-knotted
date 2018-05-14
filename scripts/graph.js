@@ -1,43 +1,36 @@
 "use strict";
 
-function GraphLine(x, y, direction, length) {
-	// GraphLine is basically just a wrapper around the snapObject property
-	this.snapObject = surface.path(`M${x} ${y}${direction} ${length}`);
-	this.snapObject.attr(config.graphLine);
-}
+function Graph(startCol, startRow, cols, rows, style) {
+	this.lines = [];
 
-var Graph = (function() {
-	var graphLines = {horizontal: [], vertical: []};
-
-	function createHorizontalLines() {
-		var	limit = "offsetHeight";
-		var length = wrapper()["offsetWidth"];
-		for (var i = config.graphLine.strokeWidth / 2; i < wrapper()[limit]; i += config.graph_spacing) {
-			var line = new GraphLine(0, i, "H", length); 
-			graphLines.horizontal.push(line);
+	this.remove = function() { // broken? 
+		for (var line of this.lines) {
+			line.remove();
 		}
-	}
-
-	function createVerticalLines() {
-		var	limit = "offsetWidth";
-		var length = wrapper()["offsetHeight"];
-		for (var i = config.graphLine.strokeWidth / 2; i < wrapper()[limit]; i += config.graph_spacing) {
-			var line = new GraphLine(i, 0, "V", length); 
-			graphLines.vertical.push(line);
-		}
-	}
-
-	function wrapper() {
-		return document.getElementById('wrapper');
-	}
-
-	function drawGraph() {
-		createHorizontalLines();
-		createVerticalLines();
-	}
-
-	return {
-		drawGraph: drawGraph,
-		graphLines: graphLines	
 	};
-})();
+
+	this.drawLine = function(startX, startY, endX, endY) {
+		this.lines.push(surface.line(startX, startY, endX, endY).attr(style));
+	};
+
+	this.createHorizontalLines = function() {
+		var startX = startCol * config.squareHeight;
+		var endX = startX + cols * config.squareHeight + style.strokeWidth;
+		for (var i = startRow; i <= startRow + rows; i++) {
+			var startY = i * config.squareHeight + style.strokeWidth / 2;
+			this.drawLine(startX, startY, endX, startY); 
+		}
+	};
+
+	this.createVerticalLines = function() {
+		var startY = startRow * config.squareHeight;
+		var endY = startY + rows * config.squareHeight + style.strokeWidth;
+		for (var i = startCol; i <= startCol + cols; i++) {
+			var startX = i * config.squareHeight + style.strokeWidth / 2;
+			this.drawLine(startX, startY, startX, endY); 
+		}
+	};
+
+	this.createHorizontalLines();
+	this.createVerticalLines();
+}
