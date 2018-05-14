@@ -5,28 +5,35 @@ var Grid = (function() {
 
   /* drawing rectangle */
   function createGrid() {
-    grid = surface.rect(Mouse.x(), Mouse.y(), Mouse.width(), Mouse.height());
-    grid.attr({
-      fill: config.GRID_FILL_COLOR,
-      stroke: config.GRID_COLOR,
-      strokeWidth: config.GRAPH_LINE_WIDTH
-    });
+    var height = Mouse.height();
+    var x = Mouse.x();
+    var width = Mouse.width();
+    var y = Mouse.y();
+    grid = surface.rect(x, y, width, height);
+    grid.attr(config.grid);
+    
+    drawCrossingPoints(x, y, width, height);
+
     return grid;
   }
 
+  function drawCrossingPoints(x, y, width, height) {
+    crossingPoint(100, 100)
+  }
+
+  function crossingPoint(x, y) {
+    surface.circle(x, y, 5);
+  }
+
   function create1x1() {
-    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, config.GRAPH_SPACING, config.GRAPH_SPACING);
-    grid.attr({
-      fill: config.GRID_FILL_COLOR,
-      stroke: config.GRID_COLOR,
-      strokeWidth: config.GRAPH_LINE_WIDTH
-    });
+    grid = surface.rect(Mouse.initialTopLeftX, Mouse.initialTopLeftY, config.graph_spacing, config.graph_spacing);
+    grid.attr(config.grid);
     return grid;
   }
 
   function userDrawGrid() {
     document.getElementById("surface").addEventListener("mousedown", Mouse.down);
-    document.getElementById("surface").addEventListener("mouseup", Mouse.up);
+    document.addEventListener("mouseup", Mouse.up);
 
     Mouse.afterDown = 
         function() {

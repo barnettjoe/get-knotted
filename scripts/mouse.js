@@ -22,11 +22,11 @@ var Mouse = (function() {
   }
 
   function roundUp(num) {
-    return Math.ceil(num / config.GRAPH_SPACING) * config.GRAPH_SPACING + config.GRAPH_LINE_WIDTH / 2;
+    return Math.ceil(num / config.graph_spacing) * config.graph_spacing + config.graphLine.strokeWidth / 2;
   }
 
   function roundDown(num) {
-    return Math.floor(num / config.GRAPH_SPACING) * config.GRAPH_SPACING + config.GRAPH_LINE_WIDTH / 2;
+    return Math.floor(num / config.graph_spacing) * config.graph_spacing + config.graphLine.strokeWidth / 2;
   }
 
   function x() {
@@ -62,6 +62,9 @@ var Mouse = (function() {
   function up(event) {
     document.getElementById("surface").removeEventListener("mousemove", move);
   }
+
+  // TODO
+  // if mouse leaves graph area, should have same effect as mouseup
 
   return {
     initialTopLeftX: initialTopLeftX,

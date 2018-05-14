@@ -1,7 +1,10 @@
 var config = {
-    GRAPH_SPACING: 40,
-	GRAPH_LINE_WIDTH: 1,
-	GRAPH_LINE_COLOR: "#eaeaea", // light gray
-	GRID_FILL_COLOR: "none",
-	GRID_COLOR: "#ff00ff", // magenta
+    graphLine: {stroke: "black", strokeWidth: 0.1}, // keeping stroke widths small avoids annoying edgecase behaviour where mouse is on the grid itself
+    grid: {
+      fill: "none",
+      stroke: "red",
+      strokeWidth: 1,
+      strokeOpacity: 1
+    },
+    graph_spacing: 200
 };

@@ -1,7 +1,5 @@
 "use strict";
 
 var surface = Snap("#surface");
-var skel;
-
-Graph.drawGraph(surface);
+Graph.drawGraph();
 Grid.userDrawGrid();
