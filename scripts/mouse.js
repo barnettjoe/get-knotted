@@ -1,8 +1,8 @@
 "use strict";
 
 var Mouse = (function() {
-  var finalBox, initialBox;
 
+  // for getting coords relative to graph area, from absolute coords (i.e. relative to whole window)
   function relativeCoords(event) {
     var absX = event.clientX;
     var absY = event.clientY;
@@ -11,44 +11,22 @@ var Mouse = (function() {
     var topOffset = svgPosition.top;
     return [absX - leftOffset, absY - topOffset]
   }
-
-  function move(event) {
-    Mouse.finalBox = rowAndCol(event);
-    if (withinGraph(Mouse.finalBox)) {
-      Mouse.afterMove();
+ 
+  // for executing code on condition that mouse is positioned within graphArea
+  function doIfInGraph(box, fn) {
+    var inGraph = (box[0] >= 0 && box[0] < config.graphCols && box[1] >= 0 && box[1] < config.graphRows);
+    if (inGraph) {
+      fn();
     }
   }
-  
-  // prevent grid from extending outside of graph
-  function withinGraph(box) {
-    return box[0] >= 0 && box[0] < config.graphRows && box[1] >= 0 && box[1] < config.graphCols;
-  }
 
+  // for getting [row, col] coords from pixel coords
   function rowAndCol(event) {
-    console.log(relativeCoords(event));
-  // TODO --- make this use TRUE EDGES
-    
-   // get row / col coords from pixel coords
-    return relativeCoords(event).map(num => Math.floor((num - config.offset() - 0.5 * config.grid.strokeWidth) / config.squareHeight));
-  }
-
-  function down(event) {
-    Mouse.initialBox = rowAndCol(event); 
-    // add listener for mouse movement
-    if (withinGraph(Mouse.initialBox)) {
-      document.getElementById("surface").addEventListener("mousemove", move);
-      Mouse.afterDown();
-    }
-  }
-
-  function up(event) {
-    document.getElementById("surface").removeEventListener("mousemove", move);
+    return relativeCoords(event).map(num => Math.floor((num - 0.5 * graph.maxStrokeWidth()) / config.squareHeight));
   }
 
   return {
-    finalBox: finalBox,
-    initialBox: initialBox,
-    down: down, 
-    up: up,
+    rowAndCol: rowAndCol,
+    doIfInGraph: doIfInGraph,
   };
 })();

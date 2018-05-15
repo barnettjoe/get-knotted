@@ -23,12 +23,12 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
 
 #wrapper {
 	position: absolute;
-	left: 0;
+	left: 100px;
 	right: 0;
-	top: 0;
+	top: 100px;
 	bottom: 0;
 	overflow: hidden;
-	margin: 10px;
+	margin: 0;
 }
 
 #surface {

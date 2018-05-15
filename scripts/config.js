@@ -3,17 +3,14 @@ var config = {
     graphCols: 4,
     squareHeight: 200,
     graphLine: {
-        stroke: "black",
-        strokeWidth: 20,
-        strokeOpacity: 0.2
+        stroke: "darkgray",
+        strokeWidth: 5,
+        strokeOpacity: 1
     },
     grid: {
         fill: "none",
         stroke: "#ff00ff",
-        strokeWidth: 10,
-        strokeOpacity: 0.5
-    },
-    offset: function() {
-        return Math.max(config.grid.strokeWidth, config.graphLine.strokeWidth);
+        strokeWidth: 15,
+        strokeOpacity: 0.2
     }
 };
