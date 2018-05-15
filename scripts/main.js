@@ -3,7 +3,8 @@
 var surface = Snap("#surface");
 
 // draw graph
-new Graph(0, 0, config.graphCols, config.graphRows, config.graphLine)
+new Graph(0, 0, config.graphCols, config.graphRows, config.graphLine, true);
 
 // let user draw a grid 
-new UserDefinedGrid()
+new UserDefinedGrid();
+
