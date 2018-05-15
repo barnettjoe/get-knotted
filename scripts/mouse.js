@@ -22,7 +22,7 @@ var Mouse = (function() {
 
   // for getting [row, col] coords from pixel coords
   function rowAndCol(event) {
-    return relativeCoords(event).map(num => Math.floor((num - 0.5 * graph.maxStrokeWidth()) / config.squareHeight));
+    return relativeCoords(event).map(num => Math.floor((num - 0.5 * drawing.graph.maxStrokeWidth()) / config.squareHeight));
   }
 
   return {

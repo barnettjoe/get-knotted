@@ -3,14 +3,14 @@
 function Graph(startCol, startRow, cols, rows, style) {
 	this.lines = [];
 
-	// remove grid (by removing all of its lines)
+	// remove frame (by removing all of its lines)
 	this.remove = function() {
 		for (var line of this.lines) {
 			line.remove();
 		}
 	};
 
-	// necessary to ensure proper alignment of grid and graph...
+	// necessary to ensure proper alignment of frame and graph...
 	// ...even when one has wider strokeWidth
 	this.shiftFactor = function() {
 		if (style.strokeWidth === this.maxStrokeWidth()) {
@@ -21,16 +21,16 @@ function Graph(startCol, startRow, cols, rows, style) {
 	}
 
 	this.maxStrokeWidth = function() {
-		return Math.max(config.graphLine.strokeWidth, config.grid.strokeWidth);
+		return Math.max(config.graphLine.strokeWidth, config.frame.strokeWidth);
 	}
 
 	this.minStrokeWidth = function() {
-		return Math.min(config.graphLine.strokeWidth, config.grid.strokeWidth);
+		return Math.min(config.graphLine.strokeWidth, config.frame.strokeWidth);
 	}
 
 	// create line svg and add to lines array
 	this.drawLine = function(...arr) { // arr contents : [startX, startY, endX, endY]
-		this.lines.push(surface.line(...arr).attr(style));	
+		this.lines.push(drawing.surface.line(...arr).attr(style));	
 	};
 
 	// draw all horizonal lines

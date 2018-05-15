@@ -7,7 +7,7 @@ var config = {
         strokeWidth: 5,
         strokeOpacity: 1
     },
-    grid: {
+    frame: {
         fill: "none",
         stroke: "#ff00ff",
         strokeWidth: 15,
