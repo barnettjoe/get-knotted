@@ -1,16 +1,19 @@
 var config = {
-    graphRows: 1,
-    graphCols: 1,
+    graphRows: 4,
+    graphCols: 4,
     squareHeight: 200,
     graphLine: {
         stroke: "black",
-        strokeWidth: 50 // keeping stroke widths small avoids annoying edgecase behaviour where mouse is on the grid itself
+        strokeWidth: 20,
+        strokeOpacity: 0.2
     },
     grid: {
         fill: "none",
-        stroke: "red",
-        strokeWidth: 30,
-        strokeOpacity: 1
+        stroke: "#ff00ff",
+        strokeWidth: 10,
+        strokeOpacity: 0.5
     },
-    graph_spacing: 200
+    offset: function() {
+        return Math.max(config.grid.strokeWidth, config.graphLine.strokeWidth);
+    }
 };

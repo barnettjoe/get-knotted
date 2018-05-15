@@ -14,24 +14,32 @@ var Mouse = (function() {
 
   function move(event) {
     Mouse.finalBox = rowAndCol(event);
-    Mouse.afterMove();
+    if (withinGraph(Mouse.finalBox)) {
+      Mouse.afterMove();
+    }
+  }
+  
+  // prevent grid from extending outside of graph
+  function withinGraph(box) {
+    return box[0] >= 0 && box[0] < config.graphRows && box[1] >= 0 && box[1] < config.graphCols;
   }
 
   function rowAndCol(event) {
-    var x, y;
-    // get row / col coords from pixel coords 
-    [x, y] = relativeCoords(event).map(num => Math.floor(num / config.squareHeight));
-    // prevent grid from extending outside of graph
-    return [Math.min(x, config.graphCols - 1), Math.min(y, config.graphRows - 1)];
+    console.log(relativeCoords(event));
+  // TODO --- make this use TRUE EDGES
+    
+   // get row / col coords from pixel coords
+    return relativeCoords(event).map(num => Math.floor((num - config.offset() - 0.5 * config.grid.strokeWidth) / config.squareHeight));
   }
 
   function down(event) {
     Mouse.initialBox = rowAndCol(event); 
     // add listener for mouse movement
-    document.getElementById("surface").addEventListener("mousemove", move);
-    // remove any existing grid and make new one
-    Mouse.afterDown();
-   }
+    if (withinGraph(Mouse.initialBox)) {
+      document.getElementById("surface").addEventListener("mousemove", move);
+      Mouse.afterDown();
+    }
+  }
 
   function up(event) {
     document.getElementById("surface").removeEventListener("mousemove", move);

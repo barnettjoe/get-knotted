@@ -47,7 +47,7 @@ function Graph(startCol, startRow, cols, rows, style, needsShift) {
 	}
 
 	this.translate = function(arr) {
-		return arr.map(x => x + 0.5 * (Math.max(config.grid.strokeWidth, config.graphLine.strokeWidth)));
+		return arr.map(x => (x + config.offset()));
 	}
 
 	this.createHorizontalLines();
