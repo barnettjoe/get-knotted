@@ -1,7 +1,6 @@
 "use strict";
 
 var Mouse = (function() {
-
   // for getting coords relative to graph area, from absolute coords (i.e. relative to whole window)
   function relativeCoords(event) {
     var absX = event.clientX;

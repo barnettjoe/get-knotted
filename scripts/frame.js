@@ -1,3 +1,5 @@
+"use strict";
+
 function Frame(drawing) {
     var createGrid = function() {
         this.grid.remove();
@@ -5,7 +7,7 @@ function Frame(drawing) {
         var topmost    = Math.min(this.initialBox[1], this.finalBox[1]);
         var rightmost  = Math.max(this.initialBox[0], this.finalBox[0]);
         var bottommost = Math.max(this.initialBox[1], this.finalBox[1]);
-        this.grid = new Graph({
+        this.grid = new Grid({
             drawing: drawing,
             startCol:  leftmost,
             startRow: topmost,
@@ -29,7 +31,7 @@ function Frame(drawing) {
     var make1x1 = function() {
         this.grid && this.grid.remove();
         // create 1x1 frame
-        this.grid = new Graph({
+        this.grid = new Grid({
             drawing: drawing,
             startCol: this.initialBox[0],
             startRow: this.initialBox[1],
