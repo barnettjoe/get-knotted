@@ -17,8 +17,7 @@ Grid.prototype = {
 		}
 	},
 
-	// necessary to ensure proper alignment of frame and graph...
-	// ...even when one has wider strokeWidth
+	// necessary to ensure that frame and graph are properly aligned even when either one has greater strokeWidth
 	shiftFactor: function(options) {
 		if (options.style.strokeWidth === this.maxStrokeWidth()) {
 			return 0;
