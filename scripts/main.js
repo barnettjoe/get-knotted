@@ -1,9 +1,13 @@
 "use strict";
 
-var drawing = new Drawing();
+// IIFE to avoid globals
+(function() {
+    var drawing = new Drawing();
 
-drawing.surface = Snap("#surface");
-drawing.graph = new Graph(0, 0, config.graphCols, config.graphRows, config.graphLine);
+    drawing.surface = Snap("#surface");
+    drawing.graph = new Graph(drawing, 0, 0, config.graphCols, config.graphRows, config.graphLine);
 
-// let user draw a grid 
-drawing.addUserFrame();
+    // let user draw a grid 
+    drawing.addUserFrame(); 
+})();
+

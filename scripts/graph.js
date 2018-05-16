@@ -1,6 +1,6 @@
 "use strict";
 
-function Graph(startCol, startRow, cols, rows, style) {
+function Graph(drawing, startCol, startRow, cols, rows, style) {
 	this.lines = [];
 
 	// remove frame (by removing all of its lines)
