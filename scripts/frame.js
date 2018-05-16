@@ -1,12 +1,3 @@
-"use strict";
-
-function Drawing() {
-    this.graphArea = document.getElementById("surface");
-    this.addUserFrame = function() {
-        this.frame = new Frame(this);
-    }
-}
-
 function Frame(drawing) {
     var createGrid = function() {
         this.grid.remove();
@@ -14,8 +5,15 @@ function Frame(drawing) {
         var topmost    = Math.min(this.initialBox[1], this.finalBox[1]);
         var rightmost  = Math.max(this.initialBox[0], this.finalBox[0]);
         var bottommost = Math.max(this.initialBox[1], this.finalBox[1]);
-        this.grid = new Graph(drawing, leftmost, topmost, rightmost - leftmost + 1, bottommost - topmost + 1, config.frame);
-    }
+        this.grid = new Graph({
+            drawing: drawing,
+            startCol:  leftmost,
+            startRow: topmost,
+            cols: rightmost - leftmost + 1,
+            rows: bottommost - topmost + 1,
+            style: config.frame
+        });
+    };
     
     this.createGrid = createGrid.bind(this);
 
@@ -31,7 +29,14 @@ function Frame(drawing) {
     var make1x1 = function() {
         this.grid && this.grid.remove();
         // create 1x1 frame
-        this.grid = new Graph(drawing, ...this.initialBox, 1, 1, config.frame);
+        this.grid = new Graph({
+            drawing: drawing,
+            startCol: this.initialBox[0],
+            startRow: this.initialBox[1],
+            cols: 1,
+            rows: 1,
+            style: config.frame
+        });
         // and add a listener for mouse movement
         drawing.graphArea.addEventListener("mousemove", this.moveListener);
     };

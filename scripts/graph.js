@@ -1,6 +1,6 @@
 "use strict";
 
-function Graph(drawing, startCol, startRow, cols, rows, style) {
+function Graph(options) {
 	this.lines = [];
 
 	// remove frame (by removing all of its lines)
@@ -13,7 +13,7 @@ function Graph(drawing, startCol, startRow, cols, rows, style) {
 	// necessary to ensure proper alignment of frame and graph...
 	// ...even when one has wider strokeWidth
 	this.shiftFactor = function() {
-		if (style.strokeWidth === this.maxStrokeWidth()) {
+		if (options.style.strokeWidth === this.maxStrokeWidth()) {
 			return 0;
 		} else {
 			return 0.5 * (this.maxStrokeWidth() - this.minStrokeWidth());
@@ -30,15 +30,15 @@ function Graph(drawing, startCol, startRow, cols, rows, style) {
 
 	// create line svg and add to lines array
 	this.drawLine = function(...arr) { // arr contents : [startX, startY, endX, endY]
-		this.lines.push(drawing.surface.line(...arr).attr(style));	
+		this.lines.push(options.drawing.surface.line(...arr).attr(options.style));	
 	};
 
 	// draw all horizonal lines
 	this.createHorizontalLines = function() {
-		var startX = startCol * config.squareHeight + this.shiftFactor();
-		var endX = startX + cols * config.squareHeight + style.strokeWidth;
+		var startX = options.startCol * config.squareHeight + this.shiftFactor();
+		var endX = startX + options.cols * config.squareHeight + options.style.strokeWidth;
 
-		for (var i = startRow; i <= startRow + rows; i++) {
+		for (var i = options.startRow; i <= options.startRow + options.rows; i++) {
 			var startY = i * config.squareHeight + this.maxStrokeWidth() / 2;
 			this.drawLine(startX, startY, endX, startY); 			
 		}
@@ -46,10 +46,10 @@ function Graph(drawing, startCol, startRow, cols, rows, style) {
 
 	// draw all vertical lines
 	this.createVerticalLines = function() {
-		var startY = startRow * config.squareHeight + this.shiftFactor();
-		var endY = startY + rows * config.squareHeight + style.strokeWidth;
+		var startY = options.startRow * config.squareHeight + this.shiftFactor();
+		var endY = startY + options.rows * config.squareHeight + options.style.strokeWidth;
 
-		for (var i = startCol; i <= startCol + cols; i++) {
+		for (var i = options.startCol; i <= options.startCol + options.cols; i++) {
 			var startX = i * config.squareHeight + this.maxStrokeWidth() / 2;
 
 			this.drawLine(startX, startY, startX, endY); 
