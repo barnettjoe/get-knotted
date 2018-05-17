@@ -3,13 +3,13 @@ var config = {
     graphCols: 4,
     squareHeight: 200,
     graphLine: {
-        stroke: "darkgray",
+        stroke: 'darkgray',
         strokeWidth: 5,
         strokeOpacity: 1
     },
     frame: {
-        fill: "none",
-        stroke: "#ff00ff",
+        fill: 'none',
+        stroke: '#ff00ff',
         strokeWidth: 15,
         strokeOpacity: 0.2
     }
