@@ -17,15 +17,27 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
   font-weight: normal;
 }
 
+body {
+    display: grid;
+    grid-template-rows: 850px;
+    grid-template-columns: 900px;
+    grid-template-areas:
+      "drawing"
+      "footer";
+}
+
 /*##########*/
 /*# BASICS #*/
 /*##########*/
 
 #wrapper {
+	grid-area: drawing;
+	height: 830px;
+	width: 830px;
 	position: absolute;
-	left: 100px;
+	left: 50px;
 	right: 0;
-	top: 100px;
+	top: 20px;
 	bottom: 0;
 	overflow: hidden;
 	margin: 0;
@@ -34,4 +46,14 @@ body, h1, h2, h3, h4, h5, h6, p, ol, ul {
 #surface {
 	height: 100%;
 	width: 100%;
+}
+
+footer {
+	text-align: center;
+	grid-area: footer;
+	margin-bottom: 20px;
+}
+
+button {
+	font-size: 20px;
 }

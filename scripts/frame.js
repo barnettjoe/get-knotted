@@ -14,6 +14,12 @@ function Frame(initialBox, finalBox, drawing) {
         rows: bottommost - topmost + 1,
         style: config.frame
     });
+
+    this.showCrossingPoints = function() {
+        for(var line of this.lines) {
+         console.log(line.drawCrossingPoints());
+        };
+    };
 }
 
 Frame.prototype = Grid.prototype;

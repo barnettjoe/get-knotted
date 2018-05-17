@@ -25,14 +25,24 @@ var Mouse = (function() {
   // for getting [row, col] coords from pixel coords
   function rowAndCol(event) {
     function pxToBox(num) {
-      var shifted = (num - 0.5 * Grid.prototype.maxStrokeWidth());
+      var shifted = (num - 0.5 *  config.maxStrokeWidth()); 
       return Math.floor(shifted / config.squareHeight);
     }
     return relativeCoords(event).map(pxToBox);
   }
 
+  // for getting pixel coords from [row, col]
+  function pixelCoords(coords){
+    function boxToPX(n) {
+      return (n * config.squareHeight) + (config.maxStrokeWidth() / 2);  
+    }
+    return coords.map(boxToPX);
+  }
+
+
   return {
     rowAndCol: rowAndCol,
+    pixelCoords: pixelCoords,
     doIfInGraph: doIfInGraph
   };
 })();
