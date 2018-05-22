@@ -1,4 +1,5 @@
 var config = {
+	bezierDistance: 20,
     graphRows: 4,
     graphCols: 4,
     squareHeight: 200,
