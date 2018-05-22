@@ -25,9 +25,9 @@ var config = {
 	nodeStyle: {
 		fill: "blue",
 		stroke: "none",
-		strokeWidth: 2, // CamelCase...
-		"fill-opacity": 1, // or dash-separated names
-		radius: 10 // prefixed values
+		strokeWidth: 2,
+		fillOpacity: 0.6,
+		radius: 7
 	},
 
 	// necessary to ensure that frame and graph are properly...

@@ -2,6 +2,8 @@
 
 function Frame(initialBox, finalBox, drawing) {
     var nodes = [];
+    this.adjacencyList = [];
+    this.lines = [];
     var leftmost   = Math.min(initialBox[0], finalBox[0]);
     var topmost    = Math.min(initialBox[1], finalBox[1]);
     var rightmost  = Math.max(initialBox[0], finalBox[0]);
@@ -37,6 +39,35 @@ function Frame(initialBox, finalBox, drawing) {
     };
 
     this.setNodes();
+
+    this.setLines = function() {
+      for(var i = 0; i < nodes.length; i++) {
+        this.adjacencyList.push([]);
+        // push indices of adjacent nodes to this new subarray
+        for(var j = 0; j < nodes.length; j++) {
+            var node = nodes[j];
+            var xDiff = Math.abs(node[0] - nodes[i][0]);
+            var yDiff = Math.abs(node[1] - nodes[i][1]);
+            var diffs = [xDiff, yDiff];
+            if (diffs.includes(1) && diffs.includes(0)) {
+              this.adjacencyList[this.adjacencyList.length - 1].push(j);
+            };
+        };
+      };  
+    };
+
+    this.drawLines = function() {
+        for (var i = 0; i < nodes.length; i++) {
+            for (var j of this.adjacencyList[i]) {
+                if (nodes[i] < nodes[j]) { // avoid drawing each line twice
+                    this.lines.push(new Line(...nodes[i], ...nodes[j], config.frame, drawing));
+                };
+            };
+        };
+    };
+
+    this.setLines();
+    this.drawLines();
 }
 
 Frame.prototype = Grid.prototype;
