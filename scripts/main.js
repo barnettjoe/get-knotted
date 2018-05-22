@@ -17,5 +17,13 @@
 	    // if user has drawn a frame, then show crossing points
 		if (drawing.frame) drawing.frame.showCrossingPoints();
 	});
+
+
+	// set up button to show nodes
+	document.getElementById("nodes-button").addEventListener("click", function() {
+	    // if user has drawn a frame, then show nodes
+		if (drawing.frame) drawing.frame.showNodes();
+	});
+	
 })();
 

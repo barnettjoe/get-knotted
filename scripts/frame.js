@@ -1,6 +1,7 @@
 'use strict';
 
 function Frame(initialBox, finalBox, drawing) {
+    var nodes = [];
     var leftmost   = Math.min(initialBox[0], finalBox[0]);
     var topmost    = Math.min(initialBox[1], finalBox[1]);
     var rightmost  = Math.max(initialBox[0], finalBox[0]);
@@ -17,9 +18,25 @@ function Frame(initialBox, finalBox, drawing) {
 
     this.showCrossingPoints = function() {
         for(var line of this.lines) {
-         console.log(line.drawCrossingPoints());
+         line.drawCrossingPoints();
         };
     };
+
+    this.showNodes = function() {
+        for(var n of nodes) {
+            drawing.surface.circle(...Mouse.pixelCoords(n), config.nodeStyle.radius).attr(config.nodeStyle);
+        };
+    };
+
+    this.setNodes = function() {
+        for (var x = leftmost; x <= rightmost + 1; x++) {
+            for (var y = topmost; y <= bottommost + 1; y++) {
+                nodes.push([x, y]);
+            }
+        }
+    };
+
+    this.setNodes();
 }
 
 Frame.prototype = Grid.prototype;

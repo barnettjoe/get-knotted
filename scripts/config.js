@@ -1,7 +1,7 @@
 var config = {
-    graphRows: 6,
-    graphCols: 6,
-    squareHeight: 130,
+    graphRows: 4,
+    graphCols: 4,
+    squareHeight: 200,
     graphLine: {
         stroke: 'darkgray',
         strokeWidth: 5,
@@ -10,7 +10,7 @@ var config = {
     frame: {
         fill: 'none',
         stroke: '#ff00ff',
-        strokeWidth: 15,
+        strokeWidth: 10,
         strokeOpacity: 0.2
     },
 
@@ -20,6 +20,14 @@ var config = {
 
     minStrokeWidth: function() {
 		return Math.min(config.graphLine.strokeWidth, config.frame.strokeWidth);
+	},
+
+	nodeStyle: {
+		fill: "blue",
+		stroke: "none",
+		strokeWidth: 2, // CamelCase...
+		"fill-opacity": 1, // or dash-separated names
+		radius: 10 // prefixed values
 	},
 
 	// necessary to ensure that frame and graph are properly...
