@@ -33,11 +33,23 @@ function Line(startCol, startRow, endCol, endRow, style, drawing) {
 		return [this.endX - this.startX, this.endY - this.startY];
 	};
 
-	this.angle = function() {
+	this.angle = function(options) {
 		var deltaX = (this.vector()[0]);
 		var deltaY = (this.vector()[1]);
-		return Math.atan2(deltaX, deltaY); // return value is in radians
+		var result = Math.atan2(deltaX, deltaY); // return value is in radians
+		if (options.reverse) result += Math.PI;
+		return result;
 	};
+
+
+	this.angleOutFrom = function(nodeBoxCoords) {
+		if (this.startNode[0] === nodeBoxCoords[0] && this.startNode[1] === nodeBoxCoords[1]) {
+			return this.angle({reverse: false});
+		} else {
+			return this.angle({reverse: true});
+		}
+	};
+	
 }
 
 
