@@ -44,6 +44,9 @@ function Line(startCol, startRow, endCol, endRow, style, drawing) {
 }
 
 function CrossingPoint(startCol, startRow, endCol, endRow, line) {
+	var crossedUnder = false;
+	var crossedOver = false;
+
 	this.boxCoords = [(startCol + endCol) / 2, (startRow + endRow) / 2];
 	this.coords = Mouse.pixelCoords(this.boxCoords);
 

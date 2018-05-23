@@ -67,6 +67,15 @@ function Knot(frame, drawing) {
 		setBezierEndPoints(direction);
 		var section = drawing.surface.path(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`)
 		section.attr(config.knot);	
+		section.attr({strokeDasharray: section.getTotalLength() - (config.gap + config.knot.strokeWidth / 2)});
+		if (direction === "L") {
+			section.attr({
+				strokeDashoffset: -(config.gap + config.knot.strokeWidth / 2)
+			});
+		}
+
+		// over / under stuff isn't perfect -- could use similar tactic...
+		// to make masks at crossover points
 		currentLine = nextLine;
 		lastTraversedNode = targetNode;
 		// set new targetNode
@@ -80,3 +89,4 @@ function Knot(frame, drawing) {
 		}
 	}
 }
+

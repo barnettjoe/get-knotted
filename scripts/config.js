@@ -1,7 +1,8 @@
 var config = {
+	gap: 2,
 	knot: {
 		stroke: "black",
-		strokeWidth: 10,
+		strokeWidth: 15,
 		fill: "none"
 	},
 	mask: {
