@@ -22,12 +22,12 @@ function Frame(initialBox, finalBox, drawing) {
 		var idx;
 		for(var i = 0; i < nodes.length; i++) {
 			if (nodes[i][0] === nodeBoxCoords[0] && nodes[i][1] === nodeBoxCoords[1]) {
-				idx = i;	
-			}	
+				idx = i;
+			}
 		};
 		return this.adjacencyList[idx].map(i => nodes[i]);
 	};
-	
+
 	this.linesOutFrom = function(nodeBoxCoords) {
 		function includeNode(line) {
 			var startMatch = line.startNode[0] === nodeBoxCoords[0] && line.startNode[1] === nodeBoxCoords[1];
@@ -72,7 +72,7 @@ function Frame(initialBox, finalBox, drawing) {
               this.adjacencyList[this.adjacencyList.length - 1].push(j);
             };
         };
-      };  
+      };
     };
 
     this.drawLines = function() {
@@ -92,112 +92,134 @@ function Frame(initialBox, finalBox, drawing) {
         var startNode;
         var currentLine;
         var roundabout;
+		var a;
+		var nextLine;
+		var lastTraversedNode;
 
-        function setBezierStartPoints(direction) {
-            var cpBoxCoords = currentLine.crossingPointBoxCoords();
-            bezierPoints[0] = Mouse.pixelCoords(cpBoxCoords);
-            drawing.surface.circle(...bezierPoints[0], 5);
-            var a = config.bezierDistance * Math.cos(Math.PI / 4);
-
-			var lineAngle;
-
-			if (targetNode === currentLine.endNode) {
-				lineAngle = currentLine.angle({reverse: false});
-			} else {
-				lineAngle = currentLine.angle({reverse: true});
-			}
-
-            var yStep = a * Math.cos(lineAngle);
-            var xStep = a * Math.sin(lineAngle);
-            if (direction === "R") {
-                var orthogVector = [-currentLine.vector()[1], currentLine.vector()[0]];    
-            } else if (direction === "L") {
-                var orthogVector = [currentLine.vector()[1], -currentLine.vector()[0]];    
-            }
-            var orthogLength = orthogVector.map(i => i**2).reduce((j, m) => j + m)**0.5;
-            var normalizedOrthog = orthogVector.map(i => i / orthogLength);
-            var xStep2 = normalizedOrthog[0] * config.bezierDistance / 2**0.5;
-            var yStep2 = normalizedOrthog[1] * config.bezierDistance / 2**0.5;
-            bezierPoints[1] = [bezierPoints[0][0] + xStep + xStep2, bezierPoints[0][1] + yStep + yStep2];
-            drawing.surface.circle(...bezierPoints[1], 5);
-        }
-
-		function setBezierEndPoints(direction) {		
-			var outLine;
-			
-			function compareByAngle(lineA, lineB) {
-			  if (lineA.angleOutFrom(targetNode) < lineB.angleOutFrom(targetNode)) {
-				return -1;
-			  } else {
-				return 1;
-			  }
-			}
-			
-			var orderedLinesOut = roundabout.sort(compareByAngle);
-			
-			// pad out list with first element to allow going all way thru to start again
-			orderedLinesOut.push(orderedLinesOut[0]);
-	
-			// get index of currentline in orderedLinesOut
-			var inIndex = orderedLinesOut.indexOf(currentLine);
-
-			if (direction === "R") {
-				// next line is first one where angle is > currentLine
-				outLine = orderedLinesOut[inIndex + 1];
-				// TODO -- account for scenario where this line has no CP...
-				bezierPoints[3] = Mouse.pixelCoords(outLine.crossingPointBoxCoords());
-				drawing.surface.circle(...bezierPoints[3], 5);
-				console.log(bezierPoints)
-
-
-				// TODO --- NOW FOR BEZIER HANDLE POINT....
-				// take "3rd exit..."
-
-			}
+		function rotate(cx, cy, x, y, angle) {
+			var cos = Math.cos(angle);
+			var sin = Math.sin(angle);
+			var nx = (cos * (x - cx)) + (sin * (y - cy)) + cx;
+			var ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+			return [nx, ny];
 		}
 
-    // until all crossing points fully crossed...
-        // get random line to start with
-        currentLine = this.lines[Math.floor(Math.random() * this.lines.length)];
-        // choose which node to go towards
-        targetNode = currentLine.endNode;
-        roundabout = this.linesOutFrom(targetNode);
-        // choose right or left
-        var direction = "R";
-        if (direction === "R") { 	// if right
-            // set bezier points - CP center and at 45 deg clockwise
-            setBezierStartPoints("R");
-            // traverse frame
-			setBezierEndPoints("R");
-                // look at angles of lines coming from target node
-                // follow last
-                // if it has CP 
-                    //- set end bezier points (take "2nd exit")
-                // else, traverse to next line
+        function setBezierStartPoints(direction) {
+        	var lineAngle;
+        	var vector;
+            var cpBoxCoords = currentLine.crossingPointBoxCoords();
+			var backwards = targetNode[0] !== currentLine.endNode[0] || targetNode[1] !== currentLine.endNode[1];
+            bezierPoints[0] = Mouse.pixelCoords(cpBoxCoords);
+            //drawing.surface.circle(...bezierPoints[0], 5);
 
-        } else if (direction === "L") {
-            setBezierStartPoints("L");
+			if (backwards) {
+				lineAngle = currentLine.angle({reverse: true});
+				vector = currentLine.vector().map(i => -i);
+			} else {
+				lineAngle = currentLine.angle({reverse: false});
+				vector = currentLine.vector();
+			}
 
+            var vectorLength = vector.map(i => i**2).reduce((j, m) => j + m)**0.5;
+			var normVect = vector.map(i => i / vectorLength);
+	        var xStep = normVect[0] * config.bezierDistance;
+            var yStep = normVect[1] * config.bezierDistance;
+			var initialPosition = [bezierPoints[0][0] + xStep, bezierPoints[0][1] + yStep];
+
+			if (direction === "L") {
+				bezierPoints[1] = rotate(...bezierPoints[0], ...initialPosition, Math.PI / 4);
+			} else {
+				bezierPoints[1] = rotate(...bezierPoints[0], ...initialPosition, -Math.PI / 4);
+			}
+
+           // drawing.surface.circle(...bezierPoints[1], 5);
         }
 
+		function compareByAngle(lineA, lineB) {
+		  if (lineA.angleOutFrom(targetNode) < lineB.angleOutFrom(targetNode)) {
+			return -1;
+		  } else {
+			return 1;
+		  }
+		}
 
-	// else if left
+		function setBezierEndPoints(direction) {
+			var orderedLinesOut = roundabout.sort(compareByAngle);
+			var inIndex;
+			if (direction === "R") { // wall is on left...
+				// pad out list with first element to allow going all way thru to start again
+				orderedLinesOut.push(orderedLinesOut[0]);
+				// get index of currentline in orderedLinesOut
+				inIndex = orderedLinesOut.indexOf(currentLine);
 
-		// set bezier points - CP center and at 45 deg anticlockwise
+				// next line is first one where angle is > currentLine
+				nextLine = orderedLinesOut[inIndex + 1];
+			} else {
+				//orderedLinesOut.unshift(orderedLinesOut[orderedLinesOut.length - 1]);
+				// get index of currentline in orderedLinesOut
+				inIndex = orderedLinesOut.indexOf(currentLine);
 
-		// traverse frame
-			// look at angles of lines coming from target nodes
-			// follow last
-			// if it has CP 
-				//- set end bezier points (take "2nd exit")
-			// else, traverse to next line
-//
-
-    };
+				// next line is first one where angle is > currentLine
+				nextLine = orderedLinesOut[inIndex - 1] || orderedLinesOut[orderedLinesOut.length - 1];
+			}
 
 
-    this.setLines();
-    this.drawLines();
-}
+			bezierPoints[3] = Mouse.pixelCoords(nextLine.crossingPointBoxCoords());
+			//drawing.surface.circle(...bezierPoints[3], 5);
+
+			var vector = nextLine.vector();
+
+			// reverse if necessary
+			if (targetNode[0] === nextLine.endNode[0] && targetNode[1] === nextLine.endNode[1]) {
+				vector = vector.map(i => -i);
+			}
+
+			var vectorLength = vector.map(i => i**2).reduce((j, m) => j + m)**0.5;
+			var normalized = vector.map(i => i / vectorLength);
+
+			var initialPosition = [bezierPoints[3][0] - normalized[0] * config.bezierDistance, bezierPoints[3][1] - normalized[1] * config.bezierDistance];
+
+
+			if (direction === "R") {
+				bezierPoints[2] = rotate(...bezierPoints[3], ...initialPosition, Math.PI / 4);
+
+			} else {
+				bezierPoints[2] = rotate(...bezierPoints[3], ...initialPosition, -Math.PI / 4);
+			}
+
+			//drawing.surface.circle(...bezierPoints[2], 5);
+		}
+
+			
+		var direction = "L";
+		// until all crossing points fully crossed...
+		
+		currentLine = this.lines[Math.floor(Math.random() * this.lines.length)];
+		// choose which node to go towards
+		targetNode = currentLine.endNode; // BUG HERE?
+
+		for (var i = 0; i < 10; i++) {
+			direction = (direction === "R" ? "L" : "R");
+			roundabout = this.linesOutFrom(targetNode);
+			setBezierStartPoints(direction);
+			setBezierEndPoints(direction);
+			var section = drawing.surface.path(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`)
+			section.attr(config.knot);	
+			currentLine = nextLine;
+			lastTraversedNode = targetNode;
+			// set new targetNode
+			if (currentLine.startNode[0] === lastTraversedNode[0] && currentLine.startNode[1] === lastTraversedNode[1]) {
+				targetNode = currentLine.endNode;
+			} else {
+				targetNode = currentLine.startNode;
+			}
+		
+		}
+
+	}
+
+	this.setLines();
+	this.drawLines();
+};
 
 Frame.prototype = Grid.prototype;

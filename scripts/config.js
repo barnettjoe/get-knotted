@@ -1,5 +1,10 @@
 var config = {
-	bezierDistance: 20,
+	knot: {
+		stroke: "black",
+		strokeWidth: 5,
+		fill: "none"
+	},
+	bezierDistance: 100,
     graphRows: 4,
     graphCols: 4,
     squareHeight: 200,
@@ -11,7 +16,7 @@ var config = {
     frame: {
         fill: 'none',
         stroke: '#ff00ff',
-        strokeWidth: 10,
+        strokeWidth: 20,
         strokeOpacity: 0.2
     },
 
