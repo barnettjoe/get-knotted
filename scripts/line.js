@@ -62,6 +62,7 @@ function CrossingPoint(startCol, startRow, endCol, endRow, line) {
 		var xStep = normVect[0] * config.bezierDistance;
 		var yStep = normVect[1] * config.bezierDistance;
 		var initialPosition = [this.coords[0] + xStep, this.coords[1] + yStep];		
+		
 		if (direction === "L") {
 			return this.rotate(...this.coords, ...initialPosition, Math.PI / 4);
 		} else {

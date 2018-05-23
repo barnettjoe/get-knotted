@@ -1,7 +1,12 @@
 var config = {
 	knot: {
 		stroke: "black",
-		strokeWidth: 5,
+		strokeWidth: 10,
+		fill: "none"
+	},
+	mask: {
+		stroke: "white",
+		strokeWidth: 30,
 		fill: "none"
 	},
 	bezierDistance: 100,
