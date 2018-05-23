@@ -5,6 +5,10 @@ function Drawing() {
     var finalBox;
     var graphArea = document.getElementById('surface');
     var drawing = this;
+     
+    this.drawKnot = function() {
+        this.knot = new Knot(this.frame, this);
+    }
 
     var drawBox = function() {
         // remove any extant frames

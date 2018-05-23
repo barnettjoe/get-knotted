@@ -21,7 +21,7 @@
 	// set up button to draw knot
 	document.getElementById("knot-button").addEventListener("click", function() {
 	    // if user has drawn a frame, then show nodes
-		if (drawing.frame) drawing.frame.drawKnot();
+		if (drawing.frame) drawing.drawKnot();
 	});
 })();
 
