@@ -1,5 +1,5 @@
 var config = {
-	gap: 2,
+	overlap: 20,
 	knot: {
 		stroke: "black",
 		strokeWidth: 15,
@@ -7,7 +7,7 @@ var config = {
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 30,
+		strokeWidth: 17,
 		fill: "none"
 	},
 	bezierDistance: 100,

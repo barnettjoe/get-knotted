@@ -59,21 +59,15 @@ function Knot(frame, drawing) {
 	// choose which node to go towards
 	var firstTargetNode = currentLine.endNode; 
 	targetNode = firstTargetNode;
-
+	
+	var paths = [];
 	while (true) {
 		direction = (direction === "R" ? "L" : "R");
 		roundabout = frame.linesOutFrom(targetNode);
 		setBezierStartPoints(direction);
 		setBezierEndPoints(direction);
-		var section = drawing.surface.path(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`)
-		section.attr(config.knot);	
-		section.attr({strokeDasharray: section.getTotalLength() - (config.gap + config.knot.strokeWidth / 2)});
-		if (direction === "L") {
-			section.attr({
-				strokeDashoffset: -(config.gap + config.knot.strokeWidth / 2)
-			});
-		}
-
+		
+		paths.push(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`);
 		// over / under stuff isn't perfect -- could use similar tactic...
 		// to make masks at crossover points
 		currentLine = nextLine;
@@ -88,5 +82,93 @@ function Knot(frame, drawing) {
 			break;
 		}
 	}
-}
 
+
+	var firstHalfOvers = [];
+	var firstHalfUnders = [];
+	var secondHalfOvers = [];
+	var secondHalfUnders = [];
+
+	for (var i = 0; i < paths.length; i++) {
+		if (i % 2 === 0) {
+			// then first half is over, second half under
+			firstHalfOvers.push(paths[i]);
+			secondHalfUnders.push(paths[i]);
+		} else {
+			// then first half is under, second half over
+			firstHalfUnders.push(paths[i]);
+			secondHalfOvers.push(paths[i]);
+		}
+	}
+
+	// now draw all unders
+
+	for (var pathStr of firstHalfUnders) {
+		var section = drawing.surface.path(pathStr);
+		section.attr(config.knot);	
+		section.attr({
+			//strokeDasharray: section.getTotalLength() / 2
+			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap]
+		});
+	}
+
+	for (var pathStr of secondHalfUnders) {
+		var section = drawing.surface.path(pathStr);
+		section.attr(config.knot);	
+		section.attr({
+			//strokeDasharray: section.getTotalLength() / 2,
+			//strokeDashoffset: section.getTotalLength() / 2
+		 	strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
+   			strokeDashoffset: section.getTotalLength() / 2 + config.overlap
+
+		});
+	}
+
+
+	// now draw all overs
+
+	for (var pathStr of firstHalfOvers) {
+
+		var mask = drawing.surface.path(pathStr);
+		mask.attr(config.mask)
+		mask.attr({
+		//	strokeDasharray: mask.getTotalLength() / 2
+	    	strokeDasharray: [mask.getTotalLength() / 2 - config.overlap, mask.getTotalLength()],
+		});	
+		var section = drawing.surface.path(pathStr);
+		section.attr(config.knot);	
+		section.attr({
+			//strokeDasharray: section.getTotalLength() / 2,
+		    //strokeDasharray: [section.getTotalLength() / 2 - config.overlap, section.getTotalLength()],
+   			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap]
+		});
+		
+	}
+
+	for (var pathStr of secondHalfOvers) {
+
+		var mask = drawing.surface.path(pathStr);
+		mask.attr(config.mask)
+		mask.attr({
+			//strokeDasharray: mask.getTotalLength() / 2,
+			//strokeDashoffset: mask.getTotalLength() / 2
+		
+   			strokeDasharray:[(mask.getTotalLength() / 2 - config.overlap), mask.getTotalLength() / 2  + config.overlap],
+    		strokeDashoffset: mask.getTotalLength() / 2 - config.overlap
+
+		});	
+
+		var section = drawing.surface.path(pathStr);
+		section.attr(config.knot);	
+		section.attr({
+			//strokeDasharray: section.getTotalLength() / 2,
+			//strokeDashoffset: section.getTotalLength() / 2
+			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
+   			strokeDashoffset: section.getTotalLength() / 2 + config.overlap,
+		});
+	}
+
+	// TODO --- NOW ADD SQUARE OF KNOT LINE WIDTH OVER EACH CP
+
+	
+}
