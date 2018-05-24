@@ -44,8 +44,25 @@ function Line(startCol, startRow, endCol, endRow, style, drawing) {
 }
 
 function CrossingPoint(startCol, startRow, endCol, endRow, line) {
-	var crossedUnder = false;
-	var crossedOver = false;
+	// use proper getters / setters...
+	this.crossedUnderOut = false;
+	this.crossedOverOut = false;
+	this.crossedOverIn = false;
+	this.crossedUnderIn  = false;
+
+	this.crossed = function(direction) {
+		if (direction === "L") {
+			return this.crossedUnderIn && this.crossedUnderOut;
+		} else {
+			return this.crossedOverIn && this.crossedOverOut;
+		}
+	};
+
+	this.fullyCrossed = function() {
+		return this.crossed("R") && this.crossed("L");
+	};
+
+
 
 	this.boxCoords = [(startCol + endCol) / 2, (startRow + endRow) / 2];
 	this.coords = Mouse.pixelCoords(this.boxCoords);
@@ -65,7 +82,6 @@ function CrossingPoint(startCol, startRow, endCol, endRow, line) {
 		var xStep = normVect[0] * config.bezierDistance;
 		var yStep = normVect[1] * config.bezierDistance;
 		var initialPosition = [this.coords[0] + xStep, this.coords[1] + yStep];		
-		
 		if (direction === "L") {
 			return this.rotate(...this.coords, ...initialPosition, Math.PI / 4);
 		} else {

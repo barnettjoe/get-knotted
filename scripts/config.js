@@ -6,8 +6,8 @@ var config = {
 		fill: "none"
 	},
 	mask: {
-		stroke: "white",
-		strokeWidth: 17,
+		stroke: "blue",
+		strokeWidth: 30,
 		fill: "none"
 	},
 	bezierDistance: 100,
