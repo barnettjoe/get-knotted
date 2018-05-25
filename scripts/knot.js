@@ -172,6 +172,10 @@ function Knot(frame, drawing) {
 		}
 	}
 
+// - TODO
+// would it be possible to use z-indexes rather than laying everyhting down sequentially
+// in the desired order...?
+
 
 	function drawUnders() {
 		for (var pathStr of underToOvers) {
