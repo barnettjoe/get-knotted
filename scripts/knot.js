@@ -1,8 +1,11 @@
 "use strict";
 
 // TODO -- fix over under pattern for multiple strands
+// use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
+// 
 
-function Knot(frame, drawing) {
+
+function Knot(drawing) {
 	var bezierPoints = [[], [], [], []];
 	var targetNode;
 	var startNode;
@@ -92,7 +95,7 @@ function Knot(frame, drawing) {
 		}
 	}
 
-	function addMaskCPcrosses(line) {
+	function addMaskCPcrosses() {
 		for (var line of drawing.frame.lines) {
 			var length = config.mask.strokeWidth - 0.5; // 0.5 adjustment to avoid tiny visible white bump 
 			var crossCenter = line.crossingPoint.coords;
@@ -124,10 +127,10 @@ function Knot(frame, drawing) {
 	var underToOvers = [];
 	var overToUnders = [];
 
-	while (frame.lines.some(uncrossed)) {
+	while (drawing.frame.lines.some(uncrossed)) {
 		// select first line - any line where CP is uncrossed in either R or L direction
 		var currentLine;
-		for (var line of frame.lines) {
+		for (var line of drawing.frame.lines) {
 			if (uncrossed(line)) {
 				currentLine = line;
 				break;
@@ -149,7 +152,7 @@ function Knot(frame, drawing) {
 
 		while (true) {
 			direction = (direction === "R" ? "L" : "R");
-			roundabout = frame.linesOutFrom(targetNode);
+			roundabout = drawing.frame.linesOutFrom(targetNode);
 			setBezierStartPoints(direction);
 			setBezierEndPoints(direction);
 			if (direction === "L") {
@@ -172,100 +175,71 @@ function Knot(frame, drawing) {
 		}
 	}
 
-// - TODO
-// would it be possible to use z-indexes rather than laying everyhting down sequentially
-// in the desired order...?
+	function clipToFirstHalf(element) {
+		element.attr({
+			strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
+		});
+	}
 
+	function clipToSecondHalf(element) {
+	element.attr({
+		strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
+		strokeDashoffset: element.getTotalLength() / 2 + config.overlap,
+	});
+	}
 
 	function drawUnders() {
 		for (var pathStr of underToOvers) {
 			var section = drawing.surface.path(pathStr);
-			section.attr(config.knot);	
-			section.attr({
-				strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
-			});
-
-			var mask = drawing.surface.path(pathStr);
-			mask.attr(config.mask)
-			mask.attr({
-				strokeDasharray: [config.knot.strokeWidth / 2 + config.gap, mask.getTotalLength()],
-			});		
+			section.attr(config.knot);
+			clipToFirstHalf(section);
 		}
 
 		for (var pathStr of overToUnders) {
 			var section = drawing.surface.path(pathStr);
 			section.attr(config.knot);	
-			section.attr({
-				strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
-				strokeDashoffset: section.getTotalLength() / 2 + config.overlap,
-			});
-
-
-			var mask = drawing.surface.path(pathStr);
-			mask.attr(config.mask)
-			mask.attr({	
-				strokeDasharray:[config.knot.strokeWidth / 2 + config.gap, mask.getTotalLength() - (config.knot.strokeWidth / 2 + config.gap)],
-				strokeDashoffset: config.knot.strokeWidth / 2 + config.gap,
-			});	
-			
+			clipToSecondHalf(section);
 		}	
 	}
 
+	function drawMasks() {
+		for (var pathStr of overToUnders) {
+			var mask = drawing.surface.path(pathStr);
+			mask.attr(config.mask);	
+			mask.attr({
+				//strokeDasharray:[(mask.getTotalLength() / 2 + config.overlap), mask.getTotalLength() / 2  - config.overlap],
+				strokeDasharray: [config.knot.strokeWidth, 1000]
+			});
+		}
 
-	function drawFirstHalfOverToUnders() {
+		for (var pathStr of underToOvers) {
+			var mask = drawing.surface.path(pathStr);
+			mask.attr(config.mask);	
+			mask.attr({
+				strokeDasharray: [config.knot.strokeWidth, 1000],
+				//strokeDasharray: [config.knot.strokeWidth, 1000],
+				strokeDashoffset: (config.knot.strokeWidth - mask.getTotalLength())
+			});
+		}
+	}
 
+	function drawOvers() {
+		for (var pathStr of overToUnders) {
+			var section = drawing.surface.path(pathStr);
+			section.attr(config.knot);	
+			clipToFirstHalf(section);
+		}
+
+		for (var pathStr of underToOvers) {
+			var section = drawing.surface.path(pathStr);
+			section.attr(config.knot);	
+			clipToSecondHalf(section);
+		}
 	}
 
 	drawUnders();
-
-	// now draw all overs
-
-	// first half of oversToUnders paths is "over"
-	for (var pathStr of overToUnders) {
-		var section = drawing.surface.path(pathStr);
-		section.attr(config.knot);	
-		section.attr({
-			//strokeDasharray: section.getTotalLength() / 2,
-		    //strokeDasharray: [section.getTotalLength() / 2 - config.overlap, section.getTotalLength()],
-   			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
-		});
-	}
-
-
-
-	for (var pathStr of underToOvers) {
-
-		
-
-		addMaskCPcrosses();
-	}
-
-	for (var pathStr of overToUnders) {
-
-		var section = drawing.surface.path(pathStr);
-		section.attr(config.knot);	
-		section.attr({
-			//strokeDasharray: section.getTotalLength() / 2,
-		    //strokeDasharray: [section.getTotalLength() / 2 - config.overlap, section.getTotalLength()],
-   			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
-		});
-		
-	}
-
-
-	for (var pathStr of underToOvers) {
-
-		var section = drawing.surface.path(pathStr);
-		section.attr(config.knot);	
-		section.attr({
-			//strokeDasharray: section.getTotalLength() / 2,
-			//strokeDashoffset: section.getTotalLength() / 2
-			strokeDasharray:[(section.getTotalLength() / 2 + config.overlap), section.getTotalLength() / 2  - config.overlap],
-   			strokeDashoffset: section.getTotalLength() / 2 + config.overlap,
-		});
-	}
-
+	drawMasks();
+	addMaskCPcrosses();
+	drawOvers();
 	addCPcrosses();	
-
-
 }

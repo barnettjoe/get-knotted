@@ -46,6 +46,7 @@ body {
 #surface {
 	height: 100%;
 	width: 100%;
+	border: 2px solid pink;
 }
 
 footer {
@@ -58,4 +59,8 @@ button {
 	font-size: 20px;
 	display: block;
 	margin: 10px auto;
+}
+
+#frame-type {
+	font-size: 26px;
 }

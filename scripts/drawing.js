@@ -7,10 +7,10 @@ function Drawing() {
     var drawing = this;
      
     this.drawKnot = function() {
-        this.knot = new Knot(this.frame, this);
+        this.knot = new Knot(drawing);
     }
 
-    var drawBox = function() {
+    var drawFrame = function() {
         // remove any extant frames
         if (drawing.frame) drawing.frame.remove();
         // make 1x1 frame
@@ -25,7 +25,7 @@ function Drawing() {
         initialBox = finalBox = Mouse.rowAndCol(event);
         // if the box containing the click was within the graph area...
         // ... then draw a box
-        Mouse.doIfInGraph(initialBox, drawBox);
+        Mouse.doIfInGraph(initialBox, drawFrame);
     };
 
     // define listener for mouse movement

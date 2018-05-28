@@ -41,6 +41,7 @@ var Mouse = (function() {
 
 
   return {
+    relativeCoords: relativeCoords,
     rowAndCol: rowAndCol,
     pixelCoords: pixelCoords,
     doIfInGraph: doIfInGraph

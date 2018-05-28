@@ -3,12 +3,12 @@ var config = {
 	overlap: 20,
 	knot: {
 		stroke: "black",
-		strokeWidth: 50,
+		strokeWidth: 40,
 		fill: "none"
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 50,
+		strokeWidth: 44,
 		fill: "none"
 	},
 	bezierDistance: 100,
@@ -16,14 +16,14 @@ var config = {
     graphCols: 4,
     squareHeight: 200,
     graphLine: {
-        stroke: 'darkgray',
-        strokeWidth: 5,
+        stroke: 'gray',
+        strokeWidth: 1,
         strokeOpacity: 1
     },
     frame: {
         fill: 'none',
         stroke: '#ff00ff',
-        strokeWidth: 20,
+        strokeWidth: 10,
         strokeOpacity: 0.2
     },
 
