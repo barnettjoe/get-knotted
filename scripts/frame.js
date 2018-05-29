@@ -1,7 +1,7 @@
 'use strict';
 
 function Frame(initialBox, finalBox, drawing) {
-    var nodes = [];
+    this.nodes = [];
     this.adjacencyList = [];
     this.lines = [];
     var leftmost   = Math.min(initialBox[0], finalBox[0]);
@@ -28,7 +28,7 @@ function Frame(initialBox, finalBox, drawing) {
     this.setNodes = function() {
         for (var x = leftmost; x <= rightmost + 1; x++) {
             for (var y = topmost; y <= bottommost + 1; y++) {
-                nodes.push(new Node({
+                this.nodes.push(new Node({
                 	x: x,
                 	y: y,
                 	gridSystem: "square",
@@ -41,21 +41,21 @@ function Frame(initialBox, finalBox, drawing) {
     this.setNodes();
 
     this.showNodes = function() {
-        for(var node of nodes) {
+        for(var node of this.nodes) {
 			node.draw();
         };
     };
 
     this.setLines = function() {
-      for(var firstNode of nodes) {
+      for(var firstNode of this.nodes) {
         this.adjacencyList.push([]);
-        // push indices of adjacent nodes to this new subarray
-        for(var j = 0; j < nodes.length; j++) {
-            var secondNode = nodes[j];
+        // push indices of adjacent this.nodes to this new subarray
+        for(var j = 0; j < this.nodes.length; j++) {
+            var secondNode = this.nodes[j];
             var xDiff = Math.abs(secondNode.gridX - firstNode.gridX);
             var yDiff = Math.abs(secondNode.gridY - firstNode.gridY);
             var diffs = [xDiff, yDiff];
-            // if the two nodes are adjacent, then difference in grid values is 1 in one dimension,
+            // if the two this.nodes are adjacent, then difference in grid values is 1 in one dimension,
             // and zero in the other
             if (diffs.includes(1) && diffs.includes(0)) {
               this.adjacencyList[this.adjacencyList.length - 1].push(j);
@@ -65,12 +65,12 @@ function Frame(initialBox, finalBox, drawing) {
     };
 
     this.drawLines = function() {
-        for (var i = 0; i < nodes.length; i++) {
+        for (var i = 0; i < this.nodes.length; i++) {
             for (var j of this.adjacencyList[i]) {
                if (i < j) { // avoid drawing each line twice
                     this.lines.push(new Line({
-                    	startNode: nodes[i],
-                    	endNode: nodes[j],
+                    	startNode: this.nodes[i],
+                    	endNode: this.nodes[j],
 						style: config.frame,
 						drawing: drawing
                     }));
@@ -86,7 +86,11 @@ function Frame(initialBox, finalBox, drawing) {
 	};
 
 	this.setLines();
-	this.drawLines();
+
+	this.draw = function() {
+		this.drawLines();
+		this.showNodes();
+	};
 };
 
 Frame.prototype = Grid.prototype;
@@ -109,7 +113,21 @@ function Node(options) {
 		return this.x === otherNode.x && this.y === otherNode.y;
 	}
 
-	this.draw = function() {
-	    options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
+	this.findHTMLobj = function() {
+		var that = this;
+		return Array.from(document.getElementsByClassName("node")).find(function(obj) {
+			return obj.cx.baseVal.value === that.x && obj.cy.baseVal.value === that.y; 
+		});
 	};
+
+	this.draw = function() {
+	    this.snapObject = options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
+		this.snapObject.addClass("node");
+		this.HTMLobj = this.findHTMLobj();
+	};
+
+	this.remove = function() {
+		if (this.snapObject) this.snapObject.remove();	
+	};
+
 }

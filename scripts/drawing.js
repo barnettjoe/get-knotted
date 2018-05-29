@@ -3,7 +3,7 @@
 function Drawing() {
     var initialBox;
     var finalBox;
-    var graphArea = document.getElementById('surface');
+    this.graphArea = document.getElementById('surface');
     var drawing = this;
      
     this.drawKnot = function() {
@@ -15,8 +15,9 @@ function Drawing() {
         if (drawing.frame) drawing.frame.remove();
         // make 1x1 frame
         drawing.frame = new Frame(initialBox, finalBox, drawing);
+        drawing.frame.draw();
         // add the listener for mouse movement
-        graphArea.addEventListener('mousemove', moveListener);
+        drawing.graphArea.addEventListener('mousemove', moveListener);
     };
 
     // define listener for mousedown
@@ -36,20 +37,27 @@ function Drawing() {
         Mouse.doIfInGraph(finalBox, function() {
             if (drawing.frame) drawing.frame.remove();
             drawing.frame = new Frame(initialBox, finalBox, drawing);
+            drawing.frame.draw();
         });
     };
 
     // define listener for mouseup
     var upListener = function() {
-        graphArea.removeEventListener('mousemove', moveListener);
+        drawing.graphArea.removeEventListener('mousemove', moveListener);
     };
 
     this.addUserFrame = function() {
         // listen for mousedown
-        graphArea.addEventListener('mousedown', downListener);
+        drawing.graphArea.addEventListener('mousedown', downListener);
         // listener for mouseup is attached to the whole document...
-        // (not just the graphArea)
+        // (not just the drawing.graphArea)
         // This prevents the "sticky mouse" bug.
         document.addEventListener('mouseup', upListener);
+    };
+
+    this.stopDrawingFrame = function() {
+        drawing.graphArea.removeEventListener('mousedown', downListener);
+        document.removeEventListener('mouseup', upListener);
+        drawing.graphArea.removeEventListener('mousemove', moveListener);
     };
 }

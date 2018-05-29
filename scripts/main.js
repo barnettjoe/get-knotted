@@ -16,26 +16,24 @@
 	function freeform() {
 		if (drawing.graph) drawing.graph.remove();
 
-		//if (drawing.frame) drawing.frame.remove();
-	/*
-		document.getElementById("surface").addEventListener("click", function(event) {
-			var node = drawing.surface.circle(...Mouse.relativeCoords(event), 10).attr(config.nodeStyle);
-			var makePink = function() { node.attr({
-				fill: "pink",
-				stroke: "black"
-			}) };
-			var undoPink = function() { node.attr(config.nodeStyle) };
-			node.hover(makePink, undoPink)
 
-			node.drag();
-			node.addEventListener("click", function(clickEvent) {
-				document.getElementById("surface").addEventListener("move", function(moveEvent) {
-					var line = drawing.surface.line(...Mouse.relativeCoords(clickEvent), ...Mouse.relativeCoords(moveEvent));
-					line.attr({stroke: "black", strokeWidth: 10});
+
+		for (let node of drawing.frame.nodes) {
+			node.HTMLobj.addEventListener("mousedown", function () {
+				var moveListener = function () {
+					[node.x, node.y] = Mouse.relativeCoords(event);
+					drawing.frame.remove();
+					//drawing.knot.remove();
+					//drawing.knot.draw();
+					drawing.frame.draw();
+				};
+
+				drawing.graphArea.addEventListener("mousemove", moveListener);
+				drawing.graphArea.addEventListener("mouseup", function () {
+					drawing.graphArea.removeEventListener("mousemove", moveListener)
 				});
-			});
-		});
-		*/
+			})
+		}
 	}
 
 	// set up button to show nodes

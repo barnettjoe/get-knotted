@@ -233,5 +233,8 @@ function Knot(drawing) {
 	drawMasks();
 	addMaskCPcrosses();
 	drawOvers();
-	addCPcrosses();	
+	addCPcrosses();
+	drawing.frame.remove();
+	drawing.frame.draw();
+	drawing.stopDrawingFrame();
 }

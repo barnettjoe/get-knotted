@@ -37,9 +37,9 @@ var config = {
 
 	nodeStyle: {
 		fill: "blue",
-		stroke: "none",
+		stroke: "white",
 		strokeWidth: 2,
-		fillOpacity: 0.6,
+		fillOpacity: 1,
 		radius: 7
 	},
 

@@ -13,6 +13,12 @@ Grid.prototype = {
 		for (var line of this.lines) {
 			line.snapObj.remove();
 		}
+
+		if (this.nodes) {
+			for (var node of this.nodes) {
+				node.remove();
+			}
+		}
 	},
 
 	// create line svg and add to lines array
