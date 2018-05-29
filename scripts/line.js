@@ -1,25 +1,24 @@
 'use strict';
 
-function Line(startCol, startRow, endCol, endRow, style, drawing) {
-	this.crossingPoint = new CrossingPoint(startCol, startRow, endCol, endRow, this)
-	if (startCol === endCol) { // i.e. if line is vertical
-		this.startX = this.endX = startCol * config.squareHeight + config.maxStrokeWidth() / 2;
-		this.startY = startRow * config.squareHeight;
-		this.startY += config.shiftFactor(style);
-		this.endY = this.startY + (endRow - startRow) * config.squareHeight;
-		this.endY += style.strokeWidth;
-	} else { // if line is horizontal 
-		this.startY = this.endY = startRow * config.squareHeight + config.maxStrokeWidth() / 2;
-		this.startX = startCol * config.squareHeight;
-		this.startX += config.shiftFactor(style);
-		this.endX = this.startX + (endCol - startCol) * config.squareHeight;
-		this.endX += style.strokeWidth;
+function Line(options) {
+	this.startNode = options.startNode;
+	this.endNode = options.endNode;
+	
+	if (this.startNode && this.endNode) {
+		this.startX = this.startNode.x;
+		this.startY = this.startNode.y;
+		this.endX = this.endNode.x;
+		this.endY = this.endNode.y;
+	} else {
+		this.startX = options.startX;
+		this.startY = options.startY;
+		this.endX = options.endX;
+		this.endY = options.endY;
 	}
 
-	this.snapObj = drawing.surface.line(this.startX, this.startY, this.endX, this.endY).attr(style);
+	this.crossingPoint = new CrossingPoint(this.startX, this.startY, this.endX, this.endY, this)
 
-	this.startNode = [startCol, startRow];
-	this.endNode = [endCol, endRow];
+	this.snapObj = options.drawing.surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
 
 	this.vector = function() {
 		return [this.endX - this.startX, this.endY - this.startY];
@@ -33,17 +32,16 @@ function Line(startCol, startRow, endCol, endRow, style, drawing) {
 		return result;
 	};
 
-	this.angleOutFrom = function(nodeBoxCoords) {
-		if (this.startNode[0] === nodeBoxCoords[0] && this.startNode[1] === nodeBoxCoords[1]) {
+	this.angleOutFrom = function(node) {
+		if (this.startX === node.x && this.startY === node.y) {
 			return this.angle({reverse: false});
 		} else {
 			return this.angle({reverse: true});
 		}
 	};
-	
 }
 
-function CrossingPoint(startCol, startRow, endCol, endRow, line) {
+function CrossingPoint(startX, startY, endX, endY, line) {
 	// use proper getters / setters...
 	this.crossedUnderOut = false;
 	this.crossedOverOut = false;
@@ -63,9 +61,7 @@ function CrossingPoint(startCol, startRow, endCol, endRow, line) {
 	};
 
 
-
-	this.boxCoords = [(startCol + endCol) / 2, (startRow + endRow) / 2];
-	this.coords = Mouse.pixelCoords(this.boxCoords);
+	this.coords = [(startX + endX) / 2, (startY + endY) / 2];
 
 	this.rotate = function(cx, cy, x, y, angle) {
 		var cos = Math.cos(angle);

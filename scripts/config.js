@@ -3,12 +3,12 @@ var config = {
 	overlap: 20,
 	knot: {
 		stroke: "black",
-		strokeWidth: 40,
+		strokeWidth: 20,
 		fill: "none"
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 44,
+		strokeWidth: 24,
 		fill: "none"
 	},
 	bezierDistance: 100,
@@ -22,9 +22,9 @@ var config = {
     },
     frame: {
         fill: 'none',
-        stroke: '#ff00ff',
-        strokeWidth: 10,
-        strokeOpacity: 0.2
+        stroke: 'red',
+        strokeWidth: 2,
+        strokeOpacity: 1
     },
 
     maxStrokeWidth: function() {

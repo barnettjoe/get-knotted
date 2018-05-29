@@ -1,6 +1,6 @@
 "use strict";
 
-// TODO -- fix over under pattern for multiple strands
+// TODO
 // use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
 // 
 
@@ -16,8 +16,8 @@ function Knot(drawing) {
 	var direction;
 
 	function setBezierStartPoints(direction) {
-		var backwards = targetNode[0] !== currentLine.endNode[0] || targetNode[1] !== currentLine.endNode[1];
-		bezierPoints[0] = Mouse.pixelCoords(currentLine.crossingPoint.boxCoords);
+		var backwards = !(targetNode.sameNode(currentLine.endNode));
+		bezierPoints[0] = currentLine.crossingPoint.coords;
 		bezierPoints[1] = currentLine.crossingPoint.controlPoint(direction, backwards);
 	    
 		if (direction === "R") {
@@ -25,10 +25,6 @@ function Knot(drawing) {
 		} else {
 			currentLine.crossingPoint.crossedUnderOut = true;
 		}
-
-	    //drawing.surface.circle(...bezierPoints[0], 5).attr({stroke: "red", fill: "red"});
-	    //drawing.surface.circle(...bezierPoints[1], 5).attr({stroke: "red", fill: "red"});
-
 	}
 
 	function compareByAngle(lineA, lineB) {
@@ -57,18 +53,15 @@ function Knot(drawing) {
 			// next line is first one where angle is > currentLine
 			nextLine = orderedLinesOut[inIndex - 1] || orderedLinesOut[orderedLinesOut.length - 1];
 		}
-		bezierPoints[3] = Mouse.pixelCoords(nextLine.crossingPoint.boxCoords);
-        var backwards = targetNode[0] === nextLine.endNode[0] && targetNode[1] === nextLine.endNode[1];
-        bezierPoints[2] = nextLine.crossingPoint.controlPoint(direction === "R" ? "L" : "R", !backwards, "end");
+		bezierPoints[3] = nextLine.crossingPoint.coords;
+        var backwards = targetNode.sameNode(nextLine.endNode);
+        bezierPoints[2] = nextLine.crossingPoint.controlPoint(direction === "R" ? "L" : "R", !backwards);
 		
 		if (direction === "L") {
 			nextLine.crossingPoint.crossedOverIn = true;
 		} else {
 			nextLine.crossingPoint.crossedUnderIn = true;
 		}
-
-		//drawing.surface.circle(...bezierPoints[3], 5).attr({stroke: "red", fill: "red"});
-	    //drawing.surface.circle(...bezierPoints[2], 5).attr({stroke: "red", fill: "red"});
 	}
 
 	function addCPcrosses() {
@@ -129,7 +122,6 @@ function Knot(drawing) {
 
 	while (drawing.frame.lines.some(uncrossed)) {
 		// select first line - any line where CP is uncrossed in either R or L direction
-		var currentLine;
 		for (var line of drawing.frame.lines) {
 			if (uncrossed(line)) {
 				currentLine = line;
@@ -163,7 +155,7 @@ function Knot(drawing) {
 			currentLine = nextLine;
 			lastTraversedNode = targetNode;
 			// set new targetNode
-			if (currentLine.startNode[0] === lastTraversedNode[0] && currentLine.startNode[1] === lastTraversedNode[1]) {
+			if (currentLine.startNode.sameNode(lastTraversedNode)) {
 				targetNode = currentLine.endNode;
 			} else {
 				targetNode = currentLine.startNode;

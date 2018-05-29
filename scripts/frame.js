@@ -18,24 +18,6 @@ function Frame(initialBox, finalBox, drawing) {
         style: config.frame
     });
 
-	this.attachedNodes = function(nodeBoxCoords) {
-		var idx;
-		for(var i = 0; i < nodes.length; i++) {
-			if (nodes[i][0] === nodeBoxCoords[0] && nodes[i][1] === nodeBoxCoords[1]) {
-				idx = i;
-			}
-		};
-		return this.adjacencyList[idx].map(i => nodes[i]);
-	};
-
-	this.linesOutFrom = function(nodeBoxCoords) {
-		function includeNode(line) {
-			var startMatch = line.startNode[0] === nodeBoxCoords[0] && line.startNode[1] === nodeBoxCoords[1];
-			var endMatch = line.endNode[0] === nodeBoxCoords[0] && line.endNode[1] === nodeBoxCoords[1];
-			return startMatch || endMatch;
-		}
-		return this.lines.filter(includeNode);
-	};
 
 	this.showCrossingPoints = function() {
         for(var line of this.lines) {
@@ -43,31 +25,38 @@ function Frame(initialBox, finalBox, drawing) {
         };
     };
 
-    this.showNodes = function() {
-        for(var n of nodes) {
-            drawing.surface.circle(...Mouse.pixelCoords(n), config.nodeStyle.radius).attr(config.nodeStyle);
-        };
-    };
-
     this.setNodes = function() {
         for (var x = leftmost; x <= rightmost + 1; x++) {
             for (var y = topmost; y <= bottommost + 1; y++) {
-                nodes.push([x, y]);
+                nodes.push(new Node({
+                	x: x,
+                	y: y,
+                	gridSystem: "square",
+                	drawing: drawing
+                }));
             }
         }
     };
 
     this.setNodes();
 
+    this.showNodes = function() {
+        for(var node of nodes) {
+			node.draw();
+        };
+    };
+
     this.setLines = function() {
-      for(var i = 0; i < nodes.length; i++) {
+      for(var firstNode of nodes) {
         this.adjacencyList.push([]);
         // push indices of adjacent nodes to this new subarray
         for(var j = 0; j < nodes.length; j++) {
-            var node = nodes[j];
-            var xDiff = Math.abs(node[0] - nodes[i][0]);
-            var yDiff = Math.abs(node[1] - nodes[i][1]);
+            var secondNode = nodes[j];
+            var xDiff = Math.abs(secondNode.gridX - firstNode.gridX);
+            var yDiff = Math.abs(secondNode.gridY - firstNode.gridY);
             var diffs = [xDiff, yDiff];
+            // if the two nodes are adjacent, then difference in grid values is 1 in one dimension,
+            // and zero in the other
             if (diffs.includes(1) && diffs.includes(0)) {
               this.adjacencyList[this.adjacencyList.length - 1].push(j);
             };
@@ -78,15 +67,49 @@ function Frame(initialBox, finalBox, drawing) {
     this.drawLines = function() {
         for (var i = 0; i < nodes.length; i++) {
             for (var j of this.adjacencyList[i]) {
-                if (nodes[i] < nodes[j]) { // avoid drawing each line twice
-                    this.lines.push(new Line(...nodes[i], ...nodes[j], config.frame, drawing));
+               if (i < j) { // avoid drawing each line twice
+                    this.lines.push(new Line({
+                    	startNode: nodes[i],
+                    	endNode: nodes[j],
+						style: config.frame,
+						drawing: drawing
+                    }));
                 };
             };
         };
     };
+
+    this.linesOutFrom = function(node) {
+		return this.lines.filter(function(line) {
+			return line.startNode.sameNode(node) || line.endNode.sameNode(node);		
+		});
+	};
 
 	this.setLines();
 	this.drawLines();
 };
 
 Frame.prototype = Grid.prototype;
+
+function Node(options) {
+	if (options.gridSystem === "square") {
+		this.gridX = options.x;
+		this.gridY = options.y;
+		var x;
+		var y;
+		[x, y] = Mouse.pixelCoords([this.gridX, this.gridY]);
+		this.x = x;
+		this.y = y;
+	} else if (options.gridSystem === "freeform") {
+		this.x = options.x;
+		this.y = options.y;
+	}
+
+	this.sameNode = function(otherNode) {
+		return this.x === otherNode.x && this.y === otherNode.y;
+	}
+
+	this.draw = function() {
+	    options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
+	};
+}
