@@ -3,18 +3,18 @@ var config = {
 	overlap: 20,
 	knot: {
 		stroke: "black",
-		strokeWidth: 40,
+		strokeWidth: 20,
 		fill: "none"
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 50,
+		strokeWidth: 24,
 		fill: "none"
 	},
-	bezierDistance: 100,
-    graphRows: 4,
-    graphCols: 4,
-    squareHeight: 200,
+	bezierDistance: 75,
+    graphRows: 6,
+    graphCols: 6,
+    squareHeight: 150,
     graphLine: {
         stroke: 'gray',
         strokeWidth: 1,

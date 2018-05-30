@@ -31,6 +31,15 @@ var Mouse = (function() {
     return relativeCoords(event).map(pxToBox);
   }
 
+  function closestGraphCoords(event) {
+       function pxToBox(num) {
+      var shifted = (num - 0.5 *  config.maxStrokeWidth()); 
+      return Math.round(shifted / config.squareHeight);
+    }
+    return relativeCoords(event).map(pxToBox);
+  }
+
+
   // for getting pixel coords from [row, col]
   function pixelCoords(coords){
     function boxToPX(n) {
@@ -39,8 +48,8 @@ var Mouse = (function() {
     return coords.map(boxToPX);
   }
 
-
   return {
+    closestGraphCoords: closestGraphCoords,
     relativeCoords: relativeCoords,
     rowAndCol: rowAndCol,
     pixelCoords: pixelCoords,

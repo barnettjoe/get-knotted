@@ -91,6 +91,104 @@ function Frame(initialBox, finalBox, drawing) {
 		this.drawLines();
 		this.showNodes();
 	};
+
+	this.addNode = function(event) {
+		var x;
+		var y;
+		[x, y] = Mouse.closestGraphCoords(event);
+		this.nodes.push(new Node({
+			x: x,
+			y: y,
+			gridSystem: "square",
+			drawing: drawing
+		}));
+		this.adjacencyList.push([]);
+		this.remove();
+		this.draw();
+	};
+
+	this.userLine = function(event) {
+
+		function nodeIndex(node) {
+			for (var i = 0; i < drawing.frame.nodes.length; i++) {
+				if ((drawing.frame.nodes[i]).sameNode(node)) {
+					return i;
+				}
+			}	
+		}
+
+		var userLine;
+		var hoveredNode;
+		var moveListener;
+		var upListener;
+
+		// this function constructs listeners for nodes
+		function onUp(node) {
+			return function() {
+				drawing.graphArea.removeEventListener("mousemove", moveListener);
+				userLine.remove();
+				if (hoveredNode) {
+					var startNodeIdx = nodeIndex(node);
+					var endNodeIdx = nodeIndex(hoveredNode);
+					drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
+					drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
+				}
+			drawing.knot.remove();
+			drawing.frame.remove();
+			drawing.frame.draw();
+			drawing.drawKnot();
+			document.removeEventListener("mouseup", upListener);		
+			};
+
+		}
+
+		function hoverIn(node) {
+			return function() {
+				hoveredNode = node;
+			};
+		}
+
+		function hoverOut(node) {
+			return function() {
+				hoveredNode = undefined;
+			};
+		}
+
+		function onDown(node) {
+			function onMove(node) {
+				return function(event) {
+					userLine && userLine.remove();
+					userLine = drawing.surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
+					userLine.attr(config.frame);
+					
+				};				
+			}
+
+			return function () {
+				moveListener = onMove(node);
+				drawing.graphArea.addEventListener("mousemove", moveListener);
+				upListener = onUp(node);
+				document.addEventListener("mouseup", upListener);		
+			};
+		}
+
+
+		// add listeners to all nodes for clicks
+		for (let node of this.nodes) {
+		  node.snapObject.mousedown(onDown(node));
+		  node.snapObject.hover(hoverIn(node), hoverOut(node));
+		}
+		// for each node...
+		// on click, set move listener 
+		// on move, delete any extant useerLine, make new line and draw from start node to current point, and draw the line
+		// on mouseup, if on another node, then create the line to centerpoint of that node 
+			// if not on another node, then delete the userLine
+	};
+
+
+		
+
+
 };
 
 Frame.prototype = Grid.prototype;

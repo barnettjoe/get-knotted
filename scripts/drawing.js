@@ -44,6 +44,7 @@ function Drawing() {
     // define listener for mouseup
     var upListener = function() {
         drawing.graphArea.removeEventListener('mousemove', moveListener);
+        drawing.drawKnot();
     };
 
     this.addUserFrame = function() {
