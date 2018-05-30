@@ -14,6 +14,8 @@ Grid.prototype = {
 			line.snapObj.remove();
 		}
 
+		this.lines = [];
+
 		if (this.nodes) {
 			for (var node of this.nodes) {
 				node.remove();

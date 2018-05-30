@@ -14,6 +14,11 @@ function Knot(drawing) {
 	var nextLine;
 	var lastTraversedNode;
 	var direction;
+	var group = drawing.surface.g();
+
+	this.remove = function() {
+		group.remove();
+	}
 
 	function setBezierStartPoints(direction) {
 		var backwards = !(targetNode.sameNode(currentLine.endNode));
@@ -85,6 +90,8 @@ function Knot(drawing) {
 
 			cross1.transform(`r${cross1angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
 			cross2.transform(`r${cross2angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
+			group.add(cross1);
+			group.add(cross2);
 		}
 	}
 
@@ -109,6 +116,8 @@ function Knot(drawing) {
 
 			cross1.transform(`r${cross1angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
 			cross2.transform(`r${cross2angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
+			group.add(cross1);
+			group.add(cross2);
 		}
 	}
 
@@ -185,12 +194,14 @@ function Knot(drawing) {
 			var section = drawing.surface.path(pathStr);
 			section.attr(config.knot);
 			clipToFirstHalf(section);
+			group.add(section);
 		}
 
 		for (var pathStr of overToUnders) {
 			var section = drawing.surface.path(pathStr);
 			section.attr(config.knot);	
 			clipToSecondHalf(section);
+			group.add(section);
 		}	
 	}
 
@@ -202,6 +213,7 @@ function Knot(drawing) {
 				//strokeDasharray:[(mask.getTotalLength() / 2 + config.overlap), mask.getTotalLength() / 2  - config.overlap],
 				strokeDasharray: [config.knot.strokeWidth, 1000]
 			});
+			group.add(mask);
 		}
 
 		for (var pathStr of underToOvers) {
@@ -212,6 +224,7 @@ function Knot(drawing) {
 				//strokeDasharray: [config.knot.strokeWidth, 1000],
 				strokeDashoffset: (config.knot.strokeWidth - mask.getTotalLength())
 			});
+			group.add(mask);
 		}
 	}
 
@@ -220,12 +233,14 @@ function Knot(drawing) {
 			var section = drawing.surface.path(pathStr);
 			section.attr(config.knot);	
 			clipToFirstHalf(section);
+			group.add(section);
 		}
 
 		for (var pathStr of underToOvers) {
 			var section = drawing.surface.path(pathStr);
 			section.attr(config.knot);	
 			clipToSecondHalf(section);
+			group.add(section);
 		}
 	}
 

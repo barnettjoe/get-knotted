@@ -19,7 +19,7 @@
 		function allNodesDraggable() {
 			for (let node of drawing.frame.nodes) {
 			  // add drag listener
-			  node.snapObject.drag(onMove(node));
+			  node.snapObject.drag(onMove(node), onStart, onEnd);
 			}
 		}
 
@@ -37,6 +37,14 @@
 				// so add listeners again
 				allNodesDraggable();		
 			};
+		}
+
+		function onStart() {}
+
+		function onEnd() {
+			drawing.knot.remove();
+			drawing.drawKnot();
+			allNodesDraggable();		
 		}
 		allNodesDraggable();
 	}
