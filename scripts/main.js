@@ -13,27 +13,32 @@
 		drawing.addUserFrame();
 	}
 
+
 	function freeform() {
+		
+		function allNodesDraggable() {
+			for (let node of drawing.frame.nodes) {
+			  // add drag listener
+			  node.snapObject.drag(onMove(node));
+			}
+		}
+
 		if (drawing.graph) drawing.graph.remove();
 
-
-
-		for (let node of drawing.frame.nodes) {
-			node.HTMLobj.addEventListener("mousedown", function () {
-				var moveListener = function () {
-					[node.x, node.y] = Mouse.relativeCoords(event);
-					drawing.frame.remove();
-					//drawing.knot.remove();
-					//drawing.knot.draw();
-					drawing.frame.draw();
-				};
-
-				drawing.graphArea.addEventListener("mousemove", moveListener);
-				drawing.graphArea.addEventListener("mouseup", function () {
-					drawing.graphArea.removeEventListener("mousemove", moveListener)
-				});
-			})
+		// this fn constructs listeners for nodes
+		function onMove(node) {
+			return function () {
+				// change node position
+				[node.x, node.y] = Mouse.relativeCoords(event);
+				// re-draw whole frame
+				drawing.frame.remove();
+				drawing.frame.draw();
+				// but now we have new snap objs...without listeners attached
+				// so add listeners again
+				allNodesDraggable();		
+			};
 		}
+		allNodesDraggable();
 	}
 
 	// set up button to show nodes

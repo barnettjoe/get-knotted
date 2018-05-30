@@ -122,12 +122,10 @@ function Node(options) {
 
 	this.draw = function() {
 	    this.snapObject = options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
-		this.snapObject.addClass("node");
-		this.HTMLobj = this.findHTMLobj();
+		//this.HTMLobj = this.findHTMLobj();
 	};
 
 	this.remove = function() {
 		if (this.snapObject) this.snapObject.remove();	
 	};
-
 }
