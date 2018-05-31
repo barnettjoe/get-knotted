@@ -3,18 +3,18 @@ var config = {
 	overlap: 20,
 	knot: {
 		stroke: "black",
-		strokeWidth: 20,
+		strokeWidth: 5,
 		fill: "none"
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 24,
+		strokeWidth: 10,
 		fill: "none"
 	},
-	bezierDistance: 75,
-    graphRows: 6,
-    graphCols: 6,
-    squareHeight: 150,
+	bezierDistance: 40,
+    graphRows: 12,
+    graphCols: 12,
+    squareHeight: 80,
     graphLine: {
         stroke: 'gray',
         strokeWidth: 1,
@@ -42,6 +42,8 @@ var config = {
 		fillOpacity: 1,
 		radius: 7
 	},
+	
+	snapRadius: 25,
 
 	// necessary to ensure that frame and graph are properly...
 	// aligned even when either one has greater strokeWidth

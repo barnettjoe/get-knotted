@@ -96,19 +96,30 @@ function Frame(initialBox, finalBox, drawing) {
 		var x;
 		var y;
 		[x, y] = Mouse.closestGraphCoords(event);
-		this.nodes.push(new Node({
-			x: x,
-			y: y,
-			gridSystem: "square",
-			drawing: drawing
-		}));
-		this.adjacencyList.push([]);
-		this.remove();
-		this.draw();
+		var pxX;
+		var pxY;
+		[pxX, pxY] = Mouse.pixelCoords([x, y]);
+
+		var overlapsExistingNode = this.nodes.find(function(node) {
+			var deltaX = Math.abs(pxX - node.x);
+			var deltaY = Math.abs(pxY - node.y);
+			return ((deltaX**2 + deltaY**2)**0.5 <= config.nodeStyle.radius);	
+		});
+		if (!overlapsExistingNode) {
+			this.nodes.push(new Node({
+				x: x,
+				y: y,
+				gridSystem: "square",
+				drawing: drawing
+			}));
+			this.adjacencyList.push([]);
+			this.remove();
+			this.draw();
+			console.log("added a node!");
+		}
 	};
 
 	this.userLine = function(event) {
-
 		function nodeIndex(node) {
 			for (var i = 0; i < drawing.frame.nodes.length; i++) {
 				if ((drawing.frame.nodes[i]).sameNode(node)) {
@@ -119,6 +130,7 @@ function Frame(initialBox, finalBox, drawing) {
 
 		var userLine;
 		var hoveredNode;
+		var downListener;
 		var moveListener;
 		var upListener;
 
@@ -128,28 +140,39 @@ function Frame(initialBox, finalBox, drawing) {
 				drawing.graphArea.removeEventListener("mousemove", moveListener);
 				userLine.remove();
 				if (hoveredNode) {
-					var startNodeIdx = nodeIndex(node);
-					var endNodeIdx = nodeIndex(hoveredNode);
-					drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
-					drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
+					var lineAlreadyExists = drawing.frame.lines.find(function(line) {
+						var existsForward = line.startNode.sameNode(node) && line.endNode.sameNode(hoveredNode);	
+						var existsReverse = line.endNode.sameNode(node) && line.startNode.sameNode(hoveredNode);
+						return existsForward || existsReverse;
+					});
+					if (!lineAlreadyExists) {
+						var startNodeIdx = nodeIndex(node);
+						var endNodeIdx = nodeIndex(hoveredNode);
+						drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
+						drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
+					}
+
 				}
 			drawing.knot.remove();
 			drawing.frame.remove();
 			drawing.frame.draw();
 			drawing.drawKnot();
-			document.removeEventListener("mouseup", upListener);		
+			document.removeEventListener("mouseup", upListener);
+			drawing.frame.userLine();
 			};
 
 		}
 
 		function hoverIn(node) {
 			return function() {
+				console.log("hovered in");
 				hoveredNode = node;
 			};
 		}
 
 		function hoverOut(node) {
 			return function() {
+				console.log("hovered out");
 				hoveredNode = undefined;
 			};
 		}
@@ -165,6 +188,7 @@ function Frame(initialBox, finalBox, drawing) {
 			}
 
 			return function () {
+				console.log("got down...");
 				moveListener = onMove(node);
 				drawing.graphArea.addEventListener("mousemove", moveListener);
 				upListener = onUp(node);
@@ -175,8 +199,9 @@ function Frame(initialBox, finalBox, drawing) {
 
 		// add listeners to all nodes for clicks
 		for (let node of this.nodes) {
-		  node.snapObject.mousedown(onDown(node));
-		  node.snapObject.hover(hoverIn(node), hoverOut(node));
+			downListener = onDown(node);
+			node.snapObject.mousedown(downListener);
+			node.snapObject.hover(hoverIn(node), hoverOut(node));
 		}
 		// for each node...
 		// on click, set move listener 
@@ -210,13 +235,6 @@ function Node(options) {
 	this.sameNode = function(otherNode) {
 		return this.x === otherNode.x && this.y === otherNode.y;
 	}
-
-	this.findHTMLobj = function() {
-		var that = this;
-		return Array.from(document.getElementsByClassName("node")).find(function(obj) {
-			return obj.cx.baseVal.value === that.x && obj.cy.baseVal.value === that.y; 
-		});
-	};
 
 	this.draw = function() {
 	    this.snapObject = options.drawing.surface.circle(this.x, this.y, config.nodeStyle.radius).attr(config.nodeStyle);
