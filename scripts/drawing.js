@@ -14,7 +14,11 @@ function Drawing() {
         // remove any extant frames
         if (drawing.frame) drawing.frame.remove();
         // make 1x1 frame
-        drawing.frame = new Frame(initialBox, finalBox, drawing);
+        drawing.frame = new Frame({
+            initialBox: initialBox,
+            finalBox: finalBox,
+            drawing: drawing
+        });
         drawing.frame.draw();
         // add the listener for mouse movement
         drawing.graphArea.addEventListener('mousemove', moveListener);
@@ -36,7 +40,11 @@ function Drawing() {
         // ... beyond the boundaries of the graph
         Mouse.doIfInGraph(finalBox, function() {
             if (drawing.frame) drawing.frame.remove();
-            drawing.frame = new Frame(initialBox, finalBox, drawing);
+            drawing.frame = new Frame({
+                initialBox: initialBox,
+                finalBox: finalBox,
+                drawing: drawing
+            });
             drawing.frame.draw();
         });
     };

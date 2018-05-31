@@ -1,21 +1,26 @@
 'use strict';
 
-function Frame(initialBox, finalBox, drawing) {
+function Frame(options) {
     this.nodes = [];
     this.adjacencyList = [];
     this.lines = [];
-    var leftmost   = Math.min(initialBox[0], finalBox[0]);
-    var topmost    = Math.min(initialBox[1], finalBox[1]);
-    var rightmost  = Math.max(initialBox[0], finalBox[0]);
-    var bottommost = Math.max(initialBox[1], finalBox[1]);
+    var initialBox = options.initialBox;
+    var finalBox = options.finalBox;
+    // if drawn as grid rather than individual nodes and lines...
+	if (initialBox && finalBox) {
+		var leftmost   = Math.min(initialBox[0], finalBox[0]);
+		var topmost    = Math.min(initialBox[1], finalBox[1]);
+		var rightmost  = Math.max(initialBox[0], finalBox[0]);
+		var bottommost = Math.max(initialBox[1], finalBox[1]);
+	}
 
     Grid.call(this, {
-        drawing: drawing,
+        drawing: options.drawing,
         startCol: leftmost,
         startRow: topmost,
         cols: rightmost - leftmost + 1,
         rows: bottommost - topmost + 1,
-        style: config.frame
+        style: config.frame	
     });
 
 
@@ -32,7 +37,7 @@ function Frame(initialBox, finalBox, drawing) {
                 	x: x,
                 	y: y,
                 	gridSystem: "square",
-                	drawing: drawing
+                	drawing: options.drawing
                 }));
             }
         }
@@ -72,7 +77,7 @@ function Frame(initialBox, finalBox, drawing) {
                     	startNode: this.nodes[i],
                     	endNode: this.nodes[j],
 						style: config.frame,
-						drawing: drawing
+						drawing: options.drawing
                     }));
                 };
             };
@@ -110,19 +115,18 @@ function Frame(initialBox, finalBox, drawing) {
 				x: x,
 				y: y,
 				gridSystem: "square",
-				drawing: drawing
+				drawing: options.drawing
 			}));
 			this.adjacencyList.push([]);
 			this.remove();
 			this.draw();
-			console.log("added a node!");
 		}
 	};
 
 	this.userLine = function(event) {
 		function nodeIndex(node) {
-			for (var i = 0; i < drawing.frame.nodes.length; i++) {
-				if ((drawing.frame.nodes[i]).sameNode(node)) {
+			for (var i = 0; i < options.drawing.frame.nodes.length; i++) {
+				if ((options.drawing.frame.nodes[i]).sameNode(node)) {
 					return i;
 				}
 			}	
@@ -137,10 +141,10 @@ function Frame(initialBox, finalBox, drawing) {
 		// this function constructs listeners for nodes
 		function onUp(node) {
 			return function() {
-				drawing.graphArea.removeEventListener("mousemove", moveListener);
+				options.drawing.graphArea.removeEventListener("mousemove", moveListener);
 				userLine.remove();
 				if (hoveredNode) {
-					var lineAlreadyExists = drawing.frame.lines.find(function(line) {
+					var lineAlreadyExists = options.drawing.frame.lines.find(function(line) {
 						var existsForward = line.startNode.sameNode(node) && line.endNode.sameNode(hoveredNode);	
 						var existsReverse = line.endNode.sameNode(node) && line.startNode.sameNode(hoveredNode);
 						return existsForward || existsReverse;
@@ -148,31 +152,29 @@ function Frame(initialBox, finalBox, drawing) {
 					if (!lineAlreadyExists) {
 						var startNodeIdx = nodeIndex(node);
 						var endNodeIdx = nodeIndex(hoveredNode);
-						drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
-						drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
+						options.drawing.frame.adjacencyList[startNodeIdx].push(endNodeIdx);
+						options.drawing.frame.adjacencyList[endNodeIdx].push(startNodeIdx);
 					}
 
 				}
-			drawing.knot.remove();
-			drawing.frame.remove();
-			drawing.frame.draw();
-			drawing.drawKnot();
+			if (options.drawing.knot) options.drawing.knot.remove();
+			options.drawing.frame.remove();
+			options.drawing.frame.draw();
+			options.drawing.drawKnot();
 			document.removeEventListener("mouseup", upListener);
-			drawing.frame.userLine();
+			options.drawing.frame.userLine();
 			};
 
 		}
 
 		function hoverIn(node) {
 			return function() {
-				console.log("hovered in");
 				hoveredNode = node;
 			};
 		}
 
 		function hoverOut(node) {
 			return function() {
-				console.log("hovered out");
 				hoveredNode = undefined;
 			};
 		}
@@ -181,16 +183,15 @@ function Frame(initialBox, finalBox, drawing) {
 			function onMove(node) {
 				return function(event) {
 					userLine && userLine.remove();
-					userLine = drawing.surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
+					userLine = options.drawing.surface.line(node.x, node.y, ...Mouse.relativeCoords(event));
 					userLine.attr(config.frame);
 					
 				};				
 			}
 
 			return function () {
-				console.log("got down...");
 				moveListener = onMove(node);
-				drawing.graphArea.addEventListener("mousemove", moveListener);
+				options.drawing.graphArea.addEventListener("mousemove", moveListener);
 				upListener = onUp(node);
 				document.addEventListener("mouseup", upListener);		
 			};
@@ -209,11 +210,6 @@ function Frame(initialBox, finalBox, drawing) {
 		// on mouseup, if on another node, then create the line to centerpoint of that node 
 			// if not on another node, then delete the userLine
 	};
-
-
-		
-
-
 };
 
 Frame.prototype = Grid.prototype;

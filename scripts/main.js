@@ -8,9 +8,6 @@
 	function squareGrid() {
 		// draw graph
 		drawing.graph = new Graph(drawing);
-
-		// let user draw a frame
-		drawing.addUserFrame();
 	}
 
 
@@ -50,6 +47,9 @@
 	}
 
 	var addNodeListener = function() {
+		if (!drawing.frame) drawing.frame = new Frame({
+			drawing: drawing
+		});
 		drawing.frame.addNode(event);
 	};
 
@@ -63,6 +63,12 @@
 	document.getElementById("add-line").addEventListener("click", function() {
 		drawing.graphArea.removeEventListener("click", addNodeListener);
 		drawing.frame.userLine();
+	});
+
+	// set up button to add grid
+	document.getElementById("add-grid").addEventListener("click", function() {
+		// let user draw a frame
+		drawing.addUserFrame();	
 	});
 
 	function setFrameType() {
