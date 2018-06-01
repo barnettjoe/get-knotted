@@ -71,12 +71,12 @@ function CrossingPoint(startX, startY, endX, endY, line) {
 		return [nx, ny];
 	};
 
-	this.controlPoint = function(direction, backwards) {
+	this.controlPoint = function(direction, backwards, bezDistance) {
 		var vector = backwards ? line.vector().map(i => -i) : line.vector();
 		var vectorLength = vector.map(i => i**2).reduce((j, m) => j + m)**0.5;
 		var normVect = vector.map(i => i / vectorLength);
-		var xStep = normVect[0] * config.bezierDistance;
-		var yStep = normVect[1] * config.bezierDistance;
+		var xStep = normVect[0] * bezDistance;
+		var yStep = normVect[1] * bezDistance;
 		var initialPosition = [this.coords[0] + xStep, this.coords[1] + yStep];		
 		if (direction === "L") {
 			return this.rotate(...this.coords, ...initialPosition, Math.PI / 4);

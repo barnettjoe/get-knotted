@@ -22,113 +22,14 @@ function Knot(drawing) {
 		group.remove();
 	}
 
-	/// BOUNDING BOX LOGIC
-
 	this.bezString = function(p0, p1, p2, p3) {
 	  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
 	};
 
-
-	this.drawBox = function(a, b, c, d) {
-		drawing.surface.line(...a, ...b).attr({stroke: "green", strokeWidth: 2});
-		drawing.surface.line(...b, ...c).attr({stroke: "green", strokeWidth: 2});
-		drawing.surface.line(...c, ...d).attr({stroke: "green", strokeWidth: 2});
-		drawing.surface.line(...d, ...a).attr({stroke: "green", strokeWidth: 2});
-	};
-
-	this.tightBoundingBox = function(p0, p1, p2, p3) {
-		var that = this;
-		var angle;
-		function alignBez(p0, p1, p2, p3) {
-			 // translate to get p0 on x axis
-			var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
-			// now rotate so p3 is also on x axis
-			var deltaX = translated[0][0];
-			angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX)) || 0;
-			return translated.map(coord => that.rotate(coord, translated[0], angle));
-		}
-		var alignedBoundingBox = this.boundingBox(...alignBez(p0, p1, p2, p3));
-		var rotatedBoundingBox = alignedBoundingBox.map(point => this.rotate(point, [p0[0], 0], -angle));
-		return rotatedBoundingBox.map(coord => [coord[0], coord[1] + p0[1]]);
-	};
-
-
-	this.boundingBox = function(p0, p1, p2, p3) {
-		var extremeTs = [0, 1];
-		extremeTs = extremeTs.concat(this.roots(p0, p1, p2, p3, "x"));
-		extremeTs = extremeTs.concat(this.roots(p0, p1, p2, p3, "y"));
-		var extremePoints = extremeTs.map(t => this.coords(p0, p1, p2, p3, t));
-		function compareX(a, b) {
-			if (a[0] < b[0]) {
-				return -1;
-			} else if (a[0] > b[0]) {
-				return 1; 
-			} else {
-				return 0;
-			}
-		}
-
-		function compareY(a, b) {
-			if (a[1] < b[1]) {
-		  		return -1;
-			} else if (a[1] > b[1]) {
-		 		 return 1; 
-			} else {
-		  		return 0;
-			}
-		}
-
-		var sortedByX = extremePoints.sort(compareX); 
-		var xMin = sortedByX[0][0];
-		var xMax = sortedByX[sortedByX.length - 1][0];
-		var sortedByY = extremePoints.sort(compareY);
-		var yMin = sortedByY[0][1];
-		var yMax = sortedByY[sortedByY.length - 1][1];
-
-		var topLeft = [xMin, yMin];
-		var topRight = [xMax, yMin];
-		var bottomLeft = [xMin, yMax];
-		var bottomRight = [xMax, yMax];
-		return [topLeft, topRight, bottomRight, bottomLeft];
-	};
-
-
-	this.rotateAboutOrigin = function(point, angle) {
-		var x = point[0];
-		var y = point[1];
-		var newX = x * Math.cos(angle) - y * Math.sin(angle);
-		var newY = y * Math.cos(angle) + x * Math.sin(angle);
-		return [newX, newY];
-	};
-
-	this.rotate = function(point, center, angle) {
-		// first shift to origin
-		var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
-		var rotated = this.rotateAboutOrigin(shiftedPoint, angle);
-		return [rotated[0] + center[0], rotated[1] + center[1]];
-	};
-
-	this.roots = function(p0, p1, p2, p3, axis) {
-		var results = [];
-		var curve = new Bezier(...p0, ...p1, ...p2, ...p3);
-		var extrema = curve.extrema();
-		results = results.concat(extrema.x);
-		results = results.concat(extrema.y);
-		return [...new Set(results)]; 
-	}; 
-
-	this.coords = function(p0, p1, p2, p3, t) {
-		var x = (1 - t)**3 * p0[0] + 3 * t * (1 - t)**2 * p1[0] + 3 * t**2 * (1 - t) * p2[0] + t**3 * p3[0];
-		var y = (1 - t)**3 * p0[1] + 3 * t * (1 - t)**2 * p1[1] + 3 * t**2 * (1 - t) * p2[1] + t**3 * p3[1];
-		return [x, y];
-	};
-
-	// END BOUNDING BOX LOGIC
-
-	function setBezierStartPoints(direction) {
+	function setBezierStartPoints(direction, bezDistance) {
 		var backwards = !(targetNode.sameNode(currentLine.endNode));
 		bezierPoints[0] = currentLine.crossingPoint.coords;
-		bezierPoints[1] = currentLine.crossingPoint.controlPoint(direction, backwards);
+		bezierPoints[1] = currentLine.crossingPoint.controlPoint(direction, backwards, bezDistance);
 	    
 		if (direction === "R") {
 			currentLine.crossingPoint.crossedOverOut = true;
@@ -145,7 +46,7 @@ function Knot(drawing) {
 	  }
 	}
 
-	function setBezierEndPoints(direction) {
+	function setBezierEndPoints(direction, bezDistance) {
 		var orderedLinesOut = roundabout.sort(compareByAngle);
 		var inIndex;
 		if (direction === "R") { // wall is on left...
@@ -165,7 +66,7 @@ function Knot(drawing) {
 		}
 		bezierPoints[3] = nextLine.crossingPoint.coords;
         var backwards = targetNode.sameNode(nextLine.endNode);
-        bezierPoints[2] = nextLine.crossingPoint.controlPoint(direction === "R" ? "L" : "R", !backwards);
+        bezierPoints[2] = nextLine.crossingPoint.controlPoint(direction === "R" ? "L" : "R", !backwards, bezDistance);
 		
 		if (direction === "L") {
 			nextLine.crossingPoint.crossedOverIn = true;
@@ -254,31 +155,57 @@ function Knot(drawing) {
 		}
 		// could start going in either direction, but just go towards endNode of line
 		var targetNode = currentLine.endNode; 
-
+	
 
 		while (true) {
 			direction = (direction === "R" ? "L" : "R");
 			roundabout = drawing.frame.linesOutFrom(targetNode);
 			
-			// if straight line, just use a line.
-			// else, start with small bezierDistance...
+			function intersections(path) {
+				var startPoint = currentLine.crossingPoint.coords; 
+				var endPoint = nextLine.crossingPoint.coords;
+				var framePath = `M${startPoint[0]} ${startPoint[1]} L${targetNode.x} ${targetNode.y} L${endPoint[0]} ${endPoint[1]}`;
+				var intersects = Snap.path.intersection(path, framePath);
+				// remove any that are extremely close to start or end points
+				return intersects.filter(function(intersect) {
+					var xStart = Math.abs(intersect.x - startPoint[0]) < 0.1;
+					var xEnd = Math.abs(intersect.x - endPoint[0]) < 0.1;
+					var yStart = Math.abs(intersect.y - startPoint[1]) < 0.1;
+					var yEnd = Math.abs(intersect.y - endPoint[1]) < 0.1;
+					return !((xStart && yStart) || (xEnd && yEnd));
+				});
+			}
+
+			var bezDistance = config.bezierDistance;
+
+			// start with small bezierDistance...
 			// increase until does not intersect any lines of the frame...
+			var path1;
+			for (var i = 1; i < 50; i++) {
+				setBezierStartPoints(direction, bezDistance);
+				setBezierEndPoints(direction, bezDistance);
+				path1 = this.bezString(...bezierPoints);
+				if (intersections(path1).length === 0) {
+					break;
+				} else {
+					bezDistance *= 1.1;
+				}
 
-			setBezierStartPoints(direction);
-			setBezierEndPoints(direction);
-			
-			//-----------------------
-			// DISPLAY BOUNDING BOX
-			//------------------------
+			}
 
-
-			this.drawBox(...this.tightBoundingBox(...bezierPoints));
+/*
+			drawing.surface.path(path1).attr({
+				stroke: "pink",
+				strokeWidth: 2,
+				fill: "none"
+			});
+*/			
 
 
 			if (direction === "L") {
-				underToOvers.push(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`);
+				underToOvers.push(this.bezString(...bezierPoints));
 			} else {
-				overToUnders.push(`M${bezierPoints[0][0]} ${bezierPoints[0][1]} C ${bezierPoints[1][0]} ${bezierPoints[1][1]}, ${bezierPoints[2][0]} ${bezierPoints[2][1]}, ${bezierPoints[3][0]}, ${bezierPoints[3][1]}`);
+				overToUnders.push(this.bezString(...bezierPoints));
 			}
 
 			currentLine = nextLine;
