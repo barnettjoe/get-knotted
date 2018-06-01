@@ -3,15 +3,15 @@ var config = {
 	overlap: 20,
 	knot: {
 		stroke: "black",
-		strokeWidth: 5,
+		strokeWidth: 10,
 		fill: "none"
 	},
 	mask: {
 		stroke: "white",
-		strokeWidth: 10,
+		strokeWidth: 14,
 		fill: "none"
 	},
-	bezierDistance: 75,
+	bezierDistance: 100,
     graphRows: 6,
     graphCols: 6,
     squareHeight: 150,

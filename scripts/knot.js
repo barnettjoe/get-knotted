@@ -4,7 +4,7 @@
 // use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
 // 
 
-var debuggingMode = false;
+var debuggingMode = true;
 var debuggingPaths = [];
 
 function Knot(drawing) {
@@ -56,7 +56,7 @@ function Knot(drawing) {
 	}
 
 	function setBezierEndPoints(direction, bezDistance) {
-		var orderedLinesOut = roundabout.sort(compareByAngle);
+		var orderedLinesOut = roundabout.slice().sort(compareByAngle);
 		var inIndex;
 		if (direction === "R") { // wall is on left...
 			// pad out list with first element to allow going all way thru to start again
@@ -191,7 +191,7 @@ function Knot(drawing) {
 
 
 			// start with small bezierDistance...
-			// increase until does not intersect any lines of the frame...
+			// increase until does not intersect lines between currentline and nextline..
 			var path1;
 			for (var i = 1; i < 50; i++) {
 				setBezierStartPoints(direction, bezDistance);
@@ -230,7 +230,6 @@ function Knot(drawing) {
 			if (currentLine.crossingPoint.crossed(direction === "R" ? "L" : "R")) {
 				break;
 			}
-
 		}
 		if (debuggingMode)break;
 	}
