@@ -4,8 +4,17 @@
 // use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
 // 
 
+var debuggingMode = false;
+var debuggingPaths = [];
 
 function Knot(drawing) {
+
+	if (debuggingMode) {
+		for (var path of debuggingPaths) {
+			path.remove();
+		}
+	}
+	
 	var bezierPoints = [[], [], [], []];
 	var targetNode;
 	var startNode;
@@ -177,6 +186,9 @@ function Knot(drawing) {
 			}
 
 			var bezDistance = config.bezierDistance;
+			// start smaller?? ...
+			// but this currently leads to hanging / infinite loop somehow ??
+
 
 			// start with small bezierDistance...
 			// increase until does not intersect any lines of the frame...
@@ -193,19 +205,18 @@ function Knot(drawing) {
 
 			}
 
-/*
-			drawing.surface.path(path1).attr({
-				stroke: "pink",
-				strokeWidth: 2,
-				fill: "none"
-			});
-*/			
-
-
-			if (direction === "L") {
-				underToOvers.push(this.bezString(...bezierPoints));
+			if (debuggingMode) {
+				debuggingPaths.push(drawing.surface.path(path1).attr({
+					stroke: "pink",
+					strokeWidth: 2,
+					fill: "none"
+				}));		
 			} else {
-				overToUnders.push(this.bezString(...bezierPoints));
+				if (direction === "L") {
+					underToOvers.push(this.bezString(...bezierPoints));
+				} else {
+					overToUnders.push(this.bezString(...bezierPoints));
+				}	
 			}
 
 			currentLine = nextLine;
@@ -221,6 +232,7 @@ function Knot(drawing) {
 			}
 
 		}
+		if (debuggingMode)break;
 	}
 
 	function clipToFirstHalf(element) {
@@ -291,11 +303,14 @@ function Knot(drawing) {
 		}
 	}
 
-	drawUnders();
-	drawMasks();
-	addMaskCPcrosses();
-	drawOvers();
-	addCPcrosses();
+	if (!debuggingMode) {
+		drawUnders();
+		drawMasks();
+		addMaskCPcrosses();
+		drawOvers();
+		addCPcrosses();
+	}
+
 	drawing.frame.remove();
 	drawing.frame.draw();
 	drawing.stopDrawingFrame();

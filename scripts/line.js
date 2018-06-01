@@ -29,7 +29,7 @@ function Line(options) {
 		var deltaY = (this.vector()[1]);
 		var result = Math.atan2(deltaX, deltaY); // return value is in radians
 		if (options.reverse) result += Math.PI;
-		return result;
+		return Math.abs(result);
 	};
 
 	this.angleOutFrom = function(node) {
