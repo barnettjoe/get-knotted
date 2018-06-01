@@ -1,7 +1,7 @@
 "use strict";
 
 // TODO
-// use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
+// use lines for lines and curves for curves --- then can tiller hanson only when necessary
 // 
 
 var debuggingMode = false;
@@ -186,28 +186,167 @@ function Knot(drawing) {
 			}
 
 			var bezDistance = config.bezierDistance;
-			// start smaller?? ...
-			// but this currently leads to hanging / infinite loop somehow ??
-
 
 			// start with small bezierDistance...
 			// increase until does not intersect lines between currentline and nextline..
 			var path1;
+
+
+			// PRETTYIFYING CURVES
+
+			// 1. DEAL WITH OFFSET
+
+			function rotateAboutOrigin(point, angle) {
+				var x = point[0];
+				var y = point[1];
+				var newX = x * Math.cos(angle) - y * Math.sin(angle);
+				var newY = y * Math.cos(angle) + x * Math.sin(angle);
+				return [newX, newY];
+			}
+
+			function rotate(point, center, angle) {
+				// first shift to origin
+				var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
+				var rotated = rotateAboutOrigin(shiftedPoint, angle);
+				return [rotated[0] + center[0], rotated[1] + center[1]];
+			}
+
+			function alignBez(p0, p1, p2, p3) {
+				// translate to get p0 on x axis
+				var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
+				// now rotate so p3 is also on x axis
+				var deltaX = translated[0][0];
+				var angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
+				return translated.map(coord => rotate(coord, translated[0], angle)); 
+			}
+
+			setBezierStartPoints(direction, bezDistance);
+			setBezierEndPoints(direction, bezDistance);
+			
 			for (var i = 1; i < 50; i++) {
+				var aligned = alignBez(...bezierPoints);
+				var bez = new Bezier(...aligned[0], ...aligned[1], ... aligned[2], ...aligned[3]);
+				var maxDisplacement = Math.max(bez.extrema().y.map(t => Math.abs(bez.get(t).y)));
+				var cpcpDistance = minus(currentLine.crossingPoint.coords, nextLine.crossingPoint.coords).map(x => x**2).reduce((a, b) => a + b)**0.5;
+				var displacementLimit = (cpcpDistance / 10);
+				if (maxDisplacement > displacementLimit) {
+					bezDistance /= 1.1;
+					setBezierStartPoints(direction, bezDistance);
+					setBezierEndPoints(direction, bezDistance);
+				} else {
+					break;
+				}
+			}
+
+			if (debuggingMode) debugger;
+
+
+			// deal with loops
+			 for (var i = 1; i < 50; i++) {
 				setBezierStartPoints(direction, bezDistance);
 				setBezierEndPoints(direction, bezDistance);
+				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
+			 	if (bez.intersects().length > 0) {
+					bezDistance /= 1.1;
+			 	} else {
+			 		break;
+			 	}
+			 }
+
+			// prevents curve crossovers...causes lasers as sideeffect though
+			for (var i = 1; i < 50; i++) {
 				path1 = this.bezString(...bezierPoints);
 				if (intersections(path1).length === 0) {
 					break;
 				} else {
 					bezDistance *= 1.1;
+					setBezierStartPoints(direction, bezDistance);
+					setBezierEndPoints(direction, bezDistance);
 				}
+			}
 
+
+
+/*
+			for (var i = 1; i < 50; i++) {
+				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
+				if (inflectionPoints(...bezierPoints).length > 0 || bez.intersects().length > 0) {
+					bezDistance /= 1.1;
+				}
+			}
+*/
+			/// GETTING INFLECTION POINTS
+
+			function minus(arr1, arr2) {
+				var new_arr = [];
+				for (var i = 0; i < arr1.length; i++) {
+					new_arr.push(arr1[i] - arr2[i]);
+				}
+				return new_arr;
+			}
+
+			function plus(arr1, arr2) {
+				var new_arr = [];
+				for (var i = 0; i < arr1.length; i++) {
+					new_arr.push(arr1[i] + arr2[i]);
+				}
+				return new_arr;
+			}
+
+			function times(n, arr) {
+				return arr.map(x => n * x);
+			}
+
+			function inflectionPoints(p0, p1, p2, p3) {
+				var x = minus(p1, p0);
+				var y = minus(minus(p2, p1), x);
+				var z = minus(minus(minus(p3, p2), x), times(2, y));
+
+				var a = y[0] * z[1] - y[1] * z[0];
+				var b = x[0] * z[1] - x[1] * z[0];
+				var c = x[0] * y[1] - x[1] * y[0]
+
+
+				var inflectionTs = [];
+				var j = (b**2 - 4 * a * c);
+				if (j > 0) {
+					inflectionTs.push((-b + j**0.5) / (2 * a));
+					inflectionTs.push((-b - j**0.5) / (2 * a));
+				}
+				var validInflectionTs =  inflectionTs.filter(function(t) {
+					return (t > 0 && t < 1);  
+				});
+
+				// if both are very close, remove second one
+				if (validInflectionTs[1] && Math.abs(validInflectionTs[1] - validInflectionTs[0]) < 0.0001 ) {
+					validInflectionTs.pop();
+				}
+				return validInflectionTs;
 			}
 
 			if (debuggingMode) {
+				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
+				var color;
+
+				if (inflectionPoints(...bezierPoints).length === 1) {
+					color = "green";
+					drawing.surface.line(...bezierPoints[0], ...bezierPoints[1]).attr({
+						stroke: "blue",
+						strokeWidth: 2
+					});
+					drawing.surface.line(...bezierPoints[2], ...bezierPoints[3]).attr({
+						stroke: "blue",
+						strokeWidth: 2
+					});
+				} else if (inflectionPoints(...bezierPoints).length === 2) {
+					color = "orange";
+				} else if (bez.intersects().length > 0) {
+					color = "blue";
+				} else {
+					color = "pink";
+				}
 				debuggingPaths.push(drawing.surface.path(path1).attr({
-					stroke: "pink",
+					stroke: color,
 					strokeWidth: 2,
 					fill: "none"
 				}));		
