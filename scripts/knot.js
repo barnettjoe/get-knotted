@@ -4,7 +4,7 @@
 // use lines for lines and cruves for curevs --- then can tiller hanson only when necessary
 // 
 
-var debuggingMode = true;
+var debuggingMode = false;
 var debuggingPaths = [];
 
 function Knot(drawing) {
