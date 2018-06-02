@@ -119,6 +119,33 @@ function Knot(drawing) {
 		return !line.crossingPoint.fullyCrossed();
 	}
 
+
+
+
+	function rotateAboutOrigin(point, angle) {
+		var x = point[0];
+		var y = point[1];
+		var newX = x * Math.cos(angle) - y * Math.sin(angle);
+		var newY = y * Math.cos(angle) + x * Math.sin(angle);
+		return [newX, newY];
+	}
+
+	function rotate(point, center, angle) {
+		// first shift to origin
+		var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
+		var rotated = rotateAboutOrigin(shiftedPoint, angle);
+		return [rotated[0] + center[0], rotated[1] + center[1]];
+	}
+
+	function alignBez(p0, p1, p2, p3) {
+		// translate to get p0 on x axis
+		var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
+		// now rotate so p3 is also on x axis
+		var deltaX = translated[0][0];
+		var angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
+		return translated.map(coord => rotate(coord, translated[0], angle)); 
+	}
+
 	// each strand is one "piece of string" of the knot
 	var strands = [];
 
@@ -148,27 +175,12 @@ function Knot(drawing) {
 		strand.push(currentLine.crossingPoint.coords);
 		logCrossing(direction);
 
+
+
 		// in the below while loop we add all the crossingpoints through which our strand passes
 		while (true) {
 			// move onto next line 			
 			currentLine = getNextLine(direction);
-			
-			// pointed return business
-			var start = currentLine.crossingPoint.coords;
-			var end = getNextLine(oppositeDirection).crossingPoint.coords;
-			var pathString = `M${start[0]} ${start[1]} L${end[0]} ${end[1]}`;
-			drawing.surface.path(pathString).attr({
-				stroke: "gray",
-				fill: "green",
-				strokeWidth: 5,
-				fillOpacity: 0.5
-			});
-
-
-	
-			// end pointed return business
-
-
 			var oppositeDirection = (direction === "R" ? "L" : "R");
 			strand.push(currentLine.crossingPoint.coords);
 			logCrossing(oppositeDirection);		
@@ -191,6 +203,10 @@ function Knot(drawing) {
 		strands.push(strand);
 	}
 
+
+	// DOING THE ACTUAL DRAWING
+
+
 	for (var strand of strands) {
 		var contour = new Contour(strand);
 		for (var pathString of contour.paths) {
@@ -202,6 +218,42 @@ function Knot(drawing) {
 				fill: "none"
 			});
 		}
+
+		// pointed return business
+		// need to know the middle node position...
+
+		// if the middle node is within the (tight) bezier bounding box
+			// do nothing
+		// if not within
+			// need to change to a pointed return
+		
+		/*
+			var start = currentLine.crossingPoint.coords;
+			var end = getNextLine(oppositeDirection).crossingPoint.coords;
+			var pathString = `M${start[0]} ${start[1]} L${end[0]} ${end[1]}`;
+			drawing.surface.path(pathString).attr({
+				stroke: "gray",
+				fill: "green",
+				strokeWidth: 5,
+				fillOpacity: 0.5
+			});
+
+			for (var i = 1; i < 50; i++) {
+				var aligned = alignBez(...bezierPoints);
+				var bez = new Bezier(...aligned[0], ...aligned[1], ... aligned[2], ...aligned[3]);
+				var maxDisplacement = Math.max(bez.extrema().y.map(t => Math.abs(bez.get(t).y)));
+				var cpcpDistance = minus(currentLine.crossingPoint.coords, nextLine.crossingPoint.coords).map(x => x**2).reduce((a, b) => a + b)**0.5;
+				var displacementLimit = (cpcpDistance / 10);
+				if (maxDisplacement > displacementLimit) {
+					bezDistance /= 1.1;
+					setBezierStartPoints(direction, bezDistance);
+					setBezierEndPoints(direction, bezDistance);
+				} else {
+					break;
+				}
+			}
+			*/
+		// end pointed return business
 	};
 
 	function clipToFirstHalf(element) {
@@ -343,6 +395,6 @@ function Contour(points) {
 	}
 
 	this.paths = polygons.map(function(polygon) {
-			return bezString(...polygon);
-		});  
+		return bezString(...polygon);
+	});  
 }
