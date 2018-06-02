@@ -4,17 +4,7 @@
 // use lines for lines and curves for curves --- then can tiller hanson only when necessary
 // 
 
-var debuggingMode = false;
-var debuggingPaths = [];
-
 function Knot(drawing) {
-
-	if (debuggingMode) {
-		for (var path of debuggingPaths) {
-			path.remove();
-		}
-	}
-	
 	var bezierPoints = [[], [], [], []];
 	var targetNode;
 	var startNode;
@@ -35,15 +25,11 @@ function Knot(drawing) {
 	  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
 	};
 
-	function setBezierStartPoints(direction, bezDistance) {
-		var backwards = !(targetNode.sameNode(currentLine.endNode));
-		bezierPoints[0] = currentLine.crossingPoint.coords;
-		bezierPoints[1] = currentLine.crossingPoint.controlPoint(direction, backwards, bezDistance);
-	    
+	function logCrossing(direction) {
 		if (direction === "R") {
-			currentLine.crossingPoint.crossedOverOut = true;
+			currentLine.crossingPoint.crossedRight = true;
 		} else {
-			currentLine.crossingPoint.crossedUnderOut = true;
+			currentLine.crossingPoint.crossedLeft = true;
 		}
 	}
 
@@ -55,7 +41,8 @@ function Knot(drawing) {
 	  }
 	}
 
-	function setBezierEndPoints(direction, bezDistance) {
+	function getNextLine(direction) {
+		roundabout = drawing.frame.linesOutFrom(targetNode);
 		var orderedLinesOut = roundabout.slice().sort(compareByAngle);
 		var inIndex;
 		if (direction === "R") { // wall is on left...
@@ -65,22 +52,13 @@ function Knot(drawing) {
 			inIndex = orderedLinesOut.indexOf(currentLine);
 
 			// next line is first one where angle is > currentLine
-			nextLine = orderedLinesOut[inIndex + 1];
+			return orderedLinesOut[inIndex + 1];
 		} else {
 			//orderedLinesOut.unshift(orderedLinesOut[orderedLinesOut.length - 1]);
 			// get index of currentline in orderedLinesOut
 			inIndex = orderedLinesOut.indexOf(currentLine);
 			// next line is first one where angle is > currentLine
-			nextLine = orderedLinesOut[inIndex - 1] || orderedLinesOut[orderedLinesOut.length - 1];
-		}
-		bezierPoints[3] = nextLine.crossingPoint.coords;
-        var backwards = targetNode.sameNode(nextLine.endNode);
-        bezierPoints[2] = nextLine.crossingPoint.controlPoint(direction === "R" ? "L" : "R", !backwards, bezDistance);
-		
-		if (direction === "L") {
-			nextLine.crossingPoint.crossedOverIn = true;
-		} else {
-			nextLine.crossingPoint.crossedUnderIn = true;
+			return orderedLinesOut[inIndex - 1] || orderedLinesOut[orderedLinesOut.length - 1];
 		}
 	}
 
@@ -141,10 +119,18 @@ function Knot(drawing) {
 		return !line.crossingPoint.fullyCrossed();
 	}
 
+	// each strand is one "piece of string" of the knot
+	var strands = [];
+
 	var underToOvers = [];
 	var overToUnders = [];
 
+
+
 	while (drawing.frame.lines.some(uncrossed)) {
+		// on each iteration of this loop we determine the crossingpoints through which a single strand will pass
+		var strand = [];
+
 		// select first line - any line where CP is uncrossed in either R or L direction
 		for (var line of drawing.frame.lines) {
 			if (uncrossed(line)) {
@@ -153,225 +139,54 @@ function Knot(drawing) {
 			}
 		}
 		// choose direction
-		// if already crossed under, then choose R to do cross overlap
-		// --> L here bc. switched in below while loop
-		if (line.crossingPoint.crossed("L")) {
-			direction = "L";
-		// otherwise, it must not be crossed under yet, so choose L to do cross under
-		// --> R here bc. switched in below while loop
-		} else {
-			direction = "R";
-		}
+		direction = line.crossingPoint.uncrossedDirection();
 		// could start going in either direction, but just go towards endNode of line
 		var targetNode = currentLine.endNode; 
-	
 
+
+		// add first point
+		strand.push(currentLine.crossingPoint.coords);
+		logCrossing(direction);
+
+		// in the below while loop we add all the crossingpoints through which our strand passes
 		while (true) {
-			direction = (direction === "R" ? "L" : "R");
-			roundabout = drawing.frame.linesOutFrom(targetNode);
+			// move onto next line 			
+			currentLine = getNextLine(direction);
 			
-			function intersections(path) {
-				var startPoint = currentLine.crossingPoint.coords; 
-				var endPoint = nextLine.crossingPoint.coords;
-				var framePath = `M${startPoint[0]} ${startPoint[1]} L${targetNode.x} ${targetNode.y} L${endPoint[0]} ${endPoint[1]}`;
-				var intersects = Snap.path.intersection(path, framePath);
-				// remove any that are extremely close to start or end points
-				return intersects.filter(function(intersect) {
-					var xStart = Math.abs(intersect.x - startPoint[0]) < 0.1;
-					var xEnd = Math.abs(intersect.x - endPoint[0]) < 0.1;
-					var yStart = Math.abs(intersect.y - startPoint[1]) < 0.1;
-					var yEnd = Math.abs(intersect.y - endPoint[1]) < 0.1;
-					return !((xStart && yStart) || (xEnd && yEnd));
-				});
-			}
+			var oppositeDirection = (direction === "R" ? "L" : "R");
+			strand.push(currentLine.crossingPoint.coords);
+			logCrossing(oppositeDirection);		
 
-			var bezDistance = config.bezierDistance;
+			// 
+			//var paths = (direction === "L" ? underToOvers : overToUnders);
+			//paths.push(this.bezString(...bezierPoints));
 
-			// start with small bezierDistance...
-			// increase until does not intersect lines between currentline and nextline..
-			var path1;
-
-
-			// PRETTYIFYING CURVES
-
-			// 1. DEAL WITH OFFSET
-
-			function rotateAboutOrigin(point, angle) {
-				var x = point[0];
-				var y = point[1];
-				var newX = x * Math.cos(angle) - y * Math.sin(angle);
-				var newY = y * Math.cos(angle) + x * Math.sin(angle);
-				return [newX, newY];
-			}
-
-			function rotate(point, center, angle) {
-				// first shift to origin
-				var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
-				var rotated = rotateAboutOrigin(shiftedPoint, angle);
-				return [rotated[0] + center[0], rotated[1] + center[1]];
-			}
-
-			function alignBez(p0, p1, p2, p3) {
-				// translate to get p0 on x axis
-				var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
-				// now rotate so p3 is also on x axis
-				var deltaX = translated[0][0];
-				var angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
-				return translated.map(coord => rotate(coord, translated[0], angle)); 
-			}
-
-			setBezierStartPoints(direction, bezDistance);
-			setBezierEndPoints(direction, bezDistance);
-			
-			for (var i = 1; i < 50; i++) {
-				var aligned = alignBez(...bezierPoints);
-				var bez = new Bezier(...aligned[0], ...aligned[1], ... aligned[2], ...aligned[3]);
-				var maxDisplacement = Math.max(bez.extrema().y.map(t => Math.abs(bez.get(t).y)));
-				var cpcpDistance = minus(currentLine.crossingPoint.coords, nextLine.crossingPoint.coords).map(x => x**2).reduce((a, b) => a + b)**0.5;
-				var displacementLimit = (cpcpDistance / 10);
-				if (maxDisplacement > displacementLimit) {
-					bezDistance /= 1.1;
-					setBezierStartPoints(direction, bezDistance);
-					setBezierEndPoints(direction, bezDistance);
-				} else {
-					break;
-				}
-			}
-
-			if (debuggingMode) debugger;
-
-
-			// deal with loops
-			 for (var i = 1; i < 50; i++) {
-				setBezierStartPoints(direction, bezDistance);
-				setBezierEndPoints(direction, bezDistance);
-				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
-			 	if (bez.intersects().length > 0) {
-					bezDistance /= 1.1;
-			 	} else {
-			 		break;
-			 	}
-			 }
-
-			// prevents curve crossovers...causes lasers as sideeffect though
-			for (var i = 1; i < 50; i++) {
-				path1 = this.bezString(...bezierPoints);
-				if (intersections(path1).length === 0) {
-					break;
-				} else {
-					bezDistance *= 1.1;
-					setBezierStartPoints(direction, bezDistance);
-					setBezierEndPoints(direction, bezDistance);
-				}
-			}
-
-
-
-/*
-			for (var i = 1; i < 50; i++) {
-				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
-				if (inflectionPoints(...bezierPoints).length > 0 || bez.intersects().length > 0) {
-					bezDistance /= 1.1;
-				}
-			}
-*/
-			/// GETTING INFLECTION POINTS
-
-			function minus(arr1, arr2) {
-				var new_arr = [];
-				for (var i = 0; i < arr1.length; i++) {
-					new_arr.push(arr1[i] - arr2[i]);
-				}
-				return new_arr;
-			}
-
-			function plus(arr1, arr2) {
-				var new_arr = [];
-				for (var i = 0; i < arr1.length; i++) {
-					new_arr.push(arr1[i] + arr2[i]);
-				}
-				return new_arr;
-			}
-
-			function times(n, arr) {
-				return arr.map(x => n * x);
-			}
-
-			function inflectionPoints(p0, p1, p2, p3) {
-				var x = minus(p1, p0);
-				var y = minus(minus(p2, p1), x);
-				var z = minus(minus(minus(p3, p2), x), times(2, y));
-
-				var a = y[0] * z[1] - y[1] * z[0];
-				var b = x[0] * z[1] - x[1] * z[0];
-				var c = x[0] * y[1] - x[1] * y[0]
-
-
-				var inflectionTs = [];
-				var j = (b**2 - 4 * a * c);
-				if (j > 0) {
-					inflectionTs.push((-b + j**0.5) / (2 * a));
-					inflectionTs.push((-b - j**0.5) / (2 * a));
-				}
-				var validInflectionTs =  inflectionTs.filter(function(t) {
-					return (t > 0 && t < 1);  
-				});
-
-				// if both are very close, remove second one
-				if (validInflectionTs[1] && Math.abs(validInflectionTs[1] - validInflectionTs[0]) < 0.0001 ) {
-					validInflectionTs.pop();
-				}
-				return validInflectionTs;
-			}
-
-			if (debuggingMode) {
-				var bez = new Bezier(...bezierPoints[0], ...bezierPoints[1], ...bezierPoints[2], ...bezierPoints[3]);
-				var color;
-
-				if (inflectionPoints(...bezierPoints).length === 1) {
-					color = "green";
-					drawing.surface.line(...bezierPoints[0], ...bezierPoints[1]).attr({
-						stroke: "blue",
-						strokeWidth: 2
-					});
-					drawing.surface.line(...bezierPoints[2], ...bezierPoints[3]).attr({
-						stroke: "blue",
-						strokeWidth: 2
-					});
-				} else if (inflectionPoints(...bezierPoints).length === 2) {
-					color = "orange";
-				} else if (bez.intersects().length > 0) {
-					color = "blue";
-				} else {
-					color = "pink";
-				}
-				debuggingPaths.push(drawing.surface.path(path1).attr({
-					stroke: color,
-					strokeWidth: 2,
-					fill: "none"
-				}));		
-			} else {
-				if (direction === "L") {
-					underToOvers.push(this.bezString(...bezierPoints));
-				} else {
-					overToUnders.push(this.bezString(...bezierPoints));
-				}	
-			}
-
-			currentLine = nextLine;
-			lastTraversedNode = targetNode;
 			// set new targetNode
-			if (currentLine.startNode.sameNode(lastTraversedNode)) {
+			if (currentLine.startNode.sameNode(targetNode)) {
 				targetNode = currentLine.endNode;
 			} else {
 				targetNode = currentLine.startNode;
 			}
-			if (currentLine.crossingPoint.crossed(direction === "R" ? "L" : "R")) {
+			if (getNextLine(oppositeDirection).crossingPoint.crossed(direction)) {
 				break;
 			}
+			direction = oppositeDirection;
 		}
-		if (debuggingMode)break;
+		strands.push(strand);
 	}
+
+	for (var strand of strands) {
+		var contour = new Contour(strand);
+		for (var pathString of contour.paths) {
+			var bez = drawing.surface.path(pathString);
+			group.add(bez);
+			bez.attr({
+				stroke: "pink",
+				strokeWidth: 5,
+				fill: "none"
+			});
+		}
+	};
 
 	function clipToFirstHalf(element) {
 		element.attr({
@@ -441,15 +256,77 @@ function Knot(drawing) {
 		}
 	}
 
-	if (!debuggingMode) {
-		drawUnders();
-		drawMasks();
-		addMaskCPcrosses();
-		drawOvers();
-		addCPcrosses();
-	}
-
+	drawUnders();
+	drawMasks();
+	addMaskCPcrosses();
+	drawOvers();
+	addCPcrosses();
 	drawing.frame.remove();
 	drawing.frame.draw();
 	drawing.stopDrawingFrame();
+}
+
+function Contour(points) {
+	var arr = [4, 1];
+	for (var i = 3; i < points.length; i++) {
+		arr.push(0);
+	}
+	arr.push(1);
+	arr = arr.concat(arr);
+	var matrix = [];
+	for (var i = 0; i < points.length; i++) {
+		var row = arr.slice(points.length - i, 2 * points.length - i);
+		matrix.push(row);
+	}
+
+	var xVector = points.map(coord => 6 * coord[0]);
+	var yVector = points.map(coord => 6 * coord[1]);
+
+	var scaffoldOrdinates = numeric.solve(matrix, yVector);
+	var scaffoldAbscissae = numeric.solve(matrix, xVector);
+
+	function b(n, i) {
+		var arr = (i === 0 ? scaffoldAbscissae : scaffoldOrdinates);
+		return ((2 * arr[n] + (arr[n + 1] || arr[0])) / 3);
+	}
+
+	function bx(n) {
+		return b(n, 0);
+	}
+
+	function by(n) {
+		return b(n, 1);
+	}
+
+	function c(n, i) {
+		var arr = (i === 0 ? scaffoldAbscissae : scaffoldOrdinates);
+		return ((arr[n] + 2 * (arr[n + 1] || arr[0])) / 3);
+	}
+
+	function cx(n) {
+		return c(n, 0);
+	}
+
+	function cy(n) {
+		return c(n, 1);
+	}
+
+	function bezPolygon(n) {
+		var nextN = (points[n + 1] ? n + 1 : 0)
+		return [[points[n][0], points[n][1]], [bx(n), by(n)], [cx(n), cy(n)], [points[nextN][0], points[nextN][1]]]
+	}
+
+	function bezString(p0, p1, p2, p3) {
+		return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
+	}
+
+	var polygons = [];
+
+	for (var i = 0; i < points.length; i++) {
+		polygons.push(bezPolygon(i));
+	}
+
+	this.paths = polygons.map(function(polygon) {
+			return bezString(...polygon);
+		});  
 }
