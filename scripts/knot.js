@@ -153,6 +153,22 @@ function Knot(drawing) {
 			// move onto next line 			
 			currentLine = getNextLine(direction);
 			
+			// pointed return business
+			var start = currentLine.crossingPoint.coords;
+			var end = getNextLine(oppositeDirection).crossingPoint.coords;
+			var pathString = `M${start[0]} ${start[1]} L${end[0]} ${end[1]}`;
+			drawing.surface.path(pathString).attr({
+				stroke: "gray",
+				fill: "green",
+				strokeWidth: 5,
+				fillOpacity: 0.5
+			});
+
+
+	
+			// end pointed return business
+
+
 			var oppositeDirection = (direction === "R" ? "L" : "R");
 			strand.push(currentLine.crossingPoint.coords);
 			logCrossing(oppositeDirection);		
