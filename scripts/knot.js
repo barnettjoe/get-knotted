@@ -1,9 +1,5 @@
 "use strict";
 
-// TODO
-// use lines for lines and curves for curves --- then can tiller hanson only when necessary
-// 
-
 function Knot(drawing) {
 	var bezierPoints = [[], [], [], []];
 	var targetNode;
@@ -27,7 +23,7 @@ function Knot(drawing) {
 
 	function logCrossing(direction) {
 		if (direction === "R") {
-			currentLine.crossingPoint.crossedRight = true;
+			currentLine.crossingPoint.crossedRight =  true;
 		} else {
 			currentLine.crossingPoint.crossedLeft = true;
 		}
@@ -44,21 +40,14 @@ function Knot(drawing) {
 	function getNextLine(direction) {
 		roundabout = drawing.frame.linesOutFrom(targetNode);
 		var orderedLinesOut = roundabout.slice().sort(compareByAngle);
-		var inIndex;
+		var inIndex = orderedLinesOut.indexOf(currentLine);
+
 		if (direction === "R") { // wall is on left...
 			// pad out list with first element to allow going all way thru to start again
-			orderedLinesOut.push(orderedLinesOut[0]);
-			// get index of currentline in orderedLinesOut
-			inIndex = orderedLinesOut.indexOf(currentLine);
-
-			// next line is first one where angle is > currentLine
-			return orderedLinesOut[inIndex + 1];
-		} else {
-			//orderedLinesOut.unshift(orderedLinesOut[orderedLinesOut.length - 1]);
-			// get index of currentline in orderedLinesOut
-			inIndex = orderedLinesOut.indexOf(currentLine);
-			// next line is first one where angle is > currentLine
 			return orderedLinesOut[inIndex - 1] || orderedLinesOut[orderedLinesOut.length - 1];
+		} else {
+			orderedLinesOut.push(orderedLinesOut[0]);
+			return orderedLinesOut[inIndex + 1];
 		}
 	}
 
@@ -119,9 +108,6 @@ function Knot(drawing) {
 		return !line.crossingPoint.fullyCrossed();
 	}
 
-
-
-
 	function rotateAboutOrigin(point, angle) {
 		var x = point[0];
 		var y = point[1];
@@ -146,17 +132,32 @@ function Knot(drawing) {
 		return translated.map(coord => rotate(coord, translated[0], angle)); 
 	}
 
+	function goingBackwards() {
+		return currentLine.startNode.sameNode(targetNode);
+	}
+
+	function traverseNextBackwards() {
+		return getNextLine(direction).endNode.sameNode(targetNode);
+	}
+
+	function pointedReturn() {
+		var currentBearing = currentLine.angleOutCP({direction: direction, reverse: goingBackwards()});
+		var nextBearing = getNextLine(direction).angleOutCP({direction: oppositeDirection, reverse: traverseNextBackwards()});
+		return Math.abs(currentBearing - nextBearing) > 1.6;
+	}
+
 	// each strand is one "piece of string" of the knot
 	var strands = [];
-
 	var underToOvers = [];
 	var overToUnders = [];
 
 
-
 	while (drawing.frame.lines.some(uncrossed)) {
 		// on each iteration of this loop we determine the crossingpoints through which a single strand will pass
-		var strand = [];
+		var strand = {
+			points: [],
+			pointedReturns: []
+		};		
 
 		// select first line - any line where CP is uncrossed in either R or L direction
 		for (var line of drawing.frame.lines) {
@@ -172,25 +173,33 @@ function Knot(drawing) {
 
 
 		// add first point
-		strand.push(currentLine.crossingPoint.coords);
+		strand.points.push(currentLine.crossingPoint.coords);
+		drawing.surface.circle(...currentLine.crossingPoint.coords, 5);
 		logCrossing(direction);
-
 
 
 		// in the below while loop we add all the crossingpoints through which our strand passes
 		while (true) {
-			// move onto next line 			
-			currentLine = getNextLine(direction);
+			// move onto next line 	
 			var oppositeDirection = (direction === "R" ? "L" : "R");
-			strand.push(currentLine.crossingPoint.coords);
+			
+			if (pointedReturn()) {
+				strand.pointedReturns.push({
+					startIdx: strand.points.length - 1,
+					endIdx: strand.points.length,
+					startReverse: goingBackwards(),
+					endReverse: traverseNextBackwards(),
+					direction: direction
+				});
+			}
+					
+			currentLine = getNextLine(direction);
+			//drawing.surface.circle(...currentLine.crossingPoint.coords, 5);
+			strand.points.push(currentLine.crossingPoint.coords);
 			logCrossing(oppositeDirection);		
 
-			// 
-			//var paths = (direction === "L" ? underToOvers : overToUnders);
-			//paths.push(this.bezString(...bezierPoints));
-
 			// set new targetNode
-			if (currentLine.startNode.sameNode(targetNode)) {
+			if (goingBackwards()) {
 				targetNode = currentLine.endNode;
 			} else {
 				targetNode = currentLine.startNode;
@@ -200,6 +209,17 @@ function Knot(drawing) {
 			}
 			direction = oppositeDirection;
 		}
+		direction = oppositeDirection;
+		//debugger;
+					if (pointedReturn()) {
+				strand.pointedReturns.push({
+					startIdx: strand.points.length - 1,
+					endIdx: strand.points.length,
+					startReverse: goingBackwards(),
+					endReverse: traverseNextBackwards(),
+					direction: direction
+				});
+			}
 		strands.push(strand);
 	}
 
@@ -208,7 +228,7 @@ function Knot(drawing) {
 
 
 	for (var strand of strands) {
-		var contour = new Contour(strand);
+		var contour = new Contour(strand.points);
 		for (var pathString of contour.paths) {
 			var bez = drawing.surface.path(pathString);
 			group.add(bez);
@@ -218,7 +238,7 @@ function Knot(drawing) {
 				fill: "none"
 			});
 		}
-
+	debugger;
 		// pointed return business
 		// need to know the middle node position...
 

@@ -24,12 +24,23 @@ function Line(options) {
 		return [this.endX - this.startX, this.endY - this.startY];
 	};
 
+	this.rotateAboutOrigin = function(vector, angle) {
+	  var x = vector[0];
+	  var y = vector[1];
+	  var newX = x * Math.cos(angle) - y * Math.sin(angle);
+	  var newY = y * Math.cos(angle) + x * Math.sin(angle);
+	  return [newX, newY];
+	};
+
 	this.angle = function(options) {
-		var deltaX = (this.vector()[0]);
-		var deltaY = (this.vector()[1]);
-		var result = Math.atan2(deltaX, deltaY); // return value is in radians
-		if (options.reverse) result += Math.PI;
-		return (result >= 0 ? result : result + 2 * Math.PI); //Math.abs(result);
+		var vector = this.vector();
+		if (options.reverse) {
+			vector = vector.map(coord => coord * -1);
+		}
+		var result = Math.atan2(vector[1], vector[0]); // return value is in radians
+		//result += 2 * Math.PI
+		//if (options.reverse) result *= -1;
+		return result //% (2 * Math.PI);
 	};
 
 	this.angleOutFrom = function(node) {
@@ -39,6 +50,24 @@ function Line(options) {
 			return this.angle({reverse: true});
 		}
 	};
+
+	this.angleOutCP = function(options) {
+		var vect = this.vector();
+		if (options.reverse) {
+			vect = vect.map(coord => coord * -1);
+		}
+		var resultant;
+		if (options.direction === "R") {
+			resultant = this.rotateAboutOrigin(vect, Math.PI/4);
+		} else if (options.direction === "L") {
+			resultant = this.rotateAboutOrigin(vect, -Math.PI/4);
+		}
+		return Math.atan2(resultant[1], resultant[0]);
+	};
+
+	this.length = function() {
+		return this.snapObj.getTotalLength(); 
+	}
 }
 
 function CrossingPoint(startX, startY, endX, endY, line) {
