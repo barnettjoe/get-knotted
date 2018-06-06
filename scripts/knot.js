@@ -1,7 +1,6 @@
 "use strict";
 
 function Knot(drawing) {
-	var bezierPoints = [[], [], [], []];
 	var targetNode;
 	var startNode;
 	var currentLine;
@@ -149,18 +148,73 @@ function Knot(drawing) {
 	}
 
 	function pointedReturn() {
-		return Math.abs(currentBearing() - nextBearing()) > 1.6;
+		var angleDelta = Math.abs(currentBearing() - nextBearing());
+		var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta); 
+		return smallerAngle > 1.6;
 	}
 
 	function oppositeDirection() {
 		return (direction === "R" ? "L" : "R");
-	} 
+	}
 
-	// each strand is one "piece of string" of the knot
+	function selectLine() {
+		// select first line - any line where CP is uncrossed in either R or L direction
+		for (var line of drawing.frame.lines) {
+			if (uncrossed(line)) {
+				currentLine = line;
+				break;
+			}
+		}
+	}
+	function selectDirection() {
+		// choose direction
+		direction = currentLine.crossingPoint.uncrossedDirection();		
+		// could start going in either direction, but just go towards endNode of line
+		targetNode = currentLine.endNode; 
+	}
+	function addPoint() {
+		strand.lines.push({
+			line: currentLine,
+			bearing: currentBearing()
+		});
+		logCrossing(direction);
+	}
+	function checkForPointedReturn() {
+		if (pointedReturn()) {
+			strand.pointedReturns.push({
+				startIdx: strand.lines.length - 1,
+				endIdx: strand.lines.length,
+				startReverse: goingBackwards(),
+				endReverse: traverseNextBackwards(),
+				startDirection: direction,
+				endDirection: (direction === "R" ? "L" : "R")
+			});
+		}					
+	}
+	function selectNextPoint() {
+		currentLine = getNextLine(direction);
+		direction = oppositeDirection();	
+	}
+	function setNewTargetNode() {
+		// set new targetNode
+		if (goingBackwards()) {
+			targetNode = currentLine.endNode;
+		} else {
+			targetNode = currentLine.startNode;
+		}		
+	}
+	function endOfStrand() {
+		return getNextLine(direction).crossingPoint.crossed(oppositeDirection());
+	}
+	function addNextPoint() {
+		selectNextPoint();
+		addPoint();	
+	}
+
 	var strands = [];
 	var underToOvers = [];
 	var overToUnders = [];
-
+	var targetNode;
 
 	while (drawing.frame.lines.some(uncrossed)) {
 		// on each iteration of this loop we determine the crossingpoints through which a single strand will pass
@@ -169,95 +223,38 @@ function Knot(drawing) {
 			pointedReturns: []
 		};		
 
-		// select first line - any line where CP is uncrossed in either R or L direction
-		for (var line of drawing.frame.lines) {
-			if (uncrossed(line)) {
-				currentLine = line;
-				break;
-			}
-		}
-		// choose direction
-		direction = line.crossingPoint.uncrossedDirection();
-		// could start going in either direction, but just go towards endNode of line
-		var targetNode = currentLine.endNode; 
-
-		// add first point
-		strand.lines.push({
-			line: currentLine,
-			bearing: currentBearing()
-		});
-		drawing.surface.circle(...currentLine.crossingPoint.coords, 5);
-		logCrossing(direction);
-
+		selectLine();
+		selectDirection();
+		addPoint();
 
 		// in the below while loop we add all the crossingpoints through which our strand passes
 		while (true) {
-			// move onto next line 			
-			if (pointedReturn()) {
-				strand.pointedReturns.push({
-					startIdx: strand.lines.length - 1,
-					endIdx: strand.lines.length,
-					startReverse: goingBackwards(),
-					endReverse: traverseNextBackwards(),
-					startDirection: direction,
-					endDirection: (direction === "R" ? "L" : "R")
-				});
-			}
-					
-			currentLine = getNextLine(direction);
-			//drawing.surface.circle(...currentLine.crossingPoint.coords, 5);
-			
-
-
-			direction = oppositeDirection();
-
-			strand.lines.push({
-				line: currentLine,
-				bearing: currentBearing()
-			});
-
-			direction = oppositeDirection();
-
-
-			logCrossing(oppositeDirection());		
-
-			// set new targetNode
-			if (goingBackwards()) {
-				targetNode = currentLine.endNode;
-			} else {
-				targetNode = currentLine.startNode;
-			}
-			if (getNextLine(oppositeDirection()).crossingPoint.crossed(direction)) {
-				break;
-			}
-
-			// record end bearing
-			//strand.endBearing = currentBearing();
-
-			direction = oppositeDirection();
+			checkForPointedReturn();
+			selectNextPoint();
+			setNewTargetNode();
+			addPoint();
+			if (endOfStrand()) break;
 		}
-		direction = oppositeDirection();
-		//debugger;
-					if (pointedReturn()) {
-				strand.pointedReturns.push({
-					startIdx: strand.lines.length - 1,
-					endIdx: 0,
-					startReverse: goingBackwards(),
-					endReverse: traverseNextBackwards(),
-					startDirection: direction,
-					endDirection: (direction === "R" ? "L" : "R")
-				});
-			}
+		
+		checkForPointedReturn();
 		strands.push(strand);
 	}
 
 
-	// DOING THE ACTUAL DRAWING
-	var strokeWidth = 20;
-	var strokeThickness = 4;
+
+	var strokeWidth = 30;
+	var strokeThickness = 10;
 
 	for (var strand of strands) {
+
+		if (strand.pointedReturns.length === 0) {
+			// use the old contour constructor...
+			var contour = new OldContour(strand.lines.map(position => position.line.crossingPoint.coords));
+			drawOutline(contour);
+		}
+
 		// first draw all the sections between the pointed returns...
+		var sections = [];
 		for (var i = 0; i < strand.pointedReturns.length; i++) {
 			var pointedReturn = strand.pointedReturns[i];
 			// the number of points in first section
@@ -269,49 +266,41 @@ function Knot(drawing) {
 			} else {
 				previousPR = strand.pointedReturns[i - 1];
 			}
-			sectionLength = pointedReturn.startIdx - previousPR.endIdx + 1;
-			section = strand.lines.slice(previousPR.endIdx, previousPR.endIdx + sectionLength);
+			var prStart = pointedReturn.startIdx || strand.lines.length; 
+			var previousPRend = (previousPR.endIdx % strand.lines.length);
+			sectionLength = Math.abs(prStart - previousPRend + 1);
+			section = strand.lines.concat(strand.lines).slice(previousPRend, previousPRend + sectionLength);
 			var startAngle = section[0].bearing;
 			var endAngle = section[section.length - 1].bearing;
-			debugger;
-			var startGradient = Math.tan(startAngle);
-			var endGradient = Math.tan(endAngle);
-			// get length of last curve segment before PR
 			var firstPoint = section[0].line.crossingPoint.coords;
 			var secondPoint = section[1].line.crossingPoint.coords;
 			var a = ((firstPoint[0] - secondPoint[0])**2 + (firstPoint[1] - secondPoint[1])**2)**0.5;
-			var dxStart = (a**2 / (startGradient**2 + 1))**0.5;
-			var dyStart =  startGradient * dxStart;
+			var dxStart = a * Math.cos(startAngle);
+			var dyStart = a * Math.sin(startAngle);
 			// now do same for end of PR
 			// for now...just use the same a value
-			var dxEnd = (a**2 / (endGradient**2 + 1))**0.5;
-			var dyEnd =  endGradient * dxEnd;
-			debugger;
+			var dxEnd = a * Math.cos(endAngle);
+			var dyEnd = a * Math.sin(endAngle);
 			var contour = new Contour(section.map(position => position.line.crossingPoint.coords), dxStart, dyStart, dxEnd, dyEnd);
 			drawOutline(contour);
-		}
-		debugger;
-
-	}
-
-	/*
-	for (var strand of strands) {
-		var contour = new Contour(strand.lines);
-		for (var pathString of contour.paths) {
-			var bez = drawing.surface.path(pathString);
-			group.add(bez);
-			bez.attr({
-				stroke: "pink",
-				strokeWidth: 5,
-				fill: "none"
+			sections.push({
+				lines: section,
+				dxStart: dxStart,
+				dyStart: dyStart,
+				dxEnd: dxEnd,
+				dyEnd: dyEnd
 			});
 		}
-	};
-	*/
 
-	debugger;
-		// pointed return business
-		
+		for (var i = 0; i < strand.pointedReturns.length; i++) {
+			var pointedReturn = strand.pointedReturns[i];
+			if (i === strand.pointedReturns.length - 1) {
+				drawPointedReturn(pointedReturn, sections[i], sections[0]);
+			} else {
+				drawPointedReturn(pointedReturn, sections[i], sections[i + 1]);
+			}
+		}
+	}
 
 
 //var s = Snap("#svg");
@@ -480,13 +469,18 @@ function format(path) {
     strokeWidth: strokeThickness,
    });
 }
-function getApexCoords(points) {
-  var startToEnd = [points[points.length - 1][0] - points[0][0], points[points.length - 1][1] - points[0][1]];
-  var normal = [startToEnd[1], -startToEnd[0]];
-  return [points[0][0] + startToEnd[0]/2 + normal[0], points[0][1] + startToEnd[1]/2 + normal[1]];
+function getApexCoords(startPoint, endPoint, direction) {
+	var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
+	var normal;
+	if (direction === "R") {
+		normal = [-startToEnd[1], startToEnd[0]];
+	} else if (direction === "L") {
+		normal = [startToEnd[1], -startToEnd[0]];
+	}
+	return [startPoint[0] + startToEnd[0]/2 + normal[0], startPoint[1] + startToEnd[1]/2 + normal[1]];
 }
 function adjustPoint(point, normal, direction) {
-  var adjust = [normal.x, normal.y].map(d => d * strokeWidth/2);
+  var adjust = [normal[0], normal[1]].map(d => d * strokeWidth/2);
   return point.map(function(x, i) {
     if (direction === "outer") {
       return x + adjust[i];
@@ -495,15 +489,32 @@ function adjustPoint(point, normal, direction) {
     }
   });
 }
-function startPoint(points, contour, direction) {
-  var normal  = contour.bezArray[0].normal(0);
-  return adjustPoint(points[0], normal, direction);
+
+function endOutlinePoint(section, point, innerOrOuter, direction) {
+	var perp;
+	if (direction === "R") {
+		perp = [-section.dyStart, section.dxStart];	
+	} else if (direction === "L") {
+		perp = [section.dyStart, -section.dxStart];
+	}
+	var magnitude = (perp[0]**2 + perp[1]**2)**0.5
+	var normalized = perp.map(x => x/magnitude);
+	return adjustPoint(point, normalized, innerOrOuter);
 }
-function endPoint(points, contour, direction) {
-  var normal  = contour.bezArray[contour.bezArray.length - 1].normal(1);
-  return adjustPoint(points[points.length - 1], normal, direction);
+
+function startOutlinePoint(section, point, innerOrOuter, direction) {
+	var perp;
+	if (direction === "R") {
+		perp = [-section.dyEnd, section.dxEnd];	
+	} else if (direction === "L") {
+		perp = [section.dyEnd, -section.dxEnd];
+	}
+	var magnitude = (perp[0]**2 + perp[1]**2)**0.5
+	var normalized = perp.map(x => x/magnitude);
+	return adjustPoint(point, normalized, innerOrOuter);
 }
-function arcString(start, end, circle, adjustment) {
+
+function arcString(start, end, circle, adjustment, direction) {
   var radius;
   if (adjustment === "inner") {
     radius = circle.radius - strokeWidth/2;
@@ -513,13 +524,13 @@ function arcString(start, end, circle, adjustment) {
   return {
     moveTo: `M${start[0]} ${start[1]} `,
     radii: `A ${radius} ${radius} `,
-    flags: "0 0 0 ",
+    flags: `0 0 ${direction === "R" ? 1 : 0} `,
     finish: `${end[0]} ${end[1]}` 
   };
 }
-function arc(start, end, circle, adjustment) {
-  var strParts = arcString(start, end, circle, adjustment);
-  return s.path(strParts.moveTo + strParts.radii + strParts.flags + strParts.finish);
+function arc(start, end, circle, adjustment, direction) {
+  var strParts = arcString(start, end, circle, adjustment, direction);
+  return drawing.surface.path(strParts.moveTo + strParts.radii + strParts.flags + strParts.finish);
 }
 function intersection(path1, path2) {
   var interObj = Snap.path.intersection(path1, path2)[0];
@@ -529,41 +540,54 @@ function concatenate(arcString1, arcString2) {
   return (arcString1.moveTo + arcString1.radii + arcString1.flags + arcString1.finish + arcString2.radii + arcString2.flags + arcString2.finish);
 }
 
-//var contour = new Contour(points, startGradX(points), startGradY(points), endGradX(points), endGradY(points));
-//drawOutline(contour);
-//drawPointedReturn();
+function drawPointedReturn(pointedReturn, firstSection, secondSection) {
+	var startPoint = firstSection.lines[firstSection.lines.length - 1].line.crossingPoint.coords;
+	var endPoint = secondSection.lines[0].line.crossingPoint.coords;
+  	var apexCoords = getApexCoords(startPoint, endPoint, pointedReturn.startDirection);
 
-function drawPointedReturn() {
-  var apexCoords = getApexCoords(points);
-  var firstArcCircle = arcCircle(apexCoords, points[0], (startGradY(points) / startGradX(points)));
-  var secondArcCircle = arcCircle(apexCoords, points[points.length - 1], (endGradY(points) / endGradX(points)));
+	var firstArcCircle = arcCircle(apexCoords, startPoint, (firstSection.dyEnd / firstSection.dxEnd));
+	var secondArcCircle = arcCircle(apexCoords, endPoint, (secondSection.dyStart/ secondSection.dxStart));
 
-  var startOuter = startPoint(points, contour, "outer"); 
-  var startInner = startPoint(points, contour, "inner"); 
-  var endOuter = endPoint(points, contour, "outer"); 
-  var endInner = endPoint(points, contour, "inner"); 
 
-  var extendedApexInner = rotate(startInner, firstArcCircle.center, Math.PI / 2);
-  var extendedApexOuter = rotate(startOuter, firstArcCircle.center, Math.PI / 2);
-  var extendedApexReverseInner = rotate(endInner, secondArcCircle.center, -Math.PI / 2);
-  var extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, -Math.PI / 2);
+	var startOuter = startOutlinePoint(firstSection, startPoint, "outer", pointedReturn.startDirection); 
+	var startInner = startOutlinePoint(firstSection, startPoint, "inner", pointedReturn.startDirection); 
+	var endOuter = endOutlinePoint(secondSection, endPoint, "outer", pointedReturn.startDirection); 
+	var endInner = endOutlinePoint(secondSection, endPoint, "inner", pointedReturn.startDirection); 
 
-  var firstInner = hide(arc(extendedApexInner, startInner, firstArcCircle, "inner"));
-  var firstOuter = hide(arc(extendedApexOuter, startOuter, firstArcCircle, "outer"));
-  var lastInner = hide(arc(endInner, extendedApexReverseInner, secondArcCircle, "inner"));
-  var lastOuter = hide(arc(endOuter, extendedApexReverseOuter, secondArcCircle, "outer"));
+	var extendedApexInner; 
+	var extendedApexOuter; 
+	var extendedApexReverseInner; 
+	var extendedApexReverseOuter; 
 
-  var innerApex = intersection(firstInner, lastInner);
-  var outerApex = intersection(firstOuter, lastOuter);
+	if (pointedReturn.startDirection === "R") {
+		extendedApexInner = rotate(startInner, firstArcCircle.center, -Math.PI / 2);
+		extendedApexOuter = rotate(startOuter, firstArcCircle.center, -Math.PI / 2);
+		extendedApexReverseInner = rotate(endInner, secondArcCircle.center, Math.PI / 2);
+		extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, Math.PI / 2);
+	} else if (pointedReturn.startDirection === "L") {
+		extendedApexInner = rotate(startInner, firstArcCircle.center, Math.PI / 2);
+		extendedApexOuter = rotate(startOuter, firstArcCircle.center, Math.PI / 2);
+		extendedApexReverseInner = rotate(endInner, secondArcCircle.center, -Math.PI / 2);
+		extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, -Math.PI / 2);
+	}
 
-  var innerFirstHalf = arcString(endInner, innerApex, secondArcCircle, "inner");
-  var innerSecondHalf = arcString(innerApex, startInner, firstArcCircle, "inner"); 
+	var firstInner = hide(arc(extendedApexInner, startInner, firstArcCircle, "inner", pointedReturn.startDirection));
+	var firstOuter = hide(arc(extendedApexOuter, startOuter, firstArcCircle, "outer", pointedReturn.startDirection));
+	var lastInner = hide(arc(endInner, extendedApexReverseInner, secondArcCircle, "inner", pointedReturn.startDirection));
+	var lastOuter = hide(arc(endOuter, extendedApexReverseOuter, secondArcCircle, "outer", pointedReturn.startDirection));
+	
+	var innerApex = intersection(firstInner, lastInner);
+	var outerApex = intersection(firstOuter, lastOuter);
 
-  var outerFirstHalf = arcString(endOuter, outerApex, secondArcCircle, "outer");
-  var outerSecondHalf = arcString(outerApex, startOuter, firstArcCircle, "outer"); 
+	var innerFirstHalf = arcString(endInner, innerApex, secondArcCircle, "inner", pointedReturn.startDirection);
+	var innerSecondHalf = arcString(innerApex, startInner, firstArcCircle, "inner", pointedReturn.startDirection); 
 
-  format(s.path(concatenate(innerFirstHalf, innerSecondHalf)));
-  format(s.path(concatenate(outerFirstHalf, outerSecondHalf)));
+	var outerFirstHalf = arcString(endOuter, outerApex, secondArcCircle, "outer", pointedReturn.startDirection);
+	var outerSecondHalf = arcString(outerApex, startOuter, firstArcCircle, "outer", pointedReturn.startDirection); 
+
+	format(drawing.surface.path(concatenate(innerFirstHalf, innerSecondHalf)));
+	format(drawing.surface.path(concatenate(outerFirstHalf, outerSecondHalf)));
+
 }
 
 
@@ -653,17 +677,17 @@ function drawPointedReturn() {
 		}
 	}
 
-	drawUnders();
-	drawMasks();
-	addMaskCPcrosses();
-	drawOvers();
-	addCPcrosses();
+	//drawUnders();
+	//drawMasks();
+	//addMaskCPcrosses();
+	//drawOvers();
+	//addCPcrosses();
 	drawing.frame.remove();
 	drawing.frame.draw();
 	drawing.stopDrawingFrame();
 }
 
-function Contour(points) {
+function OldContour(points) {
 	var arr = [4, 1];
 	for (var i = 3; i < points.length; i++) {
 		arr.push(0);
@@ -722,6 +746,9 @@ function Contour(points) {
 	for (var i = 0; i < points.length; i++) {
 		polygons.push(bezPolygon(i));
 	}
+
+	this.bezArray = polygons.map(polygon => new Bezier(...polygon[0], ...polygon[1], ...polygon[2], ...polygon[3]));
+
 
 	this.paths = polygons.map(function(polygon) {
 		return bezString(...polygon);
