@@ -50,59 +50,6 @@ function Knot(drawing) {
 		}
 	}
 
-	function addCPcrosses() {
-		for (var line of drawing.frame.lines) {
-			var length = config.knot.strokeWidth;
-			var crossCenter = line.crossingPoint.coords;
-			var startPoint = [crossCenter[0] - length / 2, crossCenter[1]];
-			var endPoint = [startPoint[0] + length, startPoint[1]]
-			var cross1angle = 180 * (line.angle({reverse: false}) + Math.PI / 4) / Math.PI;
-			var cross2angle = 180 * (line.angle({reverse: false}) - Math.PI / 4) / Math.PI;
-
-			var cross1 = drawing.surface.line(...startPoint, ...endPoint).attr({
-				stroke: "black",
-				strokeWidth: 1
-			});
-
-			var cross2 = drawing.surface.line(...startPoint, ...endPoint).attr({
-				stroke: "black",
-				strokeWidth: 1
-			});
-
-			cross1.transform(`r${cross1angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
-			cross2.transform(`r${cross2angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
-			group.add(cross1);
-			group.add(cross2);
-		}
-	}
-
-	function addMaskCPcrosses() {
-		for (var line of drawing.frame.lines) {
-			var length = config.mask.strokeWidth - 0.5; // 0.5 adjustment to avoid tiny visible white bump 
-			var crossCenter = line.crossingPoint.coords;
-			var startPoint = [crossCenter[0] - length / 2, crossCenter[1]];
-			var endPoint = [startPoint[0] + length, startPoint[1]]
-			var cross1angle = 180 * (line.angle({reverse: false}) + Math.PI / 4) / Math.PI;
-			var cross2angle = 180 * (line.angle({reverse: false}) - Math.PI / 4) / Math.PI;
-
-			var cross1 = drawing.surface.line(...startPoint, ...endPoint).attr({
-				stroke: "white",
-				strokeWidth: 1
-			});
-
-			var cross2 = drawing.surface.line(...startPoint, ...endPoint).attr({
-				stroke: "white",
-				strokeWidth: 1
-			});
-
-			cross1.transform(`r${cross1angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
-			cross2.transform(`r${cross2angle}, ${crossCenter[0]}, ${crossCenter[1]}`);
-			group.add(cross1);
-			group.add(cross2);
-		}
-	}
-
-
 	function uncrossed(line) {
 		return !line.crossingPoint.fullyCrossed();
 	}
@@ -120,15 +67,6 @@ function Knot(drawing) {
 		var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
 		var rotated = rotateAboutOrigin(shiftedPoint, angle);
 		return [rotated[0] + center[0], rotated[1] + center[1]];
-	}
-
-	function alignBez(p0, p1, p2, p3) {
-		// translate to get p0 on x axis
-		var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
-		// now rotate so p3 is also on x axis
-		var deltaX = translated[0][0];
-		var angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
-		return translated.map(coord => rotate(coord, translated[0], angle)); 
 	}
 
 	function goingBackwards() {
@@ -243,7 +181,7 @@ function Knot(drawing) {
 
 
 	var strokeWidth = 30;
-	var strokeThickness = 10;
+	var strokeThickness = 5;
 
 	for (var strand of strands) {
 
@@ -302,11 +240,6 @@ function Knot(drawing) {
 		}
 	}
 
-
-//var s = Snap("#svg");
-//var points = [[500, 200], [300, 400], [500, 600], [700, 400]];
-//var strokeWidth = 40;
-//var strokeThickness = 20;
 
 function rotateAboutOrigin(point, angle) {
   var x = point[0];
@@ -558,18 +491,13 @@ function drawPointedReturn(pointedReturn, firstSection, secondSection) {
 	var extendedApexOuter; 
 	var extendedApexReverseInner; 
 	var extendedApexReverseOuter; 
+	var rotationAngle = Math.PI / 2;
+	if (pointedReturn.startDirection === "R") rotationAngle *= -1;
 
-	if (pointedReturn.startDirection === "R") {
-		extendedApexInner = rotate(startInner, firstArcCircle.center, -Math.PI / 2);
-		extendedApexOuter = rotate(startOuter, firstArcCircle.center, -Math.PI / 2);
-		extendedApexReverseInner = rotate(endInner, secondArcCircle.center, Math.PI / 2);
-		extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, Math.PI / 2);
-	} else if (pointedReturn.startDirection === "L") {
-		extendedApexInner = rotate(startInner, firstArcCircle.center, Math.PI / 2);
-		extendedApexOuter = rotate(startOuter, firstArcCircle.center, Math.PI / 2);
-		extendedApexReverseInner = rotate(endInner, secondArcCircle.center, -Math.PI / 2);
-		extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, -Math.PI / 2);
-	}
+	extendedApexInner = rotate(startInner, firstArcCircle.center, rotationAngle);
+	extendedApexOuter = rotate(startOuter, firstArcCircle.center, rotationAngle);
+	extendedApexReverseInner = rotate(endInner, secondArcCircle.center, -rotationAngle);
+	extendedApexReverseOuter = rotate(endOuter, secondArcCircle.center, -rotationAngle);
 
 	var firstInner = hide(arc(extendedApexInner, startInner, firstArcCircle, "inner", pointedReturn.startDirection));
 	var firstOuter = hide(arc(extendedApexOuter, startOuter, firstArcCircle, "outer", pointedReturn.startDirection));
