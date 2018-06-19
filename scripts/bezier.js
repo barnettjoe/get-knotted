@@ -516,9 +516,11 @@
         return [new Bezier(coords)];
       }
       var reduced = this.reduce();
-      return reduced.map(function(s) {
+      var arr = reduced.map(function(s) {
         return s.scale(t);
       });
+
+      return arr.filter(bez => bez);
     },
     simple: function() {
       if(this.order===3) {
@@ -592,7 +594,11 @@
       var r2 = distanceFn ? distanceFn(1) : d;
       var v = [ this.offset(0,10), this.offset(1,10) ];
       var o = utils.lli4(v[0], v[0].c, v[1], v[1].c);
-      if(!o) { throw new Error("cannot scale this curve. Try reducing it first."); }
+      if(!o) {
+        console.log(this);
+        return null;
+        //throw new Error("cannot scale this curve. Try reducing it first.");
+      }
       // move all points by distance 'd' wrt the origin 'o'
       var points=this.points, np=[];
 
