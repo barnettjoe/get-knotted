@@ -2,10 +2,10 @@
 
 function Contour(points, drawing) {
 	var theta = 1.5;
-	var strokeWidth = 10;
-
-
+	var strokeWidth = 30;
 	var prBezes = [];
+	var overToUnders = [];
+	var underToOvers = [];
 
 	for (var i = 0; i < points.length; i++) {
 		if (points[i].pr) {
@@ -118,7 +118,7 @@ function Contour(points, drawing) {
 		direction = points[nextPointIdx(i)].pr;
 	} else {
 		pr = false;
-		direction = false;
+		direction = points[i].direction;
 	}
 
     polygons.push({
@@ -136,7 +136,7 @@ function Contour(points, drawing) {
 	this.format = function(snapObj) {
 		snapObj.attr({
 			stroke: "black",
-			strokeWidth: 2,
+			strokeWidth: 10,
 			fill: "none"
 		});
 	};
@@ -298,6 +298,64 @@ function Contour(points, drawing) {
 		this.drawPRouters(i);
 	};
 
+function clipToFirstHalf(element) {
+ 		element.attr({
+ 			strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
+ 		});
+ 	}
+ 
+ 	function clipToSecondHalf(element) {
+ 	element.attr({
+ 		strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
+ 		strokeDashoffset: element.getTotalLength() / 2 + config.overlap,
+ 	});
+ 	}
+ 
+ 	function drawUnders() {
+ 		for (var pathStr of underToOvers) {
+ 			var section = drawing.surface.path(pathStr);
+ 			section.attr({
+ 				stroke: "pink",
+ 				strokeWidth: 20,
+ 				fill: "none"
+ 			});
+ 			clipToFirstHalf(section);
+ 		}
+ 
+ 		for (var pathStr of overToUnders) {
+ 			var section = drawing.surface.path(pathStr);
+ 			section.attr({
+ 				stroke: "pink",
+ 				strokeWidth: 20,
+ 				fill: "none"
+ 			});
+ 			clipToSecondHalf(section);
+ 		}	
+ 	}
+ 
+ 	function drawOvers() {
+ 		for (var pathStr of overToUnders) {
+ 			var section = drawing.surface.path(pathStr);
+ 			section.attr({
+ 				stroke: "pink",
+ 				strokeWidth: 20,
+ 				fill: "none"
+ 			});
+ 			clipToFirstHalf(section);
+ 		}
+ 
+ 		for (var pathStr of underToOvers) {
+ 			var section = drawing.surface.path(pathStr);
+ 			section.attr({
+ 				stroke: "pink",
+ 				strokeWidth: 20,
+ 				fill: "none"
+ 			});
+ 			clipToSecondHalf(section);
+ 		}
+ 	}
+
+
 	this.draw = function() {
 	  for (var i = 0; i < this.bezArray.length; i++) {
 		if (polygons[i].pr === "outbound") {
@@ -307,9 +365,23 @@ function Contour(points, drawing) {
 		} else {
 			this.drawOutline(this.bezArray[i].offset(strokeWidth/2));
 			this.drawOutline(this.bezArray[i].offset(-strokeWidth/2));
+			// draw middle 
+			var p = bezString(...this.pomaxPath(this.bezArray[i]));
+			if (polygons[i].direction === "R") {
+				overToUnders.push(p);			
+			} else if (polygons[i].direction === "L") {
+				underToOvers.push(p);
+			}
 		}
 	  }
+	//drawUnders();
+ 	//drawOvers(); 
 	};
+	//debugger;
 }
+
+
+
+ 
 
 

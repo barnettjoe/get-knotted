@@ -105,7 +105,8 @@ function Knot(drawing) {
 			strand.push({
 				x: currentLine.crossingPoint.coords[0],
 				y: currentLine.crossingPoint.coords[1],
-				pr: false
+				pr: false,
+				direction: direction
 			});
 			if (pointedReturn()) {
 				var startCoords = currentLine.crossingPoint.coords;
