@@ -159,9 +159,33 @@ function Knot(drawing) {
 
 	generateStrands();
 
+	var allMasks = [];
+
 	for (var strand of strands) {
-		(new Contour(strand, drawing)).draw();
+		var c = new Contour(strand, drawing); 
+		c.draw();
+		allMasks = allMasks.concat(c.overToUnders);
+		allMasks = allMasks.concat(c.underToOvers);
+		allMasks = allMasks.concat(c.maskFirstHalf);
+		allMasks = allMasks.concat(c.maskSecondHalf);
 	}
+
+
+	for (var mask of allMasks) {
+		drawing.surface.path(mask).attr({
+			stroke: "white",
+			strokeWidth: 20,
+			fill: "none"		
+		});
+	}
+
+ 	function clipToSecondHalf(clip) {
+		drawing.surface.path(clip).attr({
+			stroke: "white",
+			strokeWidth: 20,
+			fill: "none"		
+		});
+ 	}
 
 	function getApexCoords(startPoint, endPoint, direction) {
 		var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];

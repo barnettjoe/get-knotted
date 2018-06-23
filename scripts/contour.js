@@ -4,8 +4,10 @@ function Contour(points, drawing) {
 	var theta = 1.5;
 	var strokeWidth = 30;
 	var prBezes = [];
-	var overToUnders = [];
-	var underToOvers = [];
+	this.overToUnders = [];
+	this.underToOvers = [];
+	this.maskFirstHalf = [];
+	this.maskSecondHalf = [];
 
 	for (var i = 0; i < points.length; i++) {
 		if (points[i].pr) {
@@ -298,86 +300,53 @@ function Contour(points, drawing) {
 		this.drawPRouters(i);
 	};
 
-function clipToFirstHalf(element) {
- 		element.attr({
- 			strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
- 		});
- 	}
+	this.clipToFirstHalf = function(bez) {
+		var clip = this.pomaxPath(bez.split(0.5).left);
+		drawing.surface.path(bezString(...clip)).attr({
+			stroke: "white",
+			strokeWidth: 20,
+			fill: "none"		
+		});
+ 	};
  
- 	function clipToSecondHalf(element) {
- 	element.attr({
- 		strokeDasharray:[(element.getTotalLength() / 2 + config.overlap), element.getTotalLength() / 2  - config.overlap],
- 		strokeDashoffset: element.getTotalLength() / 2 + config.overlap,
- 	});
- 	}
- 
- 	function drawUnders() {
- 		for (var pathStr of underToOvers) {
- 			var section = drawing.surface.path(pathStr);
- 			section.attr({
- 				stroke: "pink",
- 				strokeWidth: 20,
- 				fill: "none"
- 			});
- 			clipToFirstHalf(section);
- 		}
- 
- 		for (var pathStr of overToUnders) {
- 			var section = drawing.surface.path(pathStr);
- 			section.attr({
- 				stroke: "pink",
- 				strokeWidth: 20,
- 				fill: "none"
- 			});
- 			clipToSecondHalf(section);
- 		}	
- 	}
- 
- 	function drawOvers() {
- 		for (var pathStr of overToUnders) {
- 			var section = drawing.surface.path(pathStr);
- 			section.attr({
- 				stroke: "pink",
- 				strokeWidth: 20,
- 				fill: "none"
- 			});
- 			clipToFirstHalf(section);
- 		}
- 
- 		for (var pathStr of underToOvers) {
- 			var section = drawing.surface.path(pathStr);
- 			section.attr({
- 				stroke: "pink",
- 				strokeWidth: 20,
- 				fill: "none"
- 			});
- 			clipToSecondHalf(section);
- 		}
- 	}
-
+ 	this.clipToSecondHalf = function(bez) {
+		var clip = this.pomaxPath(bez.split(0.5).right);
+		drawing.surface.path(bezString(...clip)).attr({
+			stroke: "white",
+			strokeWidth: 20,
+			fill: "none"		
+		});
+ 	};
 
 	this.draw = function() {
 	  for (var i = 0; i < this.bezArray.length; i++) {
 		if (polygons[i].pr === "outbound") {
 			this.drawPROutline(i);
+			if (polygons[i].direction === "R") {
+				// mask inbound
+				var p = bezString(...this.pomaxPath(this.bezArray[i + 1]));
+				this.maskSecondHalf.push(p);
+			} else if (polygons[i].direction === "L") {
+				// mask outbound?
+				var p = bezString(...this.pomaxPath(this.bezArray[i]));
+				this.maskFirstHalf.push(p);
+			}			
 		} else if (polygons[i].pr === "inbound") {
 			// do nothing -- inbounds are dealt with in same invocation as outbounds
 		} else {
 			this.drawOutline(this.bezArray[i].offset(strokeWidth/2));
 			this.drawOutline(this.bezArray[i].offset(-strokeWidth/2));
 			// draw middle 
-			var p = bezString(...this.pomaxPath(this.bezArray[i]));
 			if (polygons[i].direction === "R") {
-				overToUnders.push(p);			
+				var clip = this.pomaxPath(this.bezArray[i].split(0.5).left);
+				this.overToUnders.push(bezString(...clip));
 			} else if (polygons[i].direction === "L") {
-				underToOvers.push(p);
+				var clip = this.pomaxPath(this.bezArray[i].split(0.5).right);
+				this.underToOvers.push(bezString(...clip));
 			}
 		}
 	  }
-	//drawUnders();
- 	//drawOvers(); 
 	};
-	//debugger;
 }
 
 
