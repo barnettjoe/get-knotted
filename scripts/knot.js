@@ -174,18 +174,10 @@ function Knot(drawing) {
 	for (var mask of allMasks) {
 		drawing.surface.path(mask).attr({
 			stroke: "white",
-			strokeWidth: 20,
+			strokeWidth: config.knot.strokeWidth,
 			fill: "none"		
 		});
 	}
-
- 	function clipToSecondHalf(clip) {
-		drawing.surface.path(clip).attr({
-			stroke: "white",
-			strokeWidth: 20,
-			fill: "none"		
-		});
- 	}
 
 	function getApexCoords(startPoint, endPoint, direction) {
 		var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];

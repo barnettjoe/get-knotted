@@ -2,7 +2,7 @@
 
 function Contour(points, drawing) {
 	var theta = 1.5;
-	var strokeWidth = 30;
+	var strokeWidth = config.knot.borderWidth;
 	var prBezes = [];
 	this.overToUnders = [];
 	this.underToOvers = [];
@@ -138,7 +138,7 @@ function Contour(points, drawing) {
 	this.format = function(snapObj) {
 		snapObj.attr({
 			stroke: "black",
-			strokeWidth: 10,
+			strokeWidth: config.knot.borderWidth,
 			fill: "none"
 		});
 	};
@@ -207,18 +207,18 @@ function Contour(points, drawing) {
 		// get bez of inner outbound
 		var innerOutbound;
 		if (polygons[i].direction === "L") {
-			innerOutbound = middleOutbound.offset(-strokeWidth/2);
+			innerOutbound = middleOutbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2);
 		} else if (polygons[i].direction === "R") {
-			innerOutbound = middleOutbound.offset(strokeWidth/2);
+			innerOutbound = middleOutbound.offset((config.knot.strokeWidth + config.knot.borderWidth)/2);
 		}
 		// get next polygon (i.e. inbound)
 		var middleInbound = this.bezArray[i + 1];
 		// get bez of inner inbound
 		var innerInbound;
 		if (polygons[i].direction === "L") {
-			innerInbound = middleInbound.offset(-strokeWidth/2);
+			innerInbound = middleInbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2);
 		} else if (polygons[i].direction === "R") {
-			innerInbound = middleInbound.offset(strokeWidth/2);
+			innerInbound = middleInbound.offset((config.knot.strokeWidth + config.knot.borderWidth)/2);
 		}
 		// get intersection of inner outbound with inner inbound
 		var intersection = this.collectionIntersect(innerOutbound, innerInbound);
@@ -253,7 +253,7 @@ function Contour(points, drawing) {
 		var middleInbound = this.bezArray[i + 1];
 
 		// get collections for outers
-		var d = (polygons[i].direction === "L") ? strokeWidth/2 : -strokeWidth/2; 
+		var d = (polygons[i].direction === "L") ? (config.knot.strokeWidth + config.knot.borderWidth)/2 : -(config.knot.strokeWidth + config.knot.borderWidth)/2; 
 		var outerOutbound = middleOutbound.offset(d)
 		var outerInbound = middleInbound.offset(d);
 
@@ -262,7 +262,7 @@ function Contour(points, drawing) {
 		var outerInboundPathStr = this.splice(outerInbound);
 		var tOutbound = 1;
 		var tInbound = 0;
-		var tStep = 0.2;
+		var tStep = 0.05;
 		var outboundExtensions = [middleOutbound.offset(1, d)];
 		var inboundExtensions = [middleInbound.offset(0, d)];
 		var kld = kldIntersections;
@@ -300,24 +300,6 @@ function Contour(points, drawing) {
 		this.drawPRouters(i);
 	};
 
-	this.clipToFirstHalf = function(bez) {
-		var clip = this.pomaxPath(bez.split(0.5).left);
-		drawing.surface.path(bezString(...clip)).attr({
-			stroke: "white",
-			strokeWidth: 20,
-			fill: "none"		
-		});
- 	};
- 
- 	this.clipToSecondHalf = function(bez) {
-		var clip = this.pomaxPath(bez.split(0.5).right);
-		drawing.surface.path(bezString(...clip)).attr({
-			stroke: "white",
-			strokeWidth: 20,
-			fill: "none"		
-		});
- 	};
-
 	this.draw = function() {
 	  for (var i = 0; i < this.bezArray.length; i++) {
 		if (polygons[i].pr === "outbound") {
@@ -334,8 +316,8 @@ function Contour(points, drawing) {
 		} else if (polygons[i].pr === "inbound") {
 			// do nothing -- inbounds are dealt with in same invocation as outbounds
 		} else {
-			this.drawOutline(this.bezArray[i].offset(strokeWidth/2));
-			this.drawOutline(this.bezArray[i].offset(-strokeWidth/2));
+			this.drawOutline(this.bezArray[i].offset((config.knot.strokeWidth + config.knot.borderWidth)/2));
+			this.drawOutline(this.bezArray[i].offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2));
 			// draw middle 
 			if (polygons[i].direction === "R") {
 				var clip = this.pomaxPath(this.bezArray[i].split(0.5).left);
