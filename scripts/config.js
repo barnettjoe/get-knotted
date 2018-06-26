@@ -5,7 +5,7 @@ var config = {
 		stroke: "black",
 		strokeWidth: 20,
 		fill: "none",
-		borderWidth: 10,
+		borderWidth: 15,
 	},
 	mask: {
 		stroke: "white",
