@@ -10,7 +10,6 @@
 		drawing.graph = new Graph(drawing);
 	}
 
-
 	function freeform() {
 		if (drawing.graph) drawing.graph.remove();
 
@@ -20,7 +19,6 @@
 			  node.snapObject.drag(onMove(node), onStart, onEnd);
 			}
 		}
-
 
 		// this function constructs listeners for nodes
 		function onMove(node) {
@@ -57,7 +55,6 @@
 	document.getElementById("add-node").addEventListener("click", function() {
 		drawing.graphArea.addEventListener("click", addNodeListener)
 	});
-	
 
 	// set up button to add line
 	document.getElementById("add-line").addEventListener("click", function() {

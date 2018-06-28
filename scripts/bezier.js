@@ -595,9 +595,14 @@
       var v = [ this.offset(0,10), this.offset(1,10) ];
       var o = utils.lli4(v[0], v[0].c, v[1], v[1].c);
       if(!o) {
-        console.log(this);
+
+        // joe's edit
+        
         return null;
         //throw new Error("cannot scale this curve. Try reducing it first.");
+        
+        // end joe's edit
+
       }
       // move all points by distance 'd' wrt the origin 'o'
       var points=this.points, np=[];

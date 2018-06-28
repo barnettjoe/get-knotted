@@ -14,6 +14,131 @@ function Knot(drawing) {
 		group.remove();
 	};
 
+	this.pomaxPath = function(bez) {
+		return bez.points.map(point => [point.x, point.y]);
+	};
+
+	this.splice = function(bezArray) {
+		var that = this;
+		var pathStrs = bezArray.map(function(bez) {
+			return knotUtils.bezString(...that.pomaxPath(bez));
+		});
+		var path = pathStrs[0];
+		for (var str of pathStrs.slice(1)) {
+			path = path + str.split(/(?=\sC)/)[1];
+		}
+		return path;
+	};
+
+	this.format = function(snapObj) {
+		snapObj.attr({
+			stroke: "black",
+			strokeWidth: config.knot.borderWidth,
+			fill: "none"
+		});
+	};
+
+
+	this.clippedOutboundPath = function(intersection, outline) {
+		var bezes = outline.slice(0, intersection.idxA);
+		bezes.push(outline[intersection.idxA].split(intersection.tA).left);
+		return bezes;
+	};
+
+	this.clippedInboundPath = function(intersection, outline) {
+		var bezes = [];
+		bezes.push(outline[intersection.idxB].split(intersection.tB).right);
+		bezes = bezes.concat(outline.slice(intersection.idxB + 1));
+		return bezes;
+	};
+
+	this.drawPRinners = function(pr) {
+		// get intersection of inner outbound with inner inbound
+		var intersection = knotUtils.collectionIntersect(pr.innerOutbound, pr.innerInbound);
+		// split at intersection point 
+		// concatenate part of outbound inner from before intersection, 
+		// with the part of inbound inner from after the intersection...
+		var outClipped = this.clippedOutboundPath(intersection, pr.innerOutbound);
+		var inClipped = this.clippedInboundPath(intersection, pr.innerInbound);
+		var snp = drawing.surface.path(this.splice(outClipped.concat(inClipped)));
+		group.add(snp);
+		this.format(snp);
+	};
+
+
+	this.drawPRouters = function(pr, i) {
+		debugger;
+		// get initial outbound bezier
+		var middleOutbound = strand[knotUtils.previousCyclicalIdx(strand, i)].bez;
+
+		// get middle inbound bez 
+		var middleInbound = pr.bez;
+
+		// get collections for outers
+		var d = (pr.pr === "L") ? (config.knot.strokeWidth + config.knot.borderWidth)/2 : -(config.knot.strokeWidth + config.knot.borderWidth)/2; 
+		//var outerOutbound = middleOutbound.offset(d)
+		//var outerInbound = middleInbound.offset(d);
+		
+		// get pathstrs for outers
+		var outerOutboundPathStr = this.splice(pr.point.outerOutbound);
+		var outerInboundPathStr = this.splice(pr.point.outerInbound);
+		var tOutbound = 1;
+		var tInbound = 0;
+		var tStep = 0.02;
+		var outboundExtensions = [middleOutbound.offset(1, d)];
+		var inboundExtensions = [middleInbound.offset(0, d)];
+		var kld = kldIntersections;
+		var intersection = new kld.Intersection("No Intersection");
+		// build up polylines until they intersect
+		while (intersection.points.length === 0) {
+			// prepare for extension
+			tOutbound += tStep;
+			tInbound -= tStep;
+			outboundExtensions.push(middleOutbound.offset(tOutbound, d));				
+			inboundExtensions.unshift(middleInbound.offset(tInbound, d));				
+			var outboundPolyline = outboundExtensions.map(ext => new kld.Point2D(ext.x, ext.y));
+			var inboundPolyline = inboundExtensions.map(ext => new kld.Point2D(ext.x, ext.y));
+			// get intersection...
+			for (var i = 0; i < outboundPolyline.length - 1; i++) {
+				var a1 = outboundPolyline[i];
+				var a2 = outboundPolyline[i + 1];
+				for (var j = 0; j < inboundPolyline.length - 1; j++) {
+					var b1 = inboundPolyline[j];
+					var b2 = inboundPolyline[j + 1];
+					intersection = kld.Intersection.intersectLineLine(a1, a2, b1, b2);
+					if (intersection.points.length > 0) {			
+						outboundExtensions = outboundExtensions.slice(0, i + 1)
+						inboundExtensions = inboundExtensions.slice(j + 1);
+						break;
+					}
+				}
+			}
+		}
+		// append intersection point to outbound polyline
+		outboundExtensions.push(intersection.points[0]);
+		// concatenate inbound polyline 
+		outboundExtensions = outboundExtensions.concat(inboundExtensions);
+		var pathStr = outerOutboundPathStr;
+		pathStr += outboundExtensions.map(point => ` L ${point.x} ${point.y}`).join("");
+		pathStr += " " + outerInboundPathStr.split("M")[1];
+		var snp = drawing.surface.path(pathStr);
+		group.add(snp);
+		this.format(snp);
+
+	};
+
+
+
+
+	this.drawOutline = function(outline) {
+	   for (var curve of outline) {
+		var cntrls = curve.points.map(point => [point.x, point.y]);
+		var snp = drawing.surface.path(knotUtils.bezString(...cntrls));
+		group.add(snp);
+		this.format(snp);
+	  }
+	};
+
 	function logCrossing(direction) {
 		if (direction === 'R') {
 			currentLine.crossingPoint.crossedRight =  true;
@@ -103,6 +228,7 @@ function Knot(drawing) {
 		}
 		function addPoint() {
 			strand.push({
+				point: currentLine.crossingPoint,
 				x: currentLine.crossingPoint.coords[0],
 				y: currentLine.crossingPoint.coords[1],
 				pr: false,
@@ -113,6 +239,7 @@ function Knot(drawing) {
 				var endCoords = getNextLine(direction).crossingPoint.coords;
 				var prCoords = getApexCoords(startCoords, endCoords, direction);
 				strand.push({
+					point: {},
 					x: prCoords[0],
 					y: prCoords[1],
 					pr: oppositeDirection()
@@ -152,7 +279,6 @@ function Knot(drawing) {
 				addPoint();
 				if (endOfStrand()) break;
 			}
-
 			strands.push(strand);
 		}
 	}
@@ -162,22 +288,118 @@ function Knot(drawing) {
 	var allMasks = [];
 
 	for (var strand of strands) {
-		var c = new Contour(strand, drawing); 
+		var c = new Contour(strand, drawing, group); 
 		c.draw();
-		allMasks = allMasks.concat(c.overToUnders);
-		allMasks = allMasks.concat(c.underToOvers);
-		allMasks = allMasks.concat(c.maskFirstHalf);
-		allMasks = allMasks.concat(c.maskSecondHalf);
 	}
+	
+
+	// now do the clipping...
+
+	for (var strand of strands) {
+		for (var cpORpr of strand) {
+			var point = cpORpr.point;
+			if (!cpORpr.pr) {
+				// now trim the unders
+				if (!cpORpr.point.trimmed) {
+					var overLeft = point.overInLeft.concat(point.overOutLeft);
+					var overRight = point.overInRight.concat(point.overOutRight);
+					var intersectLOut = knotUtils.collectionIntersect(point.underOutLeft, overLeft) || knotUtils.collectionIntersect(point.underOutLeft, overRight);
+					var intersectROut = knotUtils.collectionIntersect(point.underOutRight, overLeft) || knotUtils.collectionIntersect(point.underOutRight, overRight);
+
+					var intersectLIn = knotUtils.collectionIntersect(point.underInLeft, overLeft) || knotUtils.collectionIntersect(point.underInLeft, overRight);
+					var intersectRIn = knotUtils.collectionIntersect(point.underInRight, overLeft) || knotUtils.collectionIntersect(point.underInRight, overRight);
 
 
-	for (var mask of allMasks) {
-		drawing.surface.path(mask).attr({
-			stroke: "white",
-			strokeWidth: config.knot.strokeWidth,
-			fill: "none"		
-		});
+					// mutate the obj held in underOutLeft
+
+					var newUnderOutLeft = point.underOutLeft.slice(intersectLOut.idxA);
+
+					while (point.underOutLeft.length > 0) {
+						point.underOutLeft.pop();
+					}
+
+					for (var el of newUnderOutLeft) {
+						point.underOutLeft.push(el);
+					}
+
+					point.underOutLeft[0] = point.underOutLeft[0].split(intersectLOut.tA).right
+
+					// .... and for underOutRight
+
+
+					var newUnderOutRight = point.underOutRight.slice(intersectROut.idxA);
+
+					while (point.underOutRight.length > 0) {
+						point.underOutRight.pop();
+					}
+
+					for (var el of newUnderOutRight) {
+						point.underOutRight.push(el);
+					}
+
+					point.underOutRight[0] = point.underOutRight[0].split(intersectROut.tA).right
+
+					// and for underInLeft
+
+					var newUnderInLeft = point.underInLeft.slice(0, intersectLIn.idxA + 1);
+
+					newUnderInLeft[newUnderInLeft.length - 1] = newUnderInLeft[newUnderInLeft.length - 1].split(intersectLIn.tA).left; 
+
+					while (point.underInLeft.length > 0) {
+						point.underInLeft.pop();
+					}
+
+					for (var el of newUnderInLeft) {
+						point.underInLeft.push(el);
+					}
+
+					// and for underInRight
+
+					var newUnderInRight = point.underInRight.slice(0, intersectRIn.idxA + 1);
+					newUnderInRight[newUnderInRight.length - 1] = newUnderInRight[newUnderInRight.length - 1].split(intersectRIn.tA).left; 
+
+					while (point.underInRight.length > 0) {
+						point.underInRight.pop();
+					}
+
+					for (var el of newUnderInRight) {
+						point.underInRight.push(el);
+					}
+				}
+				
+				cpORpr.point.trimmed = true;
+			} else {
+			
+				//debugger;
+
+				
+			}
+		}
 	}
+
+	for (var strand of strands) {
+		for (var i = 0; i < strand.length; i++) {
+			var cpORpr = strand[i];
+			// now draw everything except PRs
+			if (!(cpORpr.pr || strand[knotUtils.nextCyclicalIdx(strand, i)].pr)) {
+				var point = cpORpr.point;
+				if (cpORpr.direction === "R") {
+					this.drawOutline(point.overOutLeft);
+					this.drawOutline(point.overOutRight);			
+				} else {
+					this.drawOutline(point.underOutLeft);
+					this.drawOutline(point.underOutRight);
+				}
+			} else if (cpORpr.pr) {
+			// here we draw the PRs
+				var pr = cpORpr.point;
+				this.drawPRinners(pr);
+				//debugger;
+				this.drawPRouters(cpORpr, i);
+			}		
+		}
+	}
+
 
 	function getApexCoords(startPoint, endPoint, direction) {
 		var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];

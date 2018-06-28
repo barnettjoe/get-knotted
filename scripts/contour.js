@@ -1,39 +1,24 @@
 'use strict';
 
-function Contour(points, drawing) {
+function Contour(strand, drawing, group) {
 	var theta = 1.5;
 	var strokeWidth = config.knot.borderWidth;
 	var prBezes = [];
-	this.overToUnders = [];
-	this.underToOvers = [];
-	this.maskFirstHalf = [];
-	this.maskSecondHalf = [];
+	this.masks = [];
 
-	for (var i = 0; i < points.length; i++) {
-		if (points[i].pr) {
+	for (var i = 0; i < strand.length; i++) {
+		if (strand[i].pr) {
 			prBezes.push({
-				direction: points[i].pr,
-				out: (i - 1 >= 0 ? i - 1 : points.length - 1),
-				in: (i <= points.length - 1 ? i : 0) 
+				direction: strand[i].pr,
+				out: (i - 1 >= 0 ? i - 1 : strand.length - 1),
+				in: (i <= strand.length - 1 ? i : 0) 
 			})
 		}
 	}
 
-	function bezString(p0, p1, p2, p3) {
-	  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
-	}
-
-  function nextPointIdx(i) {
-    if (i === points.length - 1) {
-      return 0;
-    } else {
-      return (i + 1);
-    }
-  }
-
   function emptyRow() {
     var row = [];
-    for (var point of points) {
+    for (var point of strand) {
       row = row.concat([0, 0]);
     };
     return row;
@@ -58,8 +43,8 @@ function Contour(points, drawing) {
     var row = condition(2 * i - 1, [1, 1]);
     matrix.push(row.concat(emptyRow()));
     matrix.push(emptyRow().concat(row));
-    equals.push(2 * points[i].x);
-    equals.push(2 * points[i].y);
+    equals.push(2 * strand[i].x);
+    equals.push(2 * strand[i].y);
   }
 
   function setC2continuity(i) {
@@ -72,9 +57,9 @@ function Contour(points, drawing) {
 
   function setPRangle(i) {
     var angle;
-    if (points[i].pr === "R") {
+    if (strand[i].pr === "R") {
       angle = theta;
-    } else if (points[i].pr === "L") {
+    } else if (strand[i].pr === "L") {
       angle = (2 * Math.PI - theta)
     }
     var row1 = condition(2 * i - 1, [1, -Math.cos(angle)]);
@@ -82,16 +67,16 @@ function Contour(points, drawing) {
     var row3 = condition(2 * i, [-Math.sin(angle)]);
     matrix.push(row1.concat(row2));
     matrix.push(row3.concat(row1));
-    equals.push((1 - Math.cos(angle)) * points[i].x + Math.sin(angle) * points[i].y),
-    equals.push((1 - Math.cos(angle)) * points[i].y - Math.sin(angle) * points[i].x);
+    equals.push((1 - Math.cos(angle)) * strand[i].x + Math.sin(angle) * strand[i].y),
+    equals.push((1 - Math.cos(angle)) * strand[i].y - Math.sin(angle) * strand[i].x);
   }
 
   var matrix = [];
   var equals = [];
 
-  for (var i = 0; i < points.length; i++) {
+  for (var i = 0; i < strand.length; i++) {
     setC2continuity(i);
-    if (points[i].pr) {
+    if (strand[i].pr) {
       setPRangle(i);
     } else {
       setC1continuity(i);
@@ -103,196 +88,72 @@ function Contour(points, drawing) {
   var yCntrlPoints = cntrlPoints.slice(cntrlPoints.length / 2);
   var polygons = [];
 
-  for (var i = 0; i < points.length; i++) {
+  for (var i = 0; i < strand.length; i++) {
     var bezPoints = [];
-    bezPoints.push([points[i].x, points[i].y]);
+    bezPoints.push([strand[i].x, strand[i].y]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
     bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
-    bezPoints.push([points[nextPointIdx(i)].x, points[nextPointIdx(i)].y]);
+    bezPoints.push([strand[knotUtils.nextCyclicalIdx(strand, i)].x, strand[knotUtils.nextCyclicalIdx(strand, i)].y]);
     
 	var pr;
 	var direction;
-	if (points[i].pr) {
+	if (strand[i].pr) {
 		pr = "inbound";
-		direction = points[i].pr;
-	} else if (points[nextPointIdx(i)].pr) {
+		direction = strand[i].pr;
+	} else if (strand[knotUtils.nextCyclicalIdx(strand, i)].pr) {
 		pr = "outbound";
-		direction = points[nextPointIdx(i)].pr;
+		direction = strand[knotUtils.nextCyclicalIdx(strand, i)].pr;
 	} else {
 		pr = false;
-		direction = points[i].direction;
+		direction = strand[i].direction;
 	}
-
-    polygons.push({
+	
+	var polygon = {
     	bezPoints: bezPoints,
     	pr: pr,
     	direction: direction
-    });
-  }
+    };
 
-  this.bezArray = polygons.map(function(polygon) {
-	return new Bezier(...polygon.bezPoints.reduce((arr, sub) => arr.concat(sub)));
-  });
+    polygons.push(polygon);
+
+	var bez = new Bezier(...polygon.bezPoints.reduce((arr, sub) => arr.concat(sub)));
 	
 
-	this.format = function(snapObj) {
-		snapObj.attr({
-			stroke: "black",
-			strokeWidth: config.knot.borderWidth,
-			fill: "none"
-		});
-	};
+	// getting crossover squares for masks
 
-	this.drawOutline = function(outline) {
-	   for (var curve of outline) {
-		var cntrls = curve.points.map(point => [point.x, point.y]);
-		this.format(drawing.surface.path(bezString(...cntrls)));
-	  }
-	};
+	// assign outgoing bezes for each point of strand
 
-	this.collectionIntersect = function(innerOutbound, innerInbound) {
-		for (var i = 0; i < innerOutbound.length; i++) {
-			var outboundCurve = innerOutbound[i];
-			for (var j = 0; j < innerInbound.length; j++) {
-				var inboundCurve = innerInbound[j];
-				var intersects = outboundCurve.intersects(inboundCurve);
-				if (intersects.length > 0) {
-					var tOut;
-					var tIn;
-					[tOut, tIn] = intersects[0].split("/").map(str => Number(str));
-					return {
-						tOut: tOut,
-						tIn: tIn,
-						outboundIdx: i,
-						inboundIdx: j
-					};
-				}
-			}
+	if (strand[i].pr) {
+		//strand[i].point.out = bez;
+	} else {
+		if (strand[i].direction === "R") {
+			strand[i].point.overOut = bez;
+		} else if (strand[i].direction === "L") {
+			strand[i].point.underOut = bez;
 		}
-	};
-
-	this.clippedOutboundPath = function(intersection, outline) {
-		var bezes = outline.slice(0, intersection.outboundIdx);
-		bezes.push(outline[intersection.outboundIdx].split(intersection.tOut).left);
-		return bezes;
-	};
-
-	this.clippedInboundPath = function(intersection, outline) {
-		var bezes = [];
-		bezes.push(outline[intersection.inboundIdx].split(intersection.tIn).right);
-		bezes = bezes.concat(outline.slice(intersection.inboundIdx + 1));
-		return bezes;
-	};
-
-
-	this.pomaxPath = function(bez) {
-		return bez.points.map(point => [point.x, point.y]);
-	};
-
-	this.splice = function(bezArray) {
-		var that = this;
-		var pathStrs = bezArray.map(function(bez) {
-			return bezString(...that.pomaxPath(bez));
-		});
-		var path = pathStrs[0];
-		for (var str of pathStrs.slice(1)) {
-			path = path + str.split(/(?=\sC)/)[1];
-		}
-		return path;
-	};
-
-	this.drawPRinners = function(i) {
-		// get initial outbound bezier
-		var middleOutbound = this.bezArray[i];
-		// get bez of inner outbound
-		var innerOutbound;
-		if (polygons[i].direction === "L") {
-			innerOutbound = middleOutbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2);
-		} else if (polygons[i].direction === "R") {
-			innerOutbound = middleOutbound.offset((config.knot.strokeWidth + config.knot.borderWidth)/2);
-		}
-		// get next polygon (i.e. inbound)
-		var middleInbound = this.bezArray[i + 1];
-		// get bez of inner inbound
-		var innerInbound;
-		if (polygons[i].direction === "L") {
-			innerInbound = middleInbound.offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2);
-		} else if (polygons[i].direction === "R") {
-			innerInbound = middleInbound.offset((config.knot.strokeWidth + config.knot.borderWidth)/2);
-		}
-		// get intersection of inner outbound with inner inbound
-		var intersection = this.collectionIntersect(innerOutbound, innerInbound);
-		// split at intersection point 
-		// concatenate part of outbound inner from before intersection, 
-		// with the part of inbound inner from after the intersection...
-		var outClipped = this.clippedOutboundPath(intersection, innerOutbound);
-		var inClipped = this.clippedInboundPath(intersection, innerInbound);			
-		var prPath = this.splice(outClipped.concat(inClipped));
-		// then draw this concatenated path
-		this.format(drawing.surface.path(prPath));
 	}
+	
+	strand[i].bez = bez;
+  }
 
 	this.append = function(pathStr, exts) {
 		for (var ext of exts) {
 			pathStr += ` L${ext.x} ${ext.y}`;
 		}
-		return this.hide(drawing.surface.path(pathStr));
+		var snp = drawing.surface.path(pathStr);
+		group.add(snp);
+		return this.hide(snp);
 	};
 	
 	this.prepend = function(pathStr, exts) {
 		var polyline = exts.slice().reverse().map(ext => `${ext.x} ${ext.y} L`).join("");
 		var extendedPath = pathStr.split(/(?<=M)/)[0] + polyline + pathStr.split(/(?<=M)/)[1];
-		return this.hide(drawing.surface.path(extendedPath));
+		var snp = drawing.surface.path(extendedPath);
+		group.add(snp);
+		return this.hide(snp);
  	};
 
-	this.drawPRouters = function(i) {
-		// get initial outbound bezier
-		var middleOutbound = this.bezArray[i];
 
-		// get middle inbound bez 
-		var middleInbound = this.bezArray[i + 1];
-
-		// get collections for outers
-		var d = (polygons[i].direction === "L") ? (config.knot.strokeWidth + config.knot.borderWidth)/2 : -(config.knot.strokeWidth + config.knot.borderWidth)/2; 
-		var outerOutbound = middleOutbound.offset(d)
-		var outerInbound = middleInbound.offset(d);
-
-		// get pathstrs for outers
-		var outerOutboundPathStr = this.splice(outerOutbound);
-		var outerInboundPathStr = this.splice(outerInbound);
-		var tOutbound = 1;
-		var tInbound = 0;
-		var tStep = 0.05;
-		var outboundExtensions = [middleOutbound.offset(1, d)];
-		var inboundExtensions = [middleInbound.offset(0, d)];
-		var kld = kldIntersections;
-
-		// build up polylines until they intersect
-		while (true) {
-			// prepare for extension
-			tOutbound += tStep;
-			tInbound -= tStep;
-			outboundExtensions.push(middleOutbound.offset(tOutbound, d));
-			inboundExtensions.unshift(middleInbound.offset(tInbound, d));
-			var outboundPolyline = outboundExtensions.map(ext => new kld.Point2D(ext.x, ext.y));
-			var inboundPolyline = inboundExtensions.map(ext => new kld.Point2D(ext.x, ext.y));
-			var intersection = kld.Intersection.intersectPolylinePolyline(outboundPolyline, inboundPolyline);
-			if (intersection.points.length > 0) {
-				// remove overshooting extensions
-				outboundExtensions.pop();
-				inboundExtensions.shift();
-				break;
-			}
-		}
-		// append intersection point to outbound polyline
-		outboundExtensions.push(intersection.points[0]);
-		// concatenate inbound polyline 
-		outboundExtensions = outboundExtensions.concat(inboundExtensions);
-		var pathStr = outerOutboundPathStr;
-		pathStr += outboundExtensions.map(point => ` L ${point.x} ${point.y}`).join("");
-		pathStr += " " + outerInboundPathStr.split("M")[1];
-		this.format(drawing.surface.path(pathStr));
-	};
 
 	this.drawPROutline = function(i) {
 		// first called for outbound bezier
@@ -300,39 +161,65 @@ function Contour(points, drawing) {
 		this.drawPRouters(i);
 	};
 
+
 	this.draw = function() {
-	  for (var i = 0; i < this.bezArray.length; i++) {
-		if (polygons[i].pr === "outbound") {
-			this.drawPROutline(i);
-			if (polygons[i].direction === "R") {
-				// mask inbound
-				var p = bezString(...this.pomaxPath(this.bezArray[i + 1]));
-				this.maskSecondHalf.push(p);
-			} else if (polygons[i].direction === "L") {
-				// mask outbound?
-				var p = bezString(...this.pomaxPath(this.bezArray[i]));
-				this.maskFirstHalf.push(p);
-			}			
-		} else if (polygons[i].pr === "inbound") {
-			// do nothing -- inbounds are dealt with in same invocation as outbounds
+	  for (var i = 0; i < strand.length; i++) {
+		var left = strand[i].bez.offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2);
+		var right = strand[i].bez.offset((config.knot.strokeWidth + config.knot.borderWidth)/2);	
+		var next = strand[knotUtils.nextCyclicalIdx(strand, i)];
+
+		if (strand[i].pr) {
+			if (strand[i].pr === "L") {
+				strand[i].point.innerInbound = left;
+				strand[i].point.outerInbound = right;
+			} else if (strand[i].pr === "R") {
+				strand[i].point.innerInbound = right;
+				strand[i].point.outerInbound = left;
+			}
+			if (strand[knotUtils.previousCyclicalIdx(strand, i)].direction === "R") {
+				next.point.underInLeft = left;
+				next.point.underInRight = right;
+			} else if (strand[knotUtils.previousCyclicalIdx(strand, i)].direction === "L") {
+				next.point.overInLeft = left;
+				next.point.overInRight = right;
+			}
 		} else {
-			this.drawOutline(this.bezArray[i].offset((config.knot.strokeWidth + config.knot.borderWidth)/2));
-			this.drawOutline(this.bezArray[i].offset(-(config.knot.strokeWidth + config.knot.borderWidth)/2));
-			// draw middle 
-			if (polygons[i].direction === "R") {
-				var clip = this.pomaxPath(this.bezArray[i].split(0.5).left);
-				this.overToUnders.push(bezString(...clip));
-			} else if (polygons[i].direction === "L") {
-				var clip = this.pomaxPath(this.bezArray[i].split(0.5).right);
-				this.underToOvers.push(bezString(...clip));
+			if (strand[i].direction === "R") {
+				strand[i].point.overOutLeft = left;
+				strand[i].point.overOutRight = right;
+				if (!next.pr) {
+					next.point.underInLeft = left;
+					next.point.underInRight = right;		
+				} else {
+					next.point.innerOutbound = left;
+					next.point.outerOutbound = right;
+				}
+			} else if (strand[i].direction === "L") {
+				strand[i].point.underOutLeft = left;
+				strand[i].point.underOutRight = right;
+				if (!next.pr) {
+					next.point.overInLeft = left;
+					next.point.overInRight = right;	
+				} else {
+					next.point.innerOutbound = right;
+					next.point.outerOutbound = left;
+				}
+			}
+		}
+
+	  }
+
+	  // PRs
+
+	  for (var i = 0; i < strand.length; i++) {
+		if (strand[i].pr) {
+			// under segments are already dealt with...
+			//debugger;
+			if (strand[knotUtils.previousCyclicalIdx(strand, i)].direction === "R") {
+			// i.e. if outbound PR is the over segment
+				
 			}
 		}
 	  }
 	};
 }
-
-
-
- 
-
-

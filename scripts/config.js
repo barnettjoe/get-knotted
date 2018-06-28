@@ -1,18 +1,15 @@
 var config = {
-	gap: 2,
-	overlap: 20,
 	knot: {
 		stroke: "black",
 		strokeWidth: 20,
 		fill: "none",
-		borderWidth: 15,
+		borderWidth: 20,
 	},
 	mask: {
 		stroke: "white",
 		strokeWidth: 12,
 		fill: "none"
 	},
-	bezierDistance: 50,
     graphRows: 6,
     graphCols: 6,
     squareHeight: 150,

@@ -12,8 +12,6 @@ function Graph(drawing) {
 
 	Grid.call(this, options);
 
-
-
 	var endX;
 	var endY;
 	[endX, endY] = Mouse.pixelCoords([options.endCol, options.endRow]);
