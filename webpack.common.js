@@ -5,7 +5,7 @@ const postcssPresetEnv = require('postcss-preset-env');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.js',
+  entry: './src/index.ts',
   devtool: 'eval-source-map',
   devServer: {
     contentBase: './dist',
@@ -22,6 +22,11 @@ module.exports = {
   ],
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       {
         test: require.resolve('snapsvg/dist/snap.svg.js'),
         use: 'imports-loader?this=>window,fix=>module.exports=0',
@@ -58,6 +63,8 @@ module.exports = {
   resolve: {
     alias: {
       snapsvg: 'snapsvg/dist/snap.svg.js',
-    }
+    },
+    // Add `.ts` and `.tsx` as a resolvable extension.
+    extensions: ['.ts', '.tsx', '.js'],
   }
 };
