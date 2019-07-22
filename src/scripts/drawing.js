@@ -1,3 +1,4 @@
+import * as drawing from "drawing";
 import Knot from './knot.js';
 import Frame from './frame.js';
 import Node from './node.js';
