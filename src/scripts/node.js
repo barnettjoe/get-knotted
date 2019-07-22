@@ -1,5 +1,5 @@
 import { pixelCoords } from './mouse.js';
-import surface from './main.js';
+import surface from './main';
 import config from './config.js';
 import { identicalObjects, distanceBetween } from './general-utils.js';
 

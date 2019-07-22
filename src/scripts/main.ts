@@ -1,7 +1,7 @@
-import drawing from './drawing.js';
+import drawing from './drawing';
 import Snap from 'snapsvg';
 import { relativeCoords } from './mouse.js';
-import Graph from './graph.js';
+import Graph from './graph';
 export default Snap('#surface');
 
 const noOp = () => {};

@@ -1,4 +1,4 @@
-import surface from './main.js';
+import surface from './main';
 import Snap from 'snapsvg';
 import { bezString } from './knot-utils.js';
 

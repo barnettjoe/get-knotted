@@ -1,4 +1,4 @@
-import surface from './main.js';
+import surface from './main';
 import CrossingPoint from './crossing-point.js';
 
 export default function Line(options) {

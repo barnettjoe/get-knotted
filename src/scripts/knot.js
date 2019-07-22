@@ -1,5 +1,5 @@
 import { collectionIntersect, format, mutate, reducer } from './knot-utils.js';
-import surface from './main.js';
+import surface from './main';
 import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';

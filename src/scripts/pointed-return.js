@@ -1,5 +1,5 @@
 import { reducer, collectionIntersect, format } from './knot-utils.js';
-import surface from './main.js';
+import surface from './main';
 
 export default function PointedReturn(options) {
   this.options = options;
