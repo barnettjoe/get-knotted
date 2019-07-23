@@ -1,5 +1,5 @@
 import drawing from './drawing';
-import * as Snap from 'snapsvg';
+import Snap from 'snapsvg';
 import { relativeCoords } from './mouse.js';
 import Graph from './graph';
 export default Snap('#surface');
