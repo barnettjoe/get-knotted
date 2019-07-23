@@ -1,20 +1,7 @@
+/* eslint-env node */
+const path = require('path');
 const merge = require('webpack-merge');
-const postcssPresetEnv = require('postcss-preset-env');
 const common = require('./webpack.common.js');
-
-const cssLoaders = [
-  'style-loader',
-  { loader: 'css-loader', options: { importLoaders: 1 } },
-  {
-    loader: 'postcss-loader',
-    options: {
-      ident: 'postcss',
-      plugins: () => [
-        postcssPresetEnv(/* pluginOptions */),
-      ],
-    },
-  },
-];
 
 module.exports = merge(common, {
   mode: 'development',
@@ -25,12 +12,17 @@ module.exports = merge(common, {
   module: {
     rules: [
       {
-        test: /\.css$/,
-        use: cssLoaders,
-      },
-      {
-        test: /\.scss$/,
-        use: cssLoaders.concat(['sass-loader']),
+        test: /\.ts/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+            },
+          }
+        ],
+        include: path.resolve(__dirname, 'src'),
       },
     ],
   },

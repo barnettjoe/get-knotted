@@ -1,12 +1,25 @@
+/* eslint-env node */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const postcssPresetEnv = require('postcss-preset-env');
 
+const cssLoaders = [
+  'style-loader',
+  { loader: 'css-loader', options: { importLoaders: 1 } },
+  {
+    loader: 'postcss-loader',
+    options: {
+      ident: 'postcss',
+      plugins: () => [
+        postcssPresetEnv(/* pluginOptions */),
+      ],
+    },
+  },
+];
+
 module.exports = {
-  mode: 'development',
   entry: './src/index.ts',
-  devtool: 'eval-source-map',
   devServer: {
     contentBase: './dist',
   },
@@ -23,40 +36,16 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
         test: require.resolve('snapsvg/dist/snap.svg.js'),
         use: 'imports-loader?this=>window,fix=>module.exports=0',
       },
       {
-        enforce: 'pre',
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: 'eslint-loader',
-      },
-      {
-        test: /\.m?js$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
-      },
-      {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          { loader: 'css-loader', options: { importLoaders: 1 } },
-          {
-            loader: 'postcss-loader',
-            options: {
-              ident: 'postcss',
-              plugins: () => [
-                postcssPresetEnv(/* pluginOptions */)
-              ],
-            }
-          },
-        ],
+        use: cssLoaders,
+      },
+      {
+        test: /\.scss$/,
+        use: cssLoaders.concat(['sass-loader']),
       },
     ]
   },
