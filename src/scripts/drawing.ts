@@ -102,7 +102,8 @@ const drawing: Drawing = {
       gridSystem: 'square',
     })];
     const adjacencies = [[]];
-    return new Frame({ nodes, adjacencies });
+    // TODO - hopefully won't need this assertion after converting frame.js
+    return new Frame({ nodes, adjacencies }) as Frame;
   },
   placeNode(e) {
     const coords = closestGraphCoords(e);

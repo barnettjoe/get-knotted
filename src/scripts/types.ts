@@ -9,7 +9,10 @@ export type Coords = [number, number];
 
 export interface Frame {
   nodes: INode[];
+  drawLines(): void;
 }
+
+export type Mode = 'add-grid' | 'add-node' | 'add-line';
 
 export interface Drawing {
   addMouseListeners(): void;
@@ -37,6 +40,6 @@ export interface Drawing {
   graph?: Graph; // TODO -- ??
   frame?: Frame;
   knots: Knot[]; // TODO -- array of what??
-  mode: string; // TODO - use enum
+  mode: Mode;
   mouseIsDown: boolean;
 }
