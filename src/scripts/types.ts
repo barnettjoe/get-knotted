@@ -12,7 +12,8 @@ export interface Frame {
   drawLines(): void;
 }
 
-export type Mode = 'add-grid' | 'add-node' | 'add-line';
+export const MODES = ['add-grid', 'add-node', 'add-line'] as const;
+export type Mode = typeof MODES[number];
 
 export interface Drawing {
   addMouseListeners(): void;

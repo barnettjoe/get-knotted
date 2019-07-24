@@ -1,7 +1,7 @@
 import drawing from './drawing';
 import Snap from 'snapsvg';
 import Graph from './graph';
-import { Mode } from  './types';
+import { Mode, MODES } from  './types';
 export default Snap('#surface');
 
 function drawSquareGrid() {
@@ -12,15 +12,17 @@ function changeDrawingMode(newMode: Mode) {
   return () => drawing.mode = newMode;
 }
 
+function setUpButton(id: Mode) {
+  const button = document.getElementById(id);
+  if (button) {
+    button.addEventListener('click', changeDrawingMode(id), false);
+  } else {
+    // throw error
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   drawing.addMouseListeners();
-  ['add-node', 'add-line', 'add-grid'].forEach((id) => {
-    const button = document.getElementById(id);
-    if (button) {
-      button.addEventListener('click', changeDrawingMode(id), false);
-    } else {
-      // throw error
-    }
-  });
+  MODES.forEach(setUpButton);
   drawSquareGrid();
 }, false);
