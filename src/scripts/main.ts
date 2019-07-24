@@ -2,6 +2,7 @@ import drawing from './drawing';
 import Snap from 'snapsvg';
 import { relativeCoords } from './mouse.js';
 import Graph from './graph';
+import { Node } from './types';
 export default Snap('#surface');
 
 const noOp = () => {};
@@ -9,16 +10,17 @@ const noOp = () => {};
 function drawSquareGrid() {
   drawing.graph = new Graph();
 }
-function makeDraggable(node) {
+
+function makeDraggable(node: Node) {
   node.snapObject.drag(makeDragHandler(node), noOp, redrawKnot);
 }
 function makeAllNodesDraggable() {
-  drawing.frame.nodes.forEach(function (node) {
+  drawing.frame.nodes.forEach((node) => {
     makeDraggable(node);
   });
 }
-function makeDragHandler(node) {
-  return function(e) {
+function makeDragHandler(node: Node) {
+  return (e)=> {
     // change node position
     [node.x, node.y] = relativeCoords(e);
     // re-draw whole frame
@@ -43,16 +45,22 @@ function startFreeformMode() {
 function setFrameType() {
   const frameType = 'square'; //document.querySelector('[name=frame-type]:checked').value;
   switch (frameType) {
-  case 'square':
-    drawing.knot && drawing.knot.remove();
-    drawing.frame && drawing.frame.remove();
-    drawSquareGrid();
-    drawing.frame && drawing.frame.draw();
-    drawing.knot && drawing.drawKnot();
-    break;
-  case 'freeform':
-    startFreeformMode();
-    break;
+    case 'square':
+      drawing.knot && drawing.knot.remove();
+      drawing.frame && drawing.frame.remove();
+      drawSquareGrid();
+      drawing.frame && drawing.frame.draw();
+      drawing.knot && drawing.drawKnot();
+      break;
+      // TODO - ignoring "Type '"freeform"' is not comparable to type '"square"'" error here
+      // this happens because we're hardcoding the frameType value above
+      // so typescript knows it's never actually going to be anything but 'square'.
+      // When we get around to using the other frameType options again, we'll be able to remove
+      // this ts-ignore.
+      // @ts-ignore
+    case 'freeform':
+      startFreeformMode();
+      break;
   }
 }
 
@@ -60,11 +68,15 @@ function changeDrawingMode(newMode) {
   return () => drawing.mode = newMode;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  drawing.init();
-  ['add-node', 'add-line', 'add-grid'].forEach(function (id) {
+document.addEventListener('DOMContentLoaded', () => {
+  drawing.addMouseListeners();
+  ['add-node', 'add-line', 'add-grid'].forEach((id) => {
     const button = document.getElementById(id);
-    button.addEventListener('click', changeDrawingMode(id), false);
+    if (button) {
+      button.addEventListener('click', changeDrawingMode(id), false);
+    } else {
+      // throw error
+    }
   });
   setFrameType();
 }, false);

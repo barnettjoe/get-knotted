@@ -1,79 +1,90 @@
 import Knot from './knot.js';
 import Frame from './frame.js';
 import Node from './node.js';
-import { rowAndCol, doIfInGraph, relativeCoords } from './mouse.js';
+import {
+  rowAndCol,
+  doIfInGraph,
+  relativeCoords,
+  closestGraphCoords,
+  pixelCoords,
+} from './mouse.js';
 import { identicalObjects } from './general-utils';
 import Snap from 'snapsvg';
 import config from './config.js';
-import { closestGraphCoords, pixelCoords } from './mouse.js';
+import { Coords, Drawing, INode } from './types';
 
 // for keeping track of where we started a drag on the grid
-let dragStart;
-let dragEnd;
+let dragStart: [number, number];
+let dragEnd: [number, number];
 
 // for keeping track of which knot / frame is currently being manipulated
-let currentKnot;
-let currentFrame;
+let currentKnot: Knot;
+let currentFrame: Frame;
 
 // for keeping track of the line currently being drawn (in 'add-line' mode)
-let userLine = {};
+const userLine: { element: Snap.Element | null; startNode: INode | null } = {
+  element: null,
+  startNode: null,
+};
 
-function handleMouseDown(e) {
-  this.mouseIsDown = true;
-  switch (this.mode) {
-  case 'add-grid':
-    this.startDrawingGrid(e);
-    break;
-  case 'add-line':
-    this.startDrawingLine(relativeCoords(e));
-    break;
-  case 'add-node':
-    this.placeNode(e);
-    break;
-  }
-}
-
-function handleMouseMove(e) {
-  if (this.mouseIsDown) {
+const drawing: Drawing = {
+  knots: [],
+  mode: 'add-grid',
+  mouseIsDown: false,
+  handleMouseDown(this: Drawing, e: MouseEvent) {
+    this.mouseIsDown = true;
     switch (this.mode) {
-    case 'add-grid':
-      this.dragFrame(e);
-      break;
-    case 'add-line':
-      this.drawUserLine(userLine.startNode, relativeCoords(e));
-      break;
+      case 'add-grid':
+        this.startDrawingGrid(e);
+        break;
+      case 'add-line':
+        // TODO - should be able to remove type assertion after converting mouse.js
+        // into typescript
+        this.startDrawingLine(relativeCoords(e) as Coords);
+        break;
+      case 'add-node':
+        this.placeNode(e);
+        break;
     }
-  }
-}
-
-function handleMouseUp(e) {
-  if (e.target.tagName !== 'BUTTON') {
-    this.mouseIsDown = false;
-    switch (this.mode) {
-    case 'add-grid':
-      currentFrame && this.drawKnot();
-      break;
-    case 'add-line':
-      this.finishDrawingLine(e);
-      break;
+  },
+  handleMouseUp(this: Drawing, e: MouseEvent) {
+    if (e.target instanceof Element && e.target.tagName !== 'BUTTON') {
+      this.mouseIsDown = false;
+      switch (this.mode) {
+        case 'add-grid':
+          currentFrame && this.drawKnot();
+          break;
+        case 'add-line':
+          this.finishDrawingLine(e);
+          break;
+      }
     }
-  }
-}
-
-const drawing = {
-  init() {
-    this.knots = [];
-    this.mode = 'add-grid';
-    this.addMouseListeners();
+  },
+  handleMouseMove(this: Drawing, e: MouseEvent) {
+    if (this.mouseIsDown) {
+      switch (this.mode) {
+        case 'add-grid':
+          this.dragFrame(e);
+          break;
+        case 'add-line':
+          if (userLine.startNode) {
+            // TODO - should be able to remove type assertion after converting mouse.js
+            // into typescript
+            this.drawUserLine(userLine.startNode, relativeCoords(e) as Coords);
+          }
+          break;
+      }
+    }
   },
   addMouseListeners() {
-    this.handleMouseDown = handleMouseDown.bind(this);
-    this.handleMouseUp = handleMouseUp.bind(this);
-    this.handleMouseMove = handleMouseMove.bind(this);
     const wrapper = document.getElementById('wrapper');
-    wrapper.addEventListener('mousedown', this.handleMouseDown, false);
-    wrapper.addEventListener('mousemove', this.handleMouseMove, false);
-    window.addEventListener('mouseup', this.handleMouseUp, false);
+    if (wrapper) {
+      wrapper.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
+      wrapper.addEventListener('mousemove', this.handleMouseMove.bind(this), false);
+    } else {
+      // TODO - throw error
+    }
+    window.addEventListener('mouseup', this.handleMouseUp.bind(this), false);
   },
   drawKnot() {
     currentKnot = new Knot(currentFrame);
@@ -91,17 +102,19 @@ const drawing = {
       gridSystem: 'square',
     })];
     const adjacencies = [[]];
-    return new Frame({ nodes, adjacencies, });
+    return new Frame({ nodes, adjacencies });
   },
   placeNode(e) {
     const coords = closestGraphCoords(e);
     const pxCoords = pixelCoords(coords);
     if (!this.isNodeOverlapping(pxCoords)) {
-      this.addNode(coords);
+      // TODO - should be able to remove type assertion after converting mouse.js
+      // into typescript
+      this.addNode(coords as Coords);
     }
   },
   isNodeOverlapping(coords) {
-    return this.knots.some(knot => {
+    return this.knots.some((knot) => {
       return knot.frame.overlapsExistingNode(...coords);
     });
   },
@@ -113,22 +126,26 @@ const drawing = {
     currentFrame.draw();
   },
   startDrawingGrid(e) {
-    dragStart = rowAndCol(e);
+    // TODO - should be able to remove type assertion after converting mouse.js
+    // into typescript
+    dragStart = rowAndCol(e) as Coords;
     dragEnd = dragStart;
     doIfInGraph(dragStart, this.drawFrame.bind(this));
   },
-  dragFrame(e) {
+  dragFrame(e: MouseEvent) {
     const previousBox = dragEnd;
-    dragEnd = rowAndCol(e);
+    // TODO - should be able to remove type assertion after converting mouse.js
+    // into typescript
+    dragEnd = rowAndCol(e) as Coords;
     if (!identicalObjects(previousBox, dragEnd)) {
-      doIfInGraph(dragEnd, function() {
+      doIfInGraph(dragEnd, (() => {
         if (currentFrame) currentFrame.remove();
         currentFrame = new Frame({
           initialBox: dragStart,
           finalBox: dragEnd,
         });
         currentFrame.draw();
-      }.bind(this));
+      }).bind(this));
     }
   },
   drawUserLine(lineStart, toCoords) {
@@ -138,8 +155,9 @@ const drawing = {
     userLine.element.attr(config.frame);
   },
   removeUserLine() {
-    userLine && userLine.element.remove();
-    userLine = {};
+    userLine.element && userLine.element.remove();
+    userLine.element = null;
+    userLine.startNode = null;
   },
   newLineIsValid(lineStart, lineEnd) {
     return lineEnd && lineEnd !== lineStart && !currentFrame.lineExistsBetween(lineStart, lineEnd);
@@ -148,8 +166,10 @@ const drawing = {
     const lineStart = userLine.startNode;
     this.removeUserLine();
     const coords = relativeCoords(e);
-    const lineEnd = this.nodeAt(coords);
-    if (this.newLineIsValid(lineStart, lineEnd)) {
+    // TODO - should be able to remove type assertion after converting mouse.js
+    // into typescript
+    const lineEnd = this.nodeAt(coords as Coords);
+    if (lineStart && lineEnd && this.newLineIsValid(lineStart, lineEnd)) {
       this.makeNewLine(lineStart, lineEnd);
     }
   },
@@ -175,26 +195,27 @@ const drawing = {
     knot.remove();
     this.knots.splice(this.knots.indexOf(knot), 1);
   },
-  nodeAt(coords) {
+  nodeAt(coords: Coords) {
     let result;
-    this.knots.some(knot => {
+    this.knots.some((knot) => {
       result = knot.frame.findProximalNode(coords);
       if (result) {
         return true;
       }
+      return false;
     });
-    return result;
+    return result || null;
   },
   findKnotWith(node) {
-    return this.knots.find(knot => {
+    return this.knots.find((knot) => {
       return knot.frame.nodes.includes(node);
-    });
+    }) || null;
   },
   startDrawingLine(coords) {
     const lineStart = this.nodeAt(coords);
-    currentKnot = this.findKnotWith(lineStart);
-    currentFrame = currentKnot.frame;
     if (lineStart) {
+      currentKnot = this.findKnotWith(lineStart);
+      currentFrame = currentKnot.frame;
       this.drawUserLine(lineStart, coords);
     }
   },
