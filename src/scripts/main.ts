@@ -2,7 +2,7 @@ import drawing from './drawing';
 import Snap from 'snapsvg';
 import { relativeCoords } from './mouse.js';
 import Graph from './graph';
-import { Node } from './types';
+import { INode } from './types';
 export default Snap('#surface');
 
 const noOp = () => {};
@@ -11,7 +11,7 @@ function drawSquareGrid() {
   drawing.graph = new Graph();
 }
 
-function makeDraggable(node: Node) {
+function makeDraggable(node: INode) {
   node.snapObject.drag(makeDragHandler(node), noOp, redrawKnot);
 }
 function makeAllNodesDraggable() {
@@ -19,7 +19,7 @@ function makeAllNodesDraggable() {
     makeDraggable(node);
   });
 }
-function makeDragHandler(node: Node) {
+function makeDragHandler(node: INode) {
   return (e)=> {
     // change node position
     [node.x, node.y] = relativeCoords(e);

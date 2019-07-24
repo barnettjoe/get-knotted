@@ -7,6 +7,10 @@ export interface INode {
 
 export type Coords = [number, number];
 
+export interface Frame {
+  nodes: INode[];
+}
+
 export interface Drawing {
   addMouseListeners(): void;
   addNode(coords: Coords): void;
@@ -31,6 +35,7 @@ export interface Drawing {
   startDrawingGrid(e: MouseEvent): void;
   startDrawingLine(coords: Coords): void;
   graph?: Graph; // TODO -- ??
+  frame?: Frame;
   knots: Knot[]; // TODO -- array of what??
   mode: string; // TODO - use enum
   mouseIsDown: boolean;
