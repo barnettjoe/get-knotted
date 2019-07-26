@@ -4,6 +4,14 @@
     "jsRules": {},
     "rules": {
       "import-name": [false],
+      "variable-name": {
+        "options": [
+          "ban-keywords",
+          "check-format",
+          "allow-leading-underscore",
+          "allow-pascal-case"
+        ]
+      },
       "align": [false]
     },
     "rulesDirectory": []

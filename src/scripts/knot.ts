@@ -4,57 +4,82 @@ import { Strand, pointFollowing, pointPreceding } from './strand.js';
 import PointedReturn from './pointed-return.js';
 import Contour from './contour.js';
 import OffsetSketch from './offset-sketch';
+import {
+  Frame,
+  KnotElement,
+  INode,
+  IStrand,
+  IContour,
+  IPoint,
+  PolyLine,
+  CollectionIntersect,
+  StrandElement,
+} from './types';
 
-export default function Knot(frame) {
-  this.frame = frame;
-  this.init();
-  this.draw();
-}
+export default class Knot {
+  // TODO - can we make some of these private or protected?
+  public frame: Frame;
+  public elements?: KnotElement[];
+  public offsetSketches?: OffsetSketch[];
+  public strands?: IStrand[];
+  public contours?: IContour[];
 
-Knot.prototype = {
+  constructor(frame: Frame) {
+    this.frame = frame;
+    this.init();
+    this.draw();
+  }
   remove() {
-    this.elements.forEach(element => element.remove());
+    if (this.elements) {
+      this.elements.forEach((element: KnotElement) => element.remove());
+    }
     this.frame.remove();
-  },
+  }
   init() {
     this.elements = [];
     this.offsetSketches = this.makeOffsets();
     this.makeOverUnders();
-  },
-  merge(otherKnot, lineStart, lineEnd) {
+  }
+  merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
     mergedFrame.markAsAdjacent(lineStart, lineEnd);
     mergedFrame.draw();
     const mergedKnot = new Knot(mergedFrame);
-    this.elements = this.elements.concat(otherKnot.elements);
+    // TODO - this conditional is necessary because elements is undefined on objects before
+    // calling init - maybe it would be neater if we initialize to an empty array or something,
+    // so it can never be undefined
+    if (this.elements && otherKnot.elements) {
+      this.elements = this.elements.concat(otherKnot.elements);
+    } else {
+      // TODO - throw an error?
+    }
     return mergedKnot;
-  },
+  }
   makeStrands() {
     const strands = [];
     while (this.frame.lines.some(line => line.uncrossed())) {
       strands.push(Strand(this.frame));
     }
     return strands;
-  },
+  }
   makeOffsets() {
     this.strands = this.makeStrands();
     this.contours = this.strands.map(strand => Contour(strand));
     return this.contours.map(contour => new OffsetSketch(contour));
-  },
-  addLineBetween(nodeA, nodeB) {
+  }
+  addLineBetween(nodeA: INode, nodeB: INode) {
     this.frame.markAsAdjacent(nodeA, nodeB);
     this.frame.drawLines();
     this.init();
     this.draw();
-  },
-  getUnder(point, direction, bound) {
+  }
+  getUnder(point: IPoint, direction: 'L' | 'R', bound: 'in' | 'out') {
     if (bound === 'out') {
       return direction === 'R' ? point.underOutRight : point.underOutLeft;
-    } else if (bound === 'in') {
-      return direction === 'R' ? point.underInRight : point.underInLeft;
     }
-  },
-  trim(under, intersect, bound) {
+    return direction === 'R' ? point.underInRight : point.underInLeft;
+  }
+  trim(under: PolyLine, intersect: CollectionIntersect, bound: 'in' | 'out') {
     if (bound === 'out') {
       mutate(under, under.slice(intersect.idxA + 1));
       under.unshift(intersect.intersection);
@@ -62,8 +87,8 @@ Knot.prototype = {
       mutate(under, under.slice(0, intersect.idxA + 1));
       under.push(intersect.intersection);
     }
-  },
-  trimUnder(point, direction, bound) {
+  }
+  trimUnder(point: IPoint, direction: 'L' | 'R', bound: 'in' | 'out') {
     const overLeft = point.overInLeft.concat(point.overOutLeft);
     const overRight = point.overInRight.concat(point.overOutRight);
     const under = this.getUnder(point, direction, bound);
@@ -71,11 +96,14 @@ Knot.prototype = {
     if (intersect) {
       this.trim(under, intersect, bound);
     }
-  },
+  }
   makeOverUnders() {
-    this.strands.forEach(strand => {
-      strand.forEach(cpORpr => {
-        var point = cpORpr.point;
+    // TODO - better to have this.strands always defined, so won't
+    // need this check -- it could just sometimes be an empty array
+    if (!this.strands) return;
+    this.strands.forEach((strand) => {
+      strand.forEach((cpORpr) => {
+        const point = cpORpr.point;
         if (!cpORpr.pr) {
           if (!point.trimmed) {
             this.trimUnder(point, 'R', 'out');
@@ -88,9 +116,12 @@ Knot.prototype = {
         }
       });
     });
-  },
+  }
   draw() {
-    this.strands.forEach(strand => {
+    // TODO - better to have this.strands always defined, so won't
+    // need this check -- it could just sometimes be an empty array
+    if (!this.strands) return;
+    this.strands.forEach((strand) => {
       strand.forEach((strandElement, i) => {
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
@@ -109,8 +140,8 @@ Knot.prototype = {
     });
     this.frame.remove();
     this.frame.draw();
-  },
-  drawOffsets(strandElement) {
+  }
+  drawOffsets(strandElement: StrandElement) {
     const point = strandElement.point;
     if (strandElement.direction === 'R') {
       this.drawPolyline(point.overOutLeft);
@@ -119,11 +150,13 @@ Knot.prototype = {
       this.drawPolyline(point.underOutLeft);
       this.drawPolyline(point.underOutRight);
     }
-  },
-  drawPolyline(outline) {
-    var points = outline.reduce(reducer, []);
-    var snp = surface.polyline(points);
-    this.elements.push(snp);
+  }
+  drawPolyline(outline: PolyLine) {
+    const points = outline.reduce(reducer, []);
+    const snp = surface.polyline(points);
+    // TODO - better to have this.strands always defined, so won't
+    // need this check -- it could just sometimes be an empty array
+    this.elements && this.elements.push(snp);
     format(snp);
-  },
-};
+  }
+}

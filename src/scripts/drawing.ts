@@ -1,4 +1,4 @@
-import Knot from './knot.js';
+import Knot from './knot';
 import Frame from './frame.js';
 import Node from './node.js';
 import {
@@ -178,7 +178,7 @@ const drawing: Drawing = {
     currentKnot && currentKnot.remove();
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
-    if (knotA !== knotB) {
+    if (knotA && knotB && knotA !== knotB) {
       this.mergeKnots(knotA, knotB, lineStart, lineEnd);
     } else {
       currentKnot.addLineBetween(lineStart, lineEnd);
@@ -215,9 +215,12 @@ const drawing: Drawing = {
   startDrawingLine(coords) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
-      currentKnot = this.findKnotWith(lineStart);
-      currentFrame = currentKnot.frame;
-      this.drawUserLine(lineStart, coords);
+      const foundKnot = this.findKnotWith(lineStart);
+      if (foundKnot) {
+        currentKnot = foundKnot;
+        currentFrame = currentKnot.frame;
+        this.drawUserLine(lineStart, coords);
+      }
     }
   },
 };

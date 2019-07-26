@@ -1,3 +1,6 @@
+import Knot from './knot';
+import Bezier from './bezier/bezier';
+
 // TODO - give this a better name
 export interface INode {
   snapObject: Snap.Element;
@@ -9,7 +12,59 @@ export type Coords = [number, number];
 
 export interface Frame {
   nodes: INode[];
+  lines: Line[];
+  draw(): void;
   drawLines(): void;
+  remove(): void;
+  merge(otherFrame: Frame): Frame;
+  markAsAdjacent(lineStart: INode, lineEnd: INode): void;
+  overlapsExistingNode(x: number, y: number): boolean;
+}
+
+export type IStrand = StrandElement[];
+
+export interface StrandElement {
+  direction: 'L' | 'R',
+  point: IPoint;
+  pr: boolean;
+  outboundBezier: Bezier;
+  inboundBezier: Bezier;
+}
+
+export interface IPoint {
+  trimmed: boolean;
+  underOutLeft: PolyLine;
+  underOutRight: PolyLine;
+  underInLeft: PolyLine;
+  underInRight: PolyLine;
+  overOutLeft: PolyLine;
+  overOutRight: PolyLine;
+  overInLeft: PolyLine;
+  overInRight: PolyLine;
+}
+
+export interface CollectionIntersect {
+  intersection: Coords;
+  idxA: number;
+  idxB: number;
+}
+
+export type PolyLine = Coords[];
+
+export interface IContour {
+
+}
+
+export interface Line {
+  uncrossed(): boolean;
+}
+
+export interface OffsetSketch {
+  foo: string;
+}
+
+export interface KnotElement {
+  remove(): void;
 }
 
 export const MODES = ['add-grid', 'add-node', 'add-line'] as const;
