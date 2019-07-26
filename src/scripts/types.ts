@@ -15,6 +15,7 @@ export interface Frame {
   lines: Line[];
   draw(): void;
   drawLines(): void;
+  findProximalNode(coords: Coords): INode;
   remove(): void;
   merge(otherFrame: Frame): Frame;
   markAsAdjacent(lineStart: INode, lineEnd: INode): void;
