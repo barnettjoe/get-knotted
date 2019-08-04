@@ -8,6 +8,35 @@ export interface INode {
   y: number;
 }
 
+export interface GridOptions {
+  startRow: number;
+  startCol: number;
+  cols: number;
+  rows: number;
+  style: LineStyle;
+}
+
+interface LineOptionsByNode {
+  method: 'node';
+  startNode: INode;
+  endNode: INode;
+}
+
+interface LineOptionsByPosition {
+  method: 'position';
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+
+// Discriminated Union
+export type LineOptions = LineOptionsByNode | LineOptionsByPosition;
+
+export interface LineStyle {
+  // TODO - part of config type
+}
+
 export type Coords = [number, number];
 
 export interface Frame {
@@ -25,7 +54,7 @@ export interface Frame {
 export type IStrand = StrandElement[];
 
 export interface StrandElement {
-  direction: 'L' | 'R',
+  direction: 'L' | 'R';
   point: IPoint;
   pr: boolean;
   outboundBezier: Bezier;
@@ -56,9 +85,6 @@ export interface IContour {
 
 }
 
-export interface Line {
-  uncrossed(): boolean;
-}
 
 export interface OffsetSketch {
   foo: string;

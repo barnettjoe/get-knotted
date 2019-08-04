@@ -4,6 +4,7 @@
     "jsRules": {},
     "rules": {
       "import-name": [false],
+      "function-name":[false],
       "variable-name": {
         "options": [
           "ban-keywords",
