@@ -1,9 +1,11 @@
 import Knot from './knot';
+import { FrameLine } from './line';
 import Bezier from './bezier/bezier';
 
 // TODO - give this a better name
 export interface INode {
   snapObject: Snap.Element;
+  sameNode(otherNode: INode): boolean;
   x: number;
   y: number;
 }
@@ -16,32 +18,32 @@ export interface GridOptions {
   style: LineStyle;
 }
 
-interface LineOptionsByNode {
-  method: 'node';
-  startNode: INode;
-  endNode: INode;
+interface LineOptions {
+  style: LineStyle;
 }
 
-interface LineOptionsByPosition {
-  method: 'position';
+export interface FrameLineOptions extends LineOptions {
+  endNode: INode;
+  startNode: INode;
+}
+
+export interface GraphLineOptions extends LineOptions {
   startX: number;
   startY: number;
   endX: number;
   endY: number;
 }
 
-// Discriminated Union
-export type LineOptions = LineOptionsByNode | LineOptionsByPosition;
-
 export interface LineStyle {
   // TODO - part of config type
 }
 
 export type Coords = [number, number];
+export type Vector = Coords;
 
 export interface Frame {
   nodes: INode[];
-  lines: Line[];
+  lines: FrameLine[];
   draw(): void;
   drawLines(): void;
   findProximalNode(coords: Coords): INode;
@@ -53,8 +55,10 @@ export interface Frame {
 
 export type IStrand = StrandElement[];
 
+export type Direction = 'L' | 'R'; 
+
 export interface StrandElement {
-  direction: 'L' | 'R';
+  direction: Direction;
   point: IPoint;
   pr: boolean;
   outboundBezier: Bezier;

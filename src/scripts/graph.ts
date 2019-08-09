@@ -1,7 +1,7 @@
 import config from './config.js';
 import Grid from './grid';
 import { pixelCoords } from './mouse.js';
-import Line from './line';
+import { GraphLine } from './line';
 
 import { GridOptions } from 'types';
 
@@ -25,12 +25,11 @@ export default class Graph extends Grid {
       const [startX, startY] = pixelCoords([options.startCol, i]);
       const [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
 
-      this.lines.push(new Line({
+      this.lines.push(new GraphLine({
         startX,
         startY,
         endX,
         endY,
-        method: 'position',
         style: options.style,
       }));
     }
@@ -42,12 +41,11 @@ export default class Graph extends Grid {
       const [startX, startY] = pixelCoords([i, options.startRow]);
       const [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
 
-      this.lines.push(new Line({
+      this.lines.push(new GraphLine({
         startX,
         startY,
         endX,
         endY,
-        method: 'position',
         style: options.style,
       }));
     }

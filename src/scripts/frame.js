@@ -1,6 +1,6 @@
 import Grid from './grid';
 import config from './config.js';
-import Line from './line';
+import { FrameLine } from './line';
 import Node from './node.js';
 import { coordinateSet } from './general-utils.js';
 
@@ -106,7 +106,7 @@ Frame.prototype = Object.assign(Object.create(Grid.prototype), {
   },
   drawLineBetween(startNode, endNode) {
     this.lines.push(
-      new Line({
+      new FrameLine({
         method: 'node',
         startNode,
         endNode,

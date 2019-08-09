@@ -1,9 +1,9 @@
 import { GridOptions } from './types';
-import Line from './line';
+import { GraphLine } from './line';
 
 export default class Grid {
   // TODO - check following prinicple of least privelege
-  public lines: Line[];
+  public lines: GraphLine[];
   public nodes?: Snap.Element[];
   public options: GridOptions;
 
