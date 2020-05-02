@@ -1,6 +1,6 @@
 import Knot from "./knot";
 import Frame from "./frame";
-import Node from "./node.js";
+import Node from "./node";
 import {
   rowAndCol,
   doIfInGraph,
@@ -11,7 +11,7 @@ import {
 import { identicalObjects } from "./general-utils";
 import Snap from "snapsvg";
 import config from "./config.js";
-import { Coords, Drawing, INode } from "./types";
+import { Coords, Drawing, INode, GridSystem } from "./types";
 
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
@@ -108,7 +108,7 @@ const drawing: Drawing = {
       new Node({
         x: coords[0],
         y: coords[1],
-        gridSystem: "square",
+        gridSystem: GridSystem.square,
       }),
     ];
     const adjacencies = [[]];

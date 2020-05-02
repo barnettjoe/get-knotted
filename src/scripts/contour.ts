@@ -1,14 +1,18 @@
-import { linearOrClose } from './knot-utils.js';
-import numeric from 'numeric';
-import Bezier from './bezier/bezier.js';
-import StraightLine from './straight-line.js';
-import { pointFollowing } from './strand.js';
+import numeric from "numeric";
+
+import { linearOrClose } from "./knot-utils.js";
+import Bezier from "./bezier/bezier.js";
+import StraightLine from "./straight-line.js";
+import { pointFollowing } from "./strand.js";
 
 const theta = 1.5;
 let strand;
-let matrix;
+let matrix: number[][];
 let equals;
 
+/**
+ * Take a basis strand (sequence of nodes), and add the actual beziers to it.
+ */
 export default function Contour(basisStrand) {
   strand = basisStrand;
   matrix = [];
@@ -29,6 +33,8 @@ export default function Contour(basisStrand) {
 function bezier(polygon) {
   return new Bezier(...polygon.reduce((arr, sub) => arr.concat(sub)));
 }
+
+// TODO - explain all the maths...
 function matrixSolution() {
   constructMatrix();
   const cntrlPoints = numeric.solve(matrix, equals);
@@ -43,10 +49,7 @@ function getBezier(index, xCntrlPoints, yCntrlPoints) {
   bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
   bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
   const nextPoint = pointFollowing(index, strand);
-  bezPoints.push([
-    nextPoint.x,
-    nextPoint.y,
-  ]);
+  bezPoints.push([nextPoint.x, nextPoint.y]);
   return bezPoints;
 }
 function assignOutbound(index) {
@@ -72,7 +75,7 @@ function constructMatrix() {
 }
 function emptyRow() {
   let row = [];
-  strand.forEach(function () {
+  strand.forEach(function() {
     row = row.concat([0, 0]);
   });
   return row;
@@ -108,9 +111,9 @@ function setC2continuity(i) {
 function setPRangle(i) {
   const point = strand[i];
   let angle;
-  if (point.pr === 'R') {
+  if (point.pr === "R") {
     angle = theta;
-  } else if (point.pr === 'L') {
+  } else if (point.pr === "L") {
     angle = 2 * Math.PI - theta;
   }
   const row1 = condition(2 * i - 1, [1, -Math.cos(angle)]);
@@ -119,5 +122,5 @@ function setPRangle(i) {
   matrix.push(row1.concat(row2));
   matrix.push(row3.concat(row1));
   equals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y),
-  equals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
+    equals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
 }

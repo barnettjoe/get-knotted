@@ -1,11 +1,10 @@
-import { collectionIntersect, format, mutate, reducer } from './knot-utils.js';
-import surface from './main';
-import { Strand, pointFollowing, pointPreceding } from './strand.js';
-import PointedReturn from './pointed-return.js';
-import Contour from './contour.js';
-import OffsetSketch from './offset-sketch';
+import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
+import surface from "./main";
+import { Strand, pointFollowing, pointPreceding } from "./strand.js";
+import PointedReturn from "./pointed-return.js";
+import Contour from "./contour";
+import OffsetSketch from "./offset-sketch";
 import {
-  Frame,
   KnotElement,
   INode,
   IStrand,
@@ -14,7 +13,8 @@ import {
   PolyLine,
   CollectionIntersect,
   StrandElement,
-} from './types';
+} from "./types";
+import Frame from "frame";
 
 export default class Knot {
   // TODO - can we make some of these private or protected?
@@ -57,15 +57,15 @@ export default class Knot {
   }
   makeStrands() {
     const strands = [];
-    while (this.frame.lines.some(line => line.uncrossed())) {
+    while (this.frame.lines.some((line) => line.uncrossed())) {
       strands.push(Strand(this.frame));
     }
     return strands;
   }
   makeOffsets() {
     this.strands = this.makeStrands();
-    this.contours = this.strands.map(strand => Contour(strand));
-    return this.contours.map(contour => new OffsetSketch(contour));
+    this.contours = this.strands.map((strand) => Contour(strand));
+    return this.contours.map((contour) => new OffsetSketch(contour));
   }
   addLineBetween(nodeA: INode, nodeB: INode) {
     this.frame.markAsAdjacent(nodeA, nodeB);
@@ -73,26 +73,28 @@ export default class Knot {
     this.init();
     this.draw();
   }
-  getUnder(point: IPoint, direction: 'L' | 'R', bound: 'in' | 'out') {
-    if (bound === 'out') {
-      return direction === 'R' ? point.underOutRight : point.underOutLeft;
+  getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
+    if (bound === "out") {
+      return direction === "R" ? point.underOutRight : point.underOutLeft;
     }
-    return direction === 'R' ? point.underInRight : point.underInLeft;
+    return direction === "R" ? point.underInRight : point.underInLeft;
   }
-  trim(under: PolyLine, intersect: CollectionIntersect, bound: 'in' | 'out') {
-    if (bound === 'out') {
+  trim(under: PolyLine, intersect: CollectionIntersect, bound: "in" | "out") {
+    if (bound === "out") {
       mutate(under, under.slice(intersect.idxA + 1));
       under.unshift(intersect.intersection);
-    } else if (bound === 'in') {
+    } else if (bound === "in") {
       mutate(under, under.slice(0, intersect.idxA + 1));
       under.push(intersect.intersection);
     }
   }
-  trimUnder(point: IPoint, direction: 'L' | 'R', bound: 'in' | 'out') {
+  trimUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
     const overLeft = point.overInLeft.concat(point.overOutLeft);
     const overRight = point.overInRight.concat(point.overOutRight);
     const under = this.getUnder(point, direction, bound);
-    const intersect = collectionIntersect(under, overLeft) || collectionIntersect(under, overRight);
+    const intersect =
+      collectionIntersect(under, overLeft) ||
+      collectionIntersect(under, overRight);
     if (intersect) {
       this.trim(under, intersect, bound);
     }
@@ -106,10 +108,10 @@ export default class Knot {
         const point = cpORpr.point;
         if (!cpORpr.pr) {
           if (!point.trimmed) {
-            this.trimUnder(point, 'R', 'out');
-            this.trimUnder(point, 'R', 'in');
-            this.trimUnder(point, 'L', 'out');
-            this.trimUnder(point, 'L', 'in');
+            this.trimUnder(point, "R", "out");
+            this.trimUnder(point, "R", "in");
+            this.trimUnder(point, "L", "out");
+            this.trimUnder(point, "L", "in");
           }
 
           point.trimmed = true;
@@ -143,7 +145,7 @@ export default class Knot {
   }
   drawOffsets(strandElement: StrandElement) {
     const point = strandElement.point;
-    if (strandElement.direction === 'R') {
+    if (strandElement.direction === "R") {
       this.drawPolyline(point.overOutLeft);
       this.drawPolyline(point.overOutRight);
     } else {

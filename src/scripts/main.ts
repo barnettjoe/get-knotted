@@ -1,7 +1,9 @@
 import drawing from "./drawing";
-import Snap from "snapsvg";
 import Graph from "./graph";
 import { Mode, MODES } from "./types";
+
+import Snap from "snapsvg";
+
 export default Snap("#surface");
 
 function drawSquareGrid() {

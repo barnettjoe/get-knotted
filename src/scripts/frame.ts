@@ -1,9 +1,9 @@
 import Grid from "./grid";
 import config from "./config.js";
 import { FrameLine } from "./line";
-import Node from "./node.js";
+import Node from "./node";
 import { coordinateSet } from "./general-utils.js";
-import { INode } from "./types";
+import { INode, GridSystem } from "./types";
 
 type Matrix = number[][];
 
@@ -39,7 +39,7 @@ export default class Frame extends Grid {
         new Node({
           x: coord[0],
           y: coord[1],
-          gridSystem: "square",
+          gridSystem: GridSystem.square,
         })
       );
     });

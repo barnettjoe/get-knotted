@@ -1,8 +1,8 @@
-import { GridOptions } from './types';
-import { GraphLine } from './line';
+import { GridOptions } from "./types";
+import { GraphLine } from "./line";
 
 export default class Grid {
-  // TODO - check following prinicple of least privelege
+  // TODO - check following prinicple of least privilege
   public lines: GraphLine[];
   public nodes?: Snap.Element[];
   public options: GridOptions;
@@ -13,11 +13,11 @@ export default class Grid {
   }
 
   remove() {
-    this.lines.forEach(line => line.snapObj.remove());
+    this.lines.forEach((line) => line.snapObj.remove());
     this.lines = [];
 
     if (this.nodes) {
-      this.nodes.forEach(node => node.remove());
+      this.nodes.forEach((node) => node.remove());
     }
   }
 }

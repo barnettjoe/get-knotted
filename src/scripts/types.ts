@@ -10,6 +10,17 @@ export interface INode {
   y: number;
 }
 
+export enum GridSystem {
+  square,
+  freeform,
+}
+
+export interface NodeOptions {
+  gridSystem: GridSystem;
+  x: number;
+  y: number;
+}
+
 export interface GridOptions {
   startRow: number;
   startCol: number;
