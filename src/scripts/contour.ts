@@ -1,6 +1,5 @@
 import numeric from "numeric";
 
-import { linearOrClose } from "./knot-utils.js";
 import Bezier from "./bezier/bezier.js";
 import StraightLine from "./straight-line.js";
 import { pointFollowing } from "./strand.js";
@@ -24,7 +23,6 @@ export default function Contour(basisStrand) {
     const polygon = getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
     point.outboundBezier = bezier(polygon);
-    assignOutbound(index);
   });
 
   return strand;
@@ -52,17 +50,7 @@ function getBezier(index, xCntrlPoints, yCntrlPoints) {
   bezPoints.push([nextPoint.x, nextPoint.y]);
   return bezPoints;
 }
-function assignOutbound(index) {
-  const point = strand[index];
-  if (linearOrClose(point.outboundBezier)) {
-    replaceOutboundWithStraightLine(index, point.outboundBezier);
-  }
-}
-function replaceOutboundWithStraightLine(index, bez) {
-  const start = [bez.points[0].x, bez.points[0].y];
-  const end = [bez.points[3].x, bez.points[3].y];
-  strand[index].outbound = new StraightLine(start, end);
-}
+
 function constructMatrix() {
   strand.forEach((point, index) => {
     setC2continuity(index);

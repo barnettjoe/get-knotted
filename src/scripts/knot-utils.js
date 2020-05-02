@@ -1,6 +1,6 @@
-import kldIntersections from 'kld-intersections';
-import config from './config.js';
-import Bezier from './bezier/bezier.js';
+import kldIntersections from "kld-intersections";
+import config from "./config.js";
+import Bezier from "./bezier/bezier.js";
 
 export function collectionIntersect(polylineA, polylineB) {
   let lineA;
@@ -10,7 +10,10 @@ export function collectionIntersect(polylineA, polylineB) {
     lineA = polylineA.slice(idxA, idxA + 2);
     for (let idxB = 0; idxB < polylineB.length - 1; idxB++) {
       lineB = polylineB.slice(idxB, idxB + 2);
-      intersection = kldIntersections.Intersection.intersectLineLine(...lineA, ...lineB);
+      intersection = kldIntersections.Intersection.intersectLineLine(
+        ...lineA,
+        ...lineB
+      );
       if (intersection.points.length > 0) {
         return {
           idxA: idxA,
@@ -24,9 +27,12 @@ export function collectionIntersect(polylineA, polylineB) {
 
 export function polyline(collection) {
   function reducer(acc, curve, idx) {
-    if (curve.constructor.name === 'StraightLine') {
+    if (curve.constructor.name === "StraightLine") {
       if (idx === 0) {
-        return acc.concat([{ x: curve.start[0], y: curve.start[1] }, { x: curve.end[0], y: curve.end[1] }]);
+        return acc.concat([
+          { x: curve.start[0], y: curve.start[1] },
+          { x: curve.end[0], y: curve.end[1] },
+        ]);
       } else {
         return acc.concat([{ x: curve.end[0], y: curve.end[1] }]);
       }
@@ -34,18 +40,22 @@ export function polyline(collection) {
       return acc.concat(curve.getLUT(config.resolution));
     }
   }
-  return collection.reduce(reducer, []).map(point => new kldIntersections.Point2D(point.x, point.y));
+  return collection
+    .reduce(reducer, [])
+    .map((point) => new kldIntersections.Point2D(point.x, point.y));
 }
 
 export function bezString(p0, p1, p2, p3) {
-  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${p3[1]}`;
+  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${
+    p3[1]
+  }`;
 }
 
 export function format(snapObj) {
   snapObj.attr({
-    stroke: 'black',
+    stroke: "black",
     strokeWidth: config.knot.borderWidth,
-    fill: 'none',
+    fill: "none",
   });
 }
 
@@ -66,25 +76,14 @@ function rotate(point, center, angle) {
 
 function alignBez(p0, p1, p2, p3) {
   // translate to get p0 on x axis
-  const translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
+  const translated = [p0, p1, p2, p3].map((coords) => [
+    coords[0],
+    coords[1] + -p0[1],
+  ]);
   // now rotate so p3 is also on x axis
   const deltaX = translated[0][0];
   const angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
-  return translated.map(coord => rotate(coord, translated[0], angle));
-}
-
-export function linearOrClose(bez) {
-  // simple heuristic for assessing linearity
-  const p0 = [bez.points[0].x, bez.points[0].y];
-  const p1 = [bez.points[1].x, bez.points[1].y];
-  const p2 = [bez.points[2].x, bez.points[2].y];
-  const p3 = [bez.points[3].x, bez.points[3].y];
-
-  const alignedCntrls = alignBez(p0, p1, p2, p3);
-  const alignedBez = new Bezier(...alignedCntrls[0], ...alignedCntrls[1], ...alignedCntrls[2], ...alignedCntrls[3]);
-  const length = Math.abs(alignedBez.points[0].x - alignedBez.points[3].x);
-  const width = Math.max(...alignedBez.points.map(point => Math.abs(point.y)));
-  return (length / width) > 100;
+  return translated.map((coord) => rotate(coord, translated[0], angle));
 }
 
 export function mutate(arr, newArr) {
