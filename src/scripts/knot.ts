@@ -37,8 +37,12 @@ export default class Knot {
   }
   init() {
     this.elements = [];
-    this.offsetSketches = this.makeOffsets();
-    this.makeOverUnders();
+    const strands = this.makeStrands();
+    this.contours = strands.map(Contour);
+    const offsetSketches = this.contours.map(
+      (contour) => new OffsetSketch(contour)
+    );
+    this.overUnders = this.makeOverUnders(strands, offsetSketches);
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -61,11 +65,6 @@ export default class Knot {
       strands.push(Strand(this.frame));
     }
     return strands;
-  }
-  makeOffsets() {
-    this.strands = this.makeStrands();
-    this.contours = this.strands.map((strand) => Contour(strand));
-    return this.contours.map((contour) => new OffsetSketch(contour));
   }
   addLineBetween(nodeA: INode, nodeB: INode) {
     this.frame.markAsAdjacent(nodeA, nodeB);
@@ -99,12 +98,12 @@ export default class Knot {
       this.trim(under, intersect, bound);
     }
   }
-  makeOverUnders() {
+  makeOverUnders(strands, offsetSketches) {
     // TODO - better to have this.strands always defined, so won't
     // need this check -- it could just sometimes be an empty array
-    if (!this.strands) return;
-    this.strands.forEach((strand, index) => {
-      const offsetSketch = this.offsetSketches[index];
+    if (!strands) return;
+    strands.forEach((strand, index) => {
+      const offsetSketch = offsetSketches[index];
       strand.forEach((cpORpr, idx) => {
         const point = cpORpr.point;
         const sketchPoint = offsetSketch.result[idx].point;
