@@ -7,8 +7,8 @@ export default function Node(options) {
   if (options.gridSystem === 'square') {
     this.gridX = options.x;
     this.gridY = options.y;
-    var x;
-    var y;
+    let x;
+    let y;
     [x, y] = pixelCoords([this.gridX, this.gridY]);
     this.x = x;
     this.y = y;

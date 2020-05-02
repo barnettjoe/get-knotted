@@ -22,10 +22,10 @@ CrossingPoint.prototype = Object.assign(Object.create(StrandElement.prototype), 
     return this.crossed('R') && this.crossed('L');
   },
   rotate(cx, cy, x, y, angle) {
-    var cos = Math.cos(angle);
-    var sin = Math.sin(angle);
-    var nx = cos * (x - cx) + sin * (y - cy) + cx;
-    var ny = cos * (y - cy) - sin * (x - cx) + cy;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const nx = cos * (x - cx) + sin * (y - cy) + cx;
+    const ny = cos * (y - cy) - sin * (x - cx) + cy;
     return [nx, ny];
   },
   uncrossedDirection() {
@@ -38,12 +38,12 @@ CrossingPoint.prototype = Object.assign(Object.create(StrandElement.prototype), 
     }
   },
   controlPoint(direction, backwards) {
-    var vector = backwards ? this.line.vector().map(i => -i) : this.line.vector();
-    var vectorLength = vector.map(i => i ** 2).reduce((j, m) => j + m) ** 0.5;
-    var normVect = vector.map(i => i / vectorLength);
-    var xStep = normVect[0] * config.bezierDistance;
-    var yStep = normVect[1] * config.bezierDistance;
-    var initialPosition = [this.coords[0] + xStep, this.coords[1] + yStep];
+    const vector = backwards ? this.line.vector().map(i => -i) : this.line.vector();
+    const vectorLength = vector.map(i => i ** 2).reduce((j, m) => j + m) ** 0.5;
+    const normVect = vector.map(i => i / vectorLength);
+    const xStep = normVect[0] * config.bezierDistance;
+    const yStep = normVect[1] * config.bezierDistance;
+    const initialPosition = [this.coords[0] + xStep, this.coords[1] + yStep];
     if (direction === 'L') {
       return this.rotate(...this.coords, ...initialPosition, Math.PI / 4);
     } else {

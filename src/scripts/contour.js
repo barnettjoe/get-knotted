@@ -38,7 +38,7 @@ function matrixSolution() {
   };
 }
 function getBezier(index, xCntrlPoints, yCntrlPoints) {
-  var bezPoints = [];
+  const bezPoints = [];
   bezPoints.push([strand[index].x, strand[index].y]);
   bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
   bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
@@ -56,8 +56,8 @@ function assignOutbound(index) {
   }
 }
 function replaceOutboundWithStraightLine(index, bez) {
-  var start = [bez.points[0].x, bez.points[0].y];
-  var end = [bez.points[3].x, bez.points[3].y];
+  const start = [bez.points[0].x, bez.points[0].y];
+  const end = [bez.points[3].x, bez.points[3].y];
   strand[index].outbound = new StraightLine(start, end);
 }
 function constructMatrix() {
@@ -71,15 +71,15 @@ function constructMatrix() {
   });
 }
 function emptyRow() {
-  var row = [];
+  let row = [];
   strand.forEach(function () {
     row = row.concat([0, 0]);
   });
   return row;
 }
 function condition(startIdx, entries) {
-  var row = emptyRow();
-  for (var x of entries) {
+  const row = emptyRow();
+  for (const x of entries) {
     if (startIdx > row.length - 1) {
       row[startIdx % row.length] = x;
     } else if (startIdx >= 0) {
@@ -92,14 +92,14 @@ function condition(startIdx, entries) {
   return row;
 }
 function setC1continuity(i) {
-  var row = condition(2 * i - 1, [1, 1]);
+  const row = condition(2 * i - 1, [1, 1]);
   matrix.push(row.concat(emptyRow()));
   matrix.push(emptyRow().concat(row));
   equals.push(2 * strand[i].x);
   equals.push(2 * strand[i].y);
 }
 function setC2continuity(i) {
-  var row = condition(2 * i, [1, -2, 2, -1]);
+  const row = condition(2 * i, [1, -2, 2, -1]);
   matrix.push(row.concat(emptyRow()));
   matrix.push(emptyRow().concat(row));
   equals.push(0);
@@ -107,15 +107,15 @@ function setC2continuity(i) {
 }
 function setPRangle(i) {
   const point = strand[i];
-  var angle;
+  let angle;
   if (point.pr === 'R') {
     angle = theta;
   } else if (point.pr === 'L') {
     angle = 2 * Math.PI - theta;
   }
-  var row1 = condition(2 * i - 1, [1, -Math.cos(angle)]);
-  var row2 = condition(2 * i, [Math.sin(angle)]);
-  var row3 = condition(2 * i, [-Math.sin(angle)]);
+  const row1 = condition(2 * i - 1, [1, -Math.cos(angle)]);
+  const row2 = condition(2 * i, [Math.sin(angle)]);
+  const row3 = condition(2 * i, [-Math.sin(angle)]);
   matrix.push(row1.concat(row2));
   matrix.push(row3.concat(row1));
   equals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y),

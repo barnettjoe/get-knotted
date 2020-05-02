@@ -3,12 +3,12 @@ import config from './config.js';
 import Bezier from './bezier/bezier.js';
 
 export function collectionIntersect(polylineA, polylineB) {
-  var lineA;
-  var lineB;
-  var intersection;
-  for (var idxA = 0; idxA < polylineA.length - 1; idxA++) {
+  let lineA;
+  let lineB;
+  let intersection;
+  for (let idxA = 0; idxA < polylineA.length - 1; idxA++) {
     lineA = polylineA.slice(idxA, idxA + 2);
-    for (var idxB = 0; idxB < polylineB.length - 1; idxB++) {
+    for (let idxB = 0; idxB < polylineB.length - 1; idxB++) {
       lineB = polylineB.slice(idxB, idxB + 2);
       intersection = kldIntersections.Intersection.intersectLineLine(...lineA, ...lineB);
       if (intersection.points.length > 0) {
@@ -50,40 +50,40 @@ export function format(snapObj) {
 }
 
 function rotateAboutOrigin(point, angle) {
-  var x = point[0];
-  var y = point[1];
-  var newX = x * Math.cos(angle) - y * Math.sin(angle);
-  var newY = y * Math.cos(angle) + x * Math.sin(angle);
+  const x = point[0];
+  const y = point[1];
+  const newX = x * Math.cos(angle) - y * Math.sin(angle);
+  const newY = y * Math.cos(angle) + x * Math.sin(angle);
   return [newX, newY];
 }
 
 function rotate(point, center, angle) {
   // first shift to origin
-  var shiftedPoint = [point[0] - center[0], point[1] - center[1]];
-  var rotated = rotateAboutOrigin(shiftedPoint, angle);
+  const shiftedPoint = [point[0] - center[0], point[1] - center[1]];
+  const rotated = rotateAboutOrigin(shiftedPoint, angle);
   return [rotated[0] + center[0], rotated[1] + center[1]];
 }
 
 function alignBez(p0, p1, p2, p3) {
   // translate to get p0 on x axis
-  var translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
+  const translated = [p0, p1, p2, p3].map(coords => [coords[0], coords[1] + -p0[1]]);
   // now rotate so p3 is also on x axis
-  var deltaX = translated[0][0];
-  var angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
+  const deltaX = translated[0][0];
+  const angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
   return translated.map(coord => rotate(coord, translated[0], angle));
 }
 
 export function linearOrClose(bez) {
   // simple heuristic for assessing linearity
-  var p0 = [bez.points[0].x, bez.points[0].y];
-  var p1 = [bez.points[1].x, bez.points[1].y];
-  var p2 = [bez.points[2].x, bez.points[2].y];
-  var p3 = [bez.points[3].x, bez.points[3].y];
+  const p0 = [bez.points[0].x, bez.points[0].y];
+  const p1 = [bez.points[1].x, bez.points[1].y];
+  const p2 = [bez.points[2].x, bez.points[2].y];
+  const p3 = [bez.points[3].x, bez.points[3].y];
 
-  var alignedCntrls = alignBez(p0, p1, p2, p3);
-  var alignedBez = new Bezier(...alignedCntrls[0], ...alignedCntrls[1], ...alignedCntrls[2], ...alignedCntrls[3]);
-  var length = Math.abs(alignedBez.points[0].x - alignedBez.points[3].x);
-  var width = Math.max(...alignedBez.points.map(point => Math.abs(point.y)));
+  const alignedCntrls = alignBez(p0, p1, p2, p3);
+  const alignedBez = new Bezier(...alignedCntrls[0], ...alignedCntrls[1], ...alignedCntrls[2], ...alignedCntrls[3]);
+  const length = Math.abs(alignedBez.points[0].x - alignedBez.points[3].x);
+  const width = Math.max(...alignedBez.points.map(point => Math.abs(point.y)));
   return (length / width) > 100;
 }
 
@@ -92,7 +92,7 @@ export function mutate(arr, newArr) {
   while (arr.length > 0) {
     arr.pop();
   }
-  for (var x of newArr) {
+  for (const x of newArr) {
     arr.push(x);
   }
   return arr;

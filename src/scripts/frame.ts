@@ -1,9 +1,9 @@
-import Grid from './grid';
-import config from './config.js';
-import { FrameLine } from './line';
-import Node from './node.js';
-import { coordinateSet } from './general-utils.js';
-import { INode } from './types';
+import Grid from "./grid";
+import config from "./config.js";
+import { FrameLine } from "./line";
+import Node from "./node.js";
+import { coordinateSet } from "./general-utils.js";
+import { INode } from "./types";
 
 type Matrix = number[][];
 
@@ -28,13 +28,18 @@ export default class Frame extends Grid {
     const rightmost = Math.max(initialBox[0], finalBox[0]);
     const bottommost = Math.max(initialBox[1], finalBox[1]);
 
-    const nodeCoords = coordinateSet({ leftmost, rightmost, topmost, bottommost });
+    const nodeCoords = coordinateSet({
+      leftmost,
+      rightmost,
+      topmost,
+      bottommost,
+    });
     nodeCoords.forEach((coord) => {
       frame.nodes.push(
         new Node({
           x: coord[0],
           y: coord[1],
-          gridSystem: 'square',
+          gridSystem: "square",
         })
       );
     });
@@ -43,13 +48,13 @@ export default class Frame extends Grid {
   }
 
   nodeIndex(node) {
-    return this.nodes.findIndex(function (someNode) {
+    return this.nodes.findIndex(function(someNode) {
       return someNode.sameNode(node);
     });
   }
 
   closestNodeToPoint(coords) {
-    return this.nodes.reduce(function (acc, node) {
+    return this.nodes.reduce(function(acc, node) {
       if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
         return node;
       } else {
@@ -64,13 +69,13 @@ export default class Frame extends Grid {
     if (closestNode.distanceFromPoint(coords) < proximityThreshold) {
       return closestNode;
     }
-    // explicit return to appease tslint
+    // explicit return to appease eslint
     return undefined;
   }
 
   lineExistsBetween(nodeA, nodeB) {
     const allLines = this.lines;
-    return !!allLines.find(line => {
+    return !!allLines.find((line) => {
       return line.isBetween(nodeA, nodeB);
     });
   }
@@ -95,16 +100,16 @@ export default class Frame extends Grid {
   }
 
   showCrossingPoints() {
-    this.lines.forEach(line => line.drawCrossingPoints());
+    this.lines.forEach((line) => line.drawCrossingPoints());
   }
 
   showAllNodes() {
-    this.nodes.forEach(node => node.draw());
+    this.nodes.forEach((node) => node.draw());
   }
 
   static allNeighboursAdjacent(frame) {
     const adjacencies = [];
-    frame.nodes.forEach(firstNode => {
+    frame.nodes.forEach((firstNode) => {
       adjacencies.push([]);
       frame.nodes.forEach((secondNode, j) => {
         if (firstNode.isAdjacentTo(secondNode)) {
@@ -118,7 +123,7 @@ export default class Frame extends Grid {
   drawLineBetween(startNode, endNode) {
     this.lines.push(
       new FrameLine({
-        method: 'node',
+        method: "node",
         startNode,
         endNode,
         style: config.frame,
@@ -129,7 +134,7 @@ export default class Frame extends Grid {
   drawLines() {
     this.lines = [];
     this.nodes.forEach((startNode, i) => {
-      this.adjacencyList[i].forEach(j => {
+      this.adjacencyList[i].forEach((j) => {
         // avoid drawing each line twice
         if (i < j) {
           this.drawLineBetween(startNode, this.nodes[j]);
@@ -139,7 +144,7 @@ export default class Frame extends Grid {
   }
 
   linesOutFrom(node) {
-    return this.lines.filter(line => line.visits(node));
+    return this.lines.filter((line) => line.visits(node));
   }
 
   draw() {
@@ -148,13 +153,15 @@ export default class Frame extends Grid {
   }
 
   overlapsExistingNode(pxX, pxY) {
-    return this.nodes.some(node => node.hasOverlap(pxX, pxY));
+    return this.nodes.some((node) => node.hasOverlap(pxX, pxY));
   }
 
   merge(otherFrame) {
     const originalLength = this.nodes.length;
     const nodes = this.nodes.concat(otherFrame.nodes);
-    const newAdjacencies = otherFrame.adjacencyList.map(arr => arr.map(x => x + originalLength));
+    const newAdjacencies = otherFrame.adjacencyList.map((arr) =>
+      arr.map((x) => x + originalLength)
+    );
     const adjacencies = this.adjacencyList.concat(newAdjacencies);
     this.nodes = nodes;
     this.adjacencyList = adjacencies;
@@ -162,6 +169,6 @@ export default class Frame extends Grid {
   }
 
   firstUncrossedLine() {
-    return this.lines.find(line => line.uncrossed());
+    return this.lines.find((line) => line.uncrossed());
   }
 }

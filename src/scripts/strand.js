@@ -37,9 +37,9 @@ function addElement() {
   }));
 
   if (pointedReturn(strandState.frame)) {
-    var startCoords = strandState.currentLine.crossingPoint.coords;
-    var endCoords = nextLine(strandState.frame).crossingPoint.coords;
-    var prCoords = getApexCoords(startCoords, endCoords);
+    const startCoords = strandState.currentLine.crossingPoint.coords;
+    const endCoords = nextLine(strandState.frame).crossingPoint.coords;
+    const prCoords = getApexCoords(startCoords, endCoords);
     add.call(this, {
       point: {},
       x: prCoords[0],
@@ -89,8 +89,8 @@ function endOfStrand() {
   return nextLine(strandState.frame).crossingPoint.crossed(oppositeDirection());
 }
 function getApexCoords(startPoint, endPoint) {
-  var startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
-  var normal;
+  const startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
+  let normal;
   if (strandState.direction === 'R') {
     normal = [-startToEnd[1], startToEnd[0]];
   } else if (strandState.direction === 'L') {
@@ -100,14 +100,14 @@ function getApexCoords(startPoint, endPoint) {
 }
 function nextLine() {
   const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
-  var orderedLinesOut = roundabout.slice().sort(compareByAngle);
-  var inIndex = orderedLinesOut.indexOf(strandState.currentLine);
+  const orderedLinesOut = roundabout.slice().sort(compareByAngle);
+  const inIndex = orderedLinesOut.indexOf(strandState.currentLine);
 
   if (strandState.direction === 'R') {
     // pad out list with first element...
     // to allow going all way thru to start again
-    var previousLine = orderedLinesOut[inIndex - 1];
-    var lastLine = orderedLinesOut[orderedLinesOut.length - 1];
+    const previousLine = orderedLinesOut[inIndex - 1];
+    const lastLine = orderedLinesOut[orderedLinesOut.length - 1];
     return previousLine || lastLine;
   } else {
     orderedLinesOut.push(orderedLinesOut[0]);
@@ -124,8 +124,8 @@ function goingBackwards() {
   return strandState.currentLine.startNode.sameNode(strandState.targetNode);
 }
 function pointedReturn() {
-  var angleDelta = Math.abs(currentBearing() - nextBearing(strandState.frame));
-  var smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
+  const angleDelta = Math.abs(currentBearing() - nextBearing(strandState.frame));
+  const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
 }
 function initialDirection() {

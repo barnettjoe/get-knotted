@@ -13,12 +13,12 @@ PointedReturn.prototype = {
     this.drawOuters();
   },
   clippedOutboundPath(intersection, polyline) {
-    var points = polyline.slice(0, intersection.idxA + 1);
+    const points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
     return points;
   },
   clippedInboundPath(intersection, polyline) {
-    var points = polyline.slice(intersection.idxB + 1);
+    const points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);
     return points;
   },
@@ -40,14 +40,14 @@ PointedReturn.prototype = {
       innerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
     }
 
-    var intersection = collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
+    const intersection = collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
     this.outClipped = this.clippedOutboundPath(intersection, innerOutboundPolyline);
     this.inClipped = this.clippedInboundPath(intersection, innerInboundPolyline);
-    var points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
-    var snp = surface.polyline(points);
+    const points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
+    const snp = surface.polyline(points);
     this.elements.push(snp);
     format(snp);
   },
@@ -77,8 +77,8 @@ PointedReturn.prototype = {
 
     //surface.circle(outerTip.x, outerTip.y, 1).attr({ fill: 'red' });
     const points = outerOutboundPolyline.concat([outerTip].concat(outerInboundPolyline));
-    var pointList = points.reduce(reducer, []);
-    var snp = surface.polyline(pointList);
+    const pointList = points.reduce(reducer, []);
+    const snp = surface.polyline(pointList);
     this.elements.push(snp);
     format(snp);
   },
