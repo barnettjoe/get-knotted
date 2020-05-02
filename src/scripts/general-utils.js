@@ -1,10 +1,12 @@
 function integerRange(first, last) {
-  return Array(last - first + 1).fill().map((_, i) => first + i);
+  return Array(last - first + 1)
+    .fill()
+    .map((_, i) => first + i);
 }
 
 function cartesianProduct(arr1, arr2) {
   return arr1.reduce((acc, x) => {
-    return acc.concat(arr2.map(y => [x, y]));
+    return acc.concat(arr2.map((y) => [x, y]));
   }, []);
 }
 
@@ -20,5 +22,7 @@ export function coordinateSet({ leftmost, rightmost, topmost, bottommost }) {
 }
 
 export function distanceBetween(coordsA, coordsB) {
-  return ((coordsA[0] - coordsB[0])**2 + (coordsA[1] - coordsB[1])**2)**0.5;
+  return (
+    ((coordsA[0] - coordsB[0]) ** 2 + (coordsA[1] - coordsB[1]) ** 2) ** 0.5
+  );
 }

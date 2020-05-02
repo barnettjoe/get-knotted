@@ -17,7 +17,7 @@ function setUpButton(id: Mode) {
   if (button) {
     button.addEventListener("click", changeDrawingMode(id), false);
   } else {
-    // TODO - throw error
+    throw new Error("button not present in the DOM");
   }
 }
 

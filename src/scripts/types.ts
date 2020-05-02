@@ -1,6 +1,6 @@
-import Knot from './knot';
-import { FrameLine } from './line';
-import Bezier from './bezier/bezier';
+import Knot from "./knot";
+import Frame from "./frame";
+import Bezier from "./bezier/bezier";
 
 // TODO - give this a better name
 export interface INode {
@@ -41,21 +41,21 @@ export interface LineStyle {
 export type Coords = [number, number];
 export type Vector = Coords;
 
-export interface Frame {
-  nodes: INode[];
-  lines: FrameLine[];
-  draw(): void;
-  drawLines(): void;
-  findProximalNode(coords: Coords): INode;
-  remove(): void;
-  merge(otherFrame: Frame): Frame;
-  markAsAdjacent(lineStart: INode, lineEnd: INode): void;
-  overlapsExistingNode(x: number, y: number): boolean;
-}
+// export interface Frame {
+//   nodes: INode[];
+//   lines: FrameLine[];
+//   draw(): void;
+//   drawLines(): void;
+//   findProximalNode(coords: Coords): INode;
+//   remove(): void;
+//   merge(otherFrame: Frame): Frame;
+//   markAsAdjacent(lineStart: INode, lineEnd: INode): void;
+//   overlapsExistingNode(x: number, y: number): boolean;
+// }
 
 export type IStrand = StrandElement[];
 
-export type Direction = 'L' | 'R'; 
+export type Direction = "L" | "R";
 
 export interface StrandElement {
   direction: Direction;
@@ -85,10 +85,7 @@ export interface CollectionIntersect {
 
 export type PolyLine = Coords[];
 
-export interface IContour {
-
-}
-
+export interface IContour {}
 
 export interface OffsetSketch {
   foo: string;
@@ -98,7 +95,7 @@ export interface KnotElement {
   remove(): void;
 }
 
-export const MODES = ['add-grid', 'add-node', 'add-line'] as const;
+export const MODES = ["add-grid", "add-node", "add-line"] as const;
 export type Mode = typeof MODES[number];
 
 export interface Drawing {
