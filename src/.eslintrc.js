@@ -3,11 +3,12 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "prettier"],
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
+    "prettier",
   ],
   parserOptions: {
     ecmaVersion: 2018,
