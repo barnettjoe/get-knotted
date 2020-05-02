@@ -103,15 +103,17 @@ export default class Knot {
     // TODO - better to have this.strands always defined, so won't
     // need this check -- it could just sometimes be an empty array
     if (!this.strands) return;
-    this.strands.forEach((strand) => {
-      strand.forEach((cpORpr) => {
+    this.strands.forEach((strand, index) => {
+      const offsetSketch = this.offsetSketches[index];
+      strand.forEach((cpORpr, idx) => {
         const point = cpORpr.point;
+        const sketchPoint = offsetSketch.result[idx].point;
         if (!cpORpr.pr) {
           if (!point.trimmed) {
-            this.trimUnder(point, "R", "out");
-            this.trimUnder(point, "R", "in");
-            this.trimUnder(point, "L", "out");
-            this.trimUnder(point, "L", "in");
+            this.trimUnder(sketchPoint, "R", "out");
+            this.trimUnder(sketchPoint, "R", "in");
+            this.trimUnder(sketchPoint, "L", "out");
+            this.trimUnder(sketchPoint, "L", "in");
           }
 
           point.trimmed = true;

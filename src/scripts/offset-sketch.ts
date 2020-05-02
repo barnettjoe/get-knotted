@@ -26,6 +26,7 @@ export default class OffsetSketch {
         next.point.overInLeft = leftOutboundOffset;
         next.point.overInRight = rightOutboundOffset;
       }
+      this.result = contour;
     });
   }
   polyLineOffset(bezier, offset) {
