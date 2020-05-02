@@ -7,24 +7,24 @@ export default class OffsetSketch {
     contour.forEach((point, index) => {
       const next = pointFollowing(index, contour);
       const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
-      point.leftOutboundOffset = this.polyLineOffset(
+      const leftOutboundOffset = this.polyLineOffset(
         point.outboundBezier,
         -offset
       );
-      point.rightOutboundOffset = this.polyLineOffset(
+      const rightOutboundOffset = this.polyLineOffset(
         point.outboundBezier,
         offset
       );
       if (point.direction === "R" || point.pr === "L") {
-        point.point.overOutLeft = point.leftOutboundOffset;
-        point.point.overOutRight = point.rightOutboundOffset;
-        next.point.underInLeft = point.leftOutboundOffset;
-        next.point.underInRight = point.rightOutboundOffset;
+        point.point.overOutLeft = leftOutboundOffset;
+        point.point.overOutRight = rightOutboundOffset;
+        next.point.underInLeft = leftOutboundOffset;
+        next.point.underInRight = rightOutboundOffset;
       } else {
-        point.point.underOutLeft = point.leftOutboundOffset;
-        point.point.underOutRight = point.rightOutboundOffset;
-        next.point.overInLeft = point.leftOutboundOffset;
-        next.point.overInRight = point.rightOutboundOffset;
+        point.point.underOutLeft = leftOutboundOffset;
+        point.point.underOutRight = rightOutboundOffset;
+        next.point.overInLeft = leftOutboundOffset;
+        next.point.overInRight = rightOutboundOffset;
       }
     });
   }
