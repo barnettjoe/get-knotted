@@ -19,13 +19,14 @@ export default function Contour(basisStrand) {
   const { xCntrlPoints, yCntrlPoints } = matrixSolution();
   const polygons = [];
 
-  strand.forEach((point, index) => {
+  return strand.map((point, index) => {
     const polygon = getBezier(index, xCntrlPoints, yCntrlPoints);
     polygons.push(polygon);
-    point.outboundBezier = bezier(polygon);
+    return {
+      ...point,
+      outboundBezier: bezier(polygon),
+    };
   });
-
-  return strand;
 }
 
 function bezier(polygon) {

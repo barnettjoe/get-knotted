@@ -122,8 +122,8 @@ export default class Knot {
   draw() {
     // TODO - better to have this.strands always defined, so won't
     // need this check -- it could just sometimes be an empty array
-    if (!this.strands) return;
-    this.strands.forEach((strand) => {
+    if (!this.contours) return;
+    this.contours.forEach((strand) => {
       strand.forEach((strandElement, i) => {
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
