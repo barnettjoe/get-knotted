@@ -1,5 +1,5 @@
 import Knot from './knot';
-import Frame from './frame.js';
+import Frame from './frame';
 import Node from './node.js';
 import {
   rowAndCol,
@@ -120,10 +120,7 @@ const drawing: Drawing = {
     });
   },
   drawFrame() {
-    currentFrame = new Frame({
-      initialBox: dragStart,
-      finalBox: dragEnd,
-    });
+    currentFrame = Frame.fromExtrema(dragStart, dragEnd);
     currentFrame.draw();
   },
   startDrawingGrid(e) {
@@ -141,10 +138,7 @@ const drawing: Drawing = {
     if (!identicalObjects(previousBox, dragEnd)) {
       doIfInGraph(dragEnd, (() => {
         if (currentFrame) currentFrame.remove();
-        currentFrame = new Frame({
-          initialBox: dragStart,
-          finalBox: dragEnd,
-        });
+        currentFrame = Frame.fromExtrema(dragStart, dragEnd);
         currentFrame.draw();
       }).bind(this));
     }

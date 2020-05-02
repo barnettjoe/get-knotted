@@ -17,7 +17,7 @@ function setUpButton(id: Mode) {
   if (button) {
     button.addEventListener('click', changeDrawingMode(id), false);
   } else {
-    // throw error
+    // TODO - throw error
   }
 }
 

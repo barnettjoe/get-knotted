@@ -31,9 +31,6 @@ export class FrameLine {
   public crossingPoint: CrossingPoint;
 
   constructor(options: FrameLineOptions) {
-    // TODO - idk when we actually use these two different methods of initialization
-    // in what situation is startNode not defined on a Line?
-    // is it grid lines vs graph lines??
     this.startNode = options.startNode;
     this.endNode = options.endNode;
     this.startX = this.startNode.x;
