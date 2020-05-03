@@ -2,6 +2,8 @@ import Knot from "./knot";
 import Frame from "./frame";
 import Bezier from "./bezier/bezier";
 
+export type Matrix = number[][];
+
 // TODO - give this a better name
 export interface INode {
   snapObject: Snap.Element;

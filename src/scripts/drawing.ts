@@ -100,7 +100,8 @@ const drawing: Drawing = {
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
-    frame.drawLines();
+    frame.makeLines();
+    frame.lines.forEach((line) => line.draw());
     this.knots.push(new Knot(frame));
   },
   singleNodeFrame(coords) {

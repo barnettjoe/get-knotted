@@ -47,6 +47,7 @@ export default class Knot {
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
     mergedFrame.markAsAdjacent(lineStart, lineEnd);
+    mergedFrame.makeLines();
     mergedFrame.draw();
     const mergedKnot = new Knot(mergedFrame);
     // TODO - this conditional is necessary because elements is undefined on objects before
@@ -68,7 +69,8 @@ export default class Knot {
   }
   addLineBetween(nodeA: INode, nodeB: INode) {
     this.frame.markAsAdjacent(nodeA, nodeB);
-    this.frame.drawLines();
+    this.frame.makeLines();
+    this.frame.lines.forEach((line) => line.draw());
     this.init();
     this.draw();
   }
@@ -142,6 +144,7 @@ export default class Knot {
       });
     });
     this.frame.remove();
+    this.frame.makeLines();
     this.frame.draw();
   }
   drawOffsets(strandElement: StrandElement) {

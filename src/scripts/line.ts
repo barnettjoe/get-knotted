@@ -1,6 +1,12 @@
-import surface from './main';
-import CrossingPoint from './crossing-point.js';
-import { INode, GraphLineOptions, FrameLineOptions, Vector, Direction } from './types';
+import surface from "./main";
+import CrossingPoint from "./crossing-point.js";
+import {
+  INode,
+  GraphLineOptions,
+  FrameLineOptions,
+  Vector,
+  Direction,
+} from "./types";
 
 export class GraphLine {
   // TODO - how to share all these between GraphLine and FrameLine??
@@ -15,7 +21,9 @@ export class GraphLine {
     this.startY = options.startY;
     this.endX = options.endX;
     this.endY = options.endY;
-    this.snapObj = surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
+    this.snapObj = surface
+      .line(this.startX, this.startY, this.endX, this.endY)
+      .attr(options.style);
   }
 }
 
@@ -37,8 +45,20 @@ export class FrameLine {
     this.startY = this.startNode.y;
     this.endX = this.endNode.x;
     this.endY = this.endNode.y;
-    this.crossingPoint = new CrossingPoint(this.startX, this.startY, this.endX, this.endY, this);
-    this.snapObj = surface.line(this.startX, this.startY, this.endX, this.endY).attr(options.style);
+    this.crossingPoint = new CrossingPoint(
+      this.startX,
+      this.startY,
+      this.endX,
+      this.endY,
+      this
+    );
+    this.style = options.style;
+  }
+
+  draw() {
+    this.snapObj = surface
+      .line(this.startX, this.startY, this.endX, this.endY)
+      .attr(this.style);
   }
 
   uncrossed() {
@@ -50,8 +70,10 @@ export class FrameLine {
   }
 
   isBetween(nodeA: INode, nodeB: INode) {
-    const isForwards = this.startNode.sameNode(nodeA) && this.endNode.sameNode(nodeB);
-    const isReversed = this.startNode.sameNode(nodeB) && this.endNode.sameNode(nodeA);
+    const isForwards =
+      this.startNode.sameNode(nodeA) && this.endNode.sameNode(nodeB);
+    const isReversed =
+      this.startNode.sameNode(nodeB) && this.endNode.sameNode(nodeA);
     return isForwards || isReversed;
   }
 
@@ -66,7 +88,7 @@ export class FrameLine {
   angle(options: { reverse?: boolean }) {
     let vector = this.vector();
     if (options.reverse) {
-      vector = vector.map(coord => coord * -1) as Vector;
+      vector = vector.map((coord) => coord * -1) as Vector;
     }
     const result = Math.atan2(vector[1], vector[0]); // return value is in radians
     // result += 2 * Math.PI
@@ -92,11 +114,11 @@ export class FrameLine {
   angleOutCP(options: { direction: Direction; reverse?: boolean }) {
     let vect = this.vector();
     if (options.reverse) {
-      vect = vect.map(coord => coord * -1) as Vector;
+      vect = vect.map((coord) => coord * -1) as Vector;
     }
 
     let resultant;
-    if (options.direction === 'R') {
+    if (options.direction === "R") {
       resultant = this.rotateAboutOrigin(vect, Math.PI / 4);
     } else {
       resultant = this.rotateAboutOrigin(vect, -Math.PI / 4);

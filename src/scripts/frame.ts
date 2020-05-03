@@ -2,16 +2,31 @@ import Grid from "./grid";
 import config from "./config.js";
 import { FrameLine } from "./line";
 import Node from "./node";
-import { coordinateSet } from "./general-utils.js";
-import { INode, GridSystem } from "./types";
+import { INode, GridSystem, Matrix } from "./types";
 
-type Matrix = number[][];
+function cartesianProduct(arr1, arr2) {
+  return arr1.reduce((acc, x) => {
+    return acc.concat(arr2.map((y) => [x, y]));
+  }, []);
+}
+
+function integerRange(first, last) {
+  return Array(last - first + 1)
+    .fill()
+    .map((_, i) => first + i);
+}
+
+function coordinateSet({ leftmost, rightmost, topmost, bottommost }) {
+  const xCoords = integerRange(leftmost, rightmost + 1);
+  const yCoords = integerRange(topmost, bottommost + 1);
+  return cartesianProduct(xCoords, yCoords);
+}
 
 export default class Frame extends Grid {
-  // check privelege levels and optionality
-  public adjacencyList?: Matrix;
+  private adjacencyList: Matrix;
   // TODO - error here bc. superclass Grid has a property nodes too, which has different type
-  public nodes: INode[];
+  private nodes: INode[];
+  public crossingPoints: any[];
 
   constructor(nodes, adjacencies) {
     super();
@@ -44,6 +59,7 @@ export default class Frame extends Grid {
       );
     });
     frame.adjacencyList = Frame.allNeighboursAdjacent(frame);
+    frame.makeLines();
     return frame;
   }
 
@@ -120,7 +136,7 @@ export default class Frame extends Grid {
     return adjacencies;
   }
 
-  drawLineBetween(startNode, endNode) {
+  makeLineBetween(startNode, endNode) {
     this.lines.push(
       new FrameLine({
         method: "node",
@@ -131,13 +147,13 @@ export default class Frame extends Grid {
     );
   }
 
-  drawLines() {
+  makeLines() {
     this.lines = [];
     this.nodes.forEach((startNode, i) => {
       this.adjacencyList[i].forEach((j) => {
         // avoid drawing each line twice
         if (i < j) {
-          this.drawLineBetween(startNode, this.nodes[j]);
+          this.makeLineBetween(startNode, this.nodes[j]);
         }
       });
     });
@@ -148,7 +164,7 @@ export default class Frame extends Grid {
   }
 
   draw() {
-    this.drawLines();
+    this.lines.forEach((line) => line.draw());
     this.showAllNodes();
   }
 

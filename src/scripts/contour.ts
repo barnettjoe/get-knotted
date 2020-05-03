@@ -3,10 +3,11 @@ import numeric from "numeric";
 import Bezier from "./bezier/bezier.js";
 import StraightLine from "./straight-line.js";
 import { pointFollowing } from "./strand.js";
+import { Matrix } from "./types";
 
 const theta = 1.5;
 let strand;
-let matrix: number[][];
+let matrix: Matrix;
 let equals;
 
 /**
