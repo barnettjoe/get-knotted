@@ -3,7 +3,7 @@ import surface from "./main";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
 import PointedReturn from "./pointed-return.js";
 import Contour from "./contour";
-import OffsetSketch from "./offset-sketch";
+import offsetSketch from "./offset-sketch";
 import {
   KnotElement,
   INode,
@@ -20,7 +20,7 @@ export default class Knot {
   // TODO - can we make some of these private or protected?
   public frame: Frame;
   public elements?: KnotElement[];
-  public offsetSketches?: OffsetSketch[];
+  public offsetSketches?: offsetSketch[];
   public strands?: IStrand[];
   public contours?: IContour[];
 
@@ -43,9 +43,7 @@ export default class Knot {
     this.elements = [];
     const strands = this.makeStrands();
     this.contours = strands.map(Contour);
-    const offsetSketches = this.contours.map(
-      (contour) => new OffsetSketch(contour)
-    );
+    const offsetSketches = this.contours.map(offsetSketch);
     this.overUnders = this.makeOverUnders(strands, offsetSketches);
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
@@ -110,10 +108,10 @@ export default class Knot {
     if (!strands) return;
     strands.forEach((strand, index) => {
       const offsetSketch = offsetSketches[index];
-      strand.forEach((cpORpr, idx) => {
-        const point = cpORpr.point;
+      strand.forEach((strandElement, idx) => {
+        const point = strandElement.point;
         const sketchPoint = offsetSketch.result[idx].point;
-        if (!cpORpr.pr) {
+        if (!strandElement.pr) {
           if (!point.trimmed) {
             this.trimUnder(sketchPoint, "R", "out");
             this.trimUnder(sketchPoint, "R", "in");
