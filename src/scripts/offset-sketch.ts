@@ -2,6 +2,7 @@ import config from "./config.js";
 import { polyline } from "./knot-utils.js";
 import { pointFollowing } from "./strand.js";
 
+const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 /**
  * TODO - currently, this mutates the crosspoints that
  * were created along with the original frame, to add
@@ -11,7 +12,7 @@ import { pointFollowing } from "./strand.js";
  * and the values are objects containing the new informatiom
  * on offset beziers.
  */
-export default function offsetSketch(contour) {
+export default function offsetSketch(result, contour) {
   function polyLineOffset(bezier, offset) {
     const reduced = bezier.reduce();
     const polyBezier = reduced.map((segment) => segment.scale(offset));
@@ -20,7 +21,7 @@ export default function offsetSketch(contour) {
   }
   contour.forEach((strandElement, index) => {
     const nextStrandElement = pointFollowing(index, contour);
-    const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
+
     const leftOutboundOffset = polyLineOffset(
       strandElement.outboundBezier,
       -offset
@@ -30,16 +31,28 @@ export default function offsetSketch(contour) {
       offset
     );
     if (strandElement.direction === "R" || strandElement.pr === "L") {
-      strandElement.point.overOutLeft = leftOutboundOffset;
-      strandElement.point.overOutRight = rightOutboundOffset;
-      nextStrandElement.point.underInLeft = leftOutboundOffset;
-      nextStrandElement.point.underInRight = rightOutboundOffset;
+      result.set(strandElement.point, {
+        ...(result.get(strandElement.point) || {}),
+        overOutLeft: leftOutboundOffset,
+        overOutRight: rightOutboundOffset,
+      });
+      result.set(nextStrandElement.point, {
+        ...(result.get(nextStrandElement.point) || {}),
+        underInLeft: leftOutboundOffset,
+        underInRight: rightOutboundOffset,
+      });
     } else {
-      strandElement.point.underOutLeft = leftOutboundOffset;
-      strandElement.point.underOutRight = rightOutboundOffset;
-      nextStrandElement.point.overInLeft = leftOutboundOffset;
-      nextStrandElement.point.overInRight = rightOutboundOffset;
+      result.set(strandElement.point, {
+        ...(result.get(strandElement.point) || {}),
+        underOutLeft: leftOutboundOffset,
+        underOutRight: rightOutboundOffset,
+      });
+      result.set(nextStrandElement.point, {
+        ...(result.get(nextStrandElement.point) || {}),
+        overInLeft: leftOutboundOffset,
+        overInRight: rightOutboundOffset,
+      });
     }
   });
-  return { result: contour };
+  return result;
 }

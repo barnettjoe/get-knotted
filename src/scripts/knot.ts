@@ -43,8 +43,9 @@ export default class Knot {
     this.elements = [];
     const strands = this.makeStrands();
     this.contours = strands.map(Contour);
-    const offsetSketches = this.contours.map(offsetSketch);
-    this.overUnders = this.makeOverUnders(strands, offsetSketches);
+    this.offsetSketches = this.contours.reduce(offsetSketch, new Map());
+    // mutates the offset sketches
+    this.overUnders = this.makeOverUnders(strands, this.offsetSketches);
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -107,10 +108,9 @@ export default class Knot {
     // need this check -- it could just sometimes be an empty array
     if (!strands) return;
     strands.forEach((strand, index) => {
-      const offsetSketch = offsetSketches[index];
       strand.forEach((strandElement, idx) => {
         const point = strandElement.point;
-        const sketchPoint = offsetSketch.result[idx].point;
+        const sketchPoint = offsetSketches.get(point);
         if (!strandElement.pr) {
           if (!point.trimmed) {
             this.trimUnder(sketchPoint, "R", "out");
@@ -118,7 +118,6 @@ export default class Knot {
             this.trimUnder(sketchPoint, "L", "out");
             this.trimUnder(sketchPoint, "L", "in");
           }
-
           point.trimmed = true;
         }
       });
@@ -135,13 +134,13 @@ export default class Knot {
           this.drawOffsets(strandElement);
         } else if (strandElement.pr) {
           // here we draw the PRs
-          const pr = new PointedReturn({
-            pr: strandElement,
-            elements: this.elements,
-            middleOutbound: pointPreceding(i, strand).outboundBezier,
-            middleInbound: strandElement.outboundBezier,
-          });
-          pr.draw();
+          // const pr = new PointedReturn({
+          //   pr: strandElement,
+          //   elements: this.elements,
+          //   middleOutbound: pointPreceding(i, strand).outboundBezier,
+          //   middleInbound: strandElement.outboundBezier,
+          // });
+          // pr.draw();
         }
       });
     });
@@ -151,12 +150,13 @@ export default class Knot {
   }
   drawOffsets(strandElement: StrandElement) {
     const point = strandElement.point;
+    const offsets = this.offsetSketches.get(point);
     if (strandElement.direction === "R") {
-      this.drawPolyline(point.overOutLeft);
-      this.drawPolyline(point.overOutRight);
+      this.drawPolyline(offsets.overOutLeft);
+      this.drawPolyline(offsets.overOutRight);
     } else {
-      this.drawPolyline(point.underOutLeft);
-      this.drawPolyline(point.underOutRight);
+      this.drawPolyline(offsets.underOutLeft);
+      this.drawPolyline(offsets.underOutRight);
     }
   }
   drawPolyline(outline: PolyLine) {
