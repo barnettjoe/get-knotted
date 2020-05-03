@@ -157,6 +157,7 @@ export default class Frame extends Grid {
         }
       });
     });
+    this.crossingPoints = this.lines.map((line) => line.crossingPoint);
   }
 
   linesOutFrom(node) {
