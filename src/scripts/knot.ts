@@ -26,6 +26,10 @@ export default class Knot {
 
   constructor(frame: Frame) {
     this.frame = frame;
+    this.crossingPoints = new Map();
+    frame.crossingPoints.forEach((cp) => {
+      this.crossingPoints.set(cp, {});
+    });
     this.init();
     this.draw();
   }
