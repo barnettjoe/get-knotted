@@ -26,10 +26,6 @@ export default class Knot {
 
   constructor(frame: Frame) {
     this.frame = frame;
-    this.crossingPoints = new Map();
-    frame.crossingPoints.forEach((cp) => {
-      this.crossingPoints.set(cp, {});
-    });
     this.init();
     this.draw();
   }
@@ -41,11 +37,8 @@ export default class Knot {
   }
   init() {
     this.elements = [];
-    const strands = this.makeStrands();
-    this.contours = strands.map(Contour);
-    this.offsetSketches = this.contours.reduce(offsetSketch, new Map());
-    // mutates the offset sketches
-    this.overUnders = this.makeOverUnders(strands, this.offsetSketches);
+    this.contours = this.makeStrands().map(Contour);
+    this.overUnders = this.makeOverUnders(this.contours);
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
@@ -103,10 +96,9 @@ export default class Knot {
       this.trim(under, intersect, bound);
     }
   }
-  makeOverUnders(strands, offsetSketches) {
-    // TODO - better to have this.strands always defined, so won't
-    // need this check -- it could just sometimes be an empty array
+  makeOverUnders(strands) {
     if (!strands) return;
+    const offsetSketches = strands.reduce(offsetSketch, new Map());
     strands.forEach((strand, index) => {
       strand.forEach((strandElement, idx) => {
         const point = strandElement.point;
@@ -122,6 +114,7 @@ export default class Knot {
         }
       });
     });
+    return offsetSketches;
   }
   draw() {
     // TODO - better to have this.strands always defined, so won't
@@ -129,7 +122,7 @@ export default class Knot {
     if (!this.contours) return;
     this.contours.forEach((strand) => {
       strand.forEach((strandElement, i) => {
-        const offsets = this.offsetSketches.get(strandElement.point);
+        const offsets = this.overUnders.get(strandElement.point);
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
           this.drawOffsets(strandElement, offsets);
