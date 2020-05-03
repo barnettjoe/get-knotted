@@ -1,5 +1,5 @@
-import { reducer, collectionIntersect, format } from './knot-utils.js';
-import surface from './main';
+import { reducer, collectionIntersect, format } from "./knot-utils.js";
+import surface from "./main";
 
 export default function PointedReturn(options) {
   this.options = options;
@@ -8,9 +8,9 @@ export default function PointedReturn(options) {
 }
 
 PointedReturn.prototype = {
-  draw() {
-    this.drawInners();
-    this.drawOuters();
+  draw(offsets) {
+    this.drawInners(offsets);
+    this.drawOuters(offsets);
   },
   clippedOutboundPath(intersection, polyline) {
     const points = polyline.slice(0, intersection.idxA + 1);
@@ -22,50 +22,58 @@ PointedReturn.prototype = {
     points.unshift(intersection.intersection);
     return points;
   },
-  drawInners() {
+  drawInners(offsets) {
     const direction = this.pr.pr;
-
     // get intersection of inner outbound with inner inbound
     let innerOutboundPolyline;
-    if (direction === 'L') {
-      innerOutboundPolyline = this.pr.point.underInLeft || this.pr.point.overInLeft;
+    if (direction === "L") {
+      innerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
     } else {
-      innerOutboundPolyline = this.pr.point.underInRight || this.pr.point.overInRight;
+      innerOutboundPolyline = offsets.underInRight || offsets.overInRight;
     }
 
     let innerInboundPolyline;
-    if (direction === 'L') {
-      innerInboundPolyline = this.pr.point.underOutLeft || this.pr.point.overOutLeft;
+    if (direction === "L") {
+      innerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
     } else {
-      innerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
+      innerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
     }
 
-    const intersection = collectionIntersect(innerOutboundPolyline, innerInboundPolyline);
+    const intersection = collectionIntersect(
+      innerOutboundPolyline,
+      innerInboundPolyline
+    );
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
-    this.outClipped = this.clippedOutboundPath(intersection, innerOutboundPolyline);
-    this.inClipped = this.clippedInboundPath(intersection, innerInboundPolyline);
+    this.outClipped = this.clippedOutboundPath(
+      intersection,
+      innerOutboundPolyline
+    );
+    this.inClipped = this.clippedInboundPath(
+      intersection,
+      innerInboundPolyline
+    );
     const points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
     const snp = surface.polyline(points);
     this.elements.push(snp);
     format(snp);
   },
-  drawOuters() {
+  drawOuters(offsets) {
     const direction = this.pr.pr;
 
     let outerOutboundPolyline;
-    if (direction === 'L') {
-      outerOutboundPolyline = this.pr.point.underInRight || this.pr.point.overInRight;
+    if (direction === "L") {
+      outerOutboundPolyline = offsets.underInRight || offsets.overInRight;
     } else {
-      outerOutboundPolyline = this.pr.point.underInLeft || this.pr.point.overInLeft;
+      outerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
     }
 
     let outerInboundPolyline;
-    if (direction === 'L') {
-      outerInboundPolyline = this.pr.point.underOutRight || this.pr.point.overOutRight;
+    if (direction === "L") {
+      outerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
     } else {
-      outerInboundPolyline = this.pr.point.underOutLeft || this.pr.point.overOutLeft;
+      outerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
     }
 
     const innerTip = this.inClipped[0];
@@ -76,7 +84,9 @@ PointedReturn.prototype = {
     };
 
     //surface.circle(outerTip.x, outerTip.y, 1).attr({ fill: 'red' });
-    const points = outerOutboundPolyline.concat([outerTip].concat(outerInboundPolyline));
+    const points = outerOutboundPolyline.concat(
+      [outerTip].concat(outerInboundPolyline)
+    );
     const pointList = points.reduce(reducer, []);
     const snp = surface.polyline(pointList);
     this.elements.push(snp);

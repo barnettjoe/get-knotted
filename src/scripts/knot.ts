@@ -129,18 +129,19 @@ export default class Knot {
     if (!this.contours) return;
     this.contours.forEach((strand) => {
       strand.forEach((strandElement, i) => {
+        const offsets = this.offsetSketches.get(strandElement.point);
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-          this.drawOffsets(strandElement);
+          this.drawOffsets(strandElement, offsets);
         } else if (strandElement.pr) {
           // here we draw the PRs
-          // const pr = new PointedReturn({
-          //   pr: strandElement,
-          //   elements: this.elements,
-          //   middleOutbound: pointPreceding(i, strand).outboundBezier,
-          //   middleInbound: strandElement.outboundBezier,
-          // });
-          // pr.draw();
+          const pr = new PointedReturn({
+            pr: strandElement,
+            elements: this.elements,
+            middleOutbound: pointPreceding(i, strand).outboundBezier,
+            middleInbound: strandElement.outboundBezier,
+          });
+          pr.draw(offsets);
         }
       });
     });
@@ -148,9 +149,8 @@ export default class Knot {
     this.frame.makeLines();
     this.frame.draw();
   }
-  drawOffsets(strandElement: StrandElement) {
+  drawOffsets(strandElement: StrandElement, offsets) {
     const point = strandElement.point;
-    const offsets = this.offsetSketches.get(point);
     if (strandElement.direction === "R") {
       this.drawPolyline(offsets.overOutLeft);
       this.drawPolyline(offsets.overOutRight);

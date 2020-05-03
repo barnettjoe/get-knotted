@@ -50,7 +50,8 @@ export default class Node {
     return distanceBetween([this.x, this.y], [coords[0], coords[1]]);
   }
   isAdjacentTo(otherNode: Node) {
-    if (this.gridX && this.gridY && otherNode.gridX && otherNode.gridY) {
+    const required = [this.gridX, this.gridY, otherNode.gridX, otherNode.gridY];
+    if (required.every((x) => x !== undefined)) {
       const xDiff = Math.abs(otherNode.gridX - this.gridX);
       const yDiff = Math.abs(otherNode.gridY - this.gridY);
       return identicalObjects([xDiff, yDiff].sort(), [0, 1]);
