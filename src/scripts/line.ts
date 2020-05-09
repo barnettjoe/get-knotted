@@ -1,5 +1,5 @@
 import surface from "./main";
-import CrossingPoint from "./crossing-point.js";
+import { CrossingPoint, fullyCrossed } from "./crossing-point.js";
 import {
   INode,
   GraphLineOptions,
@@ -62,7 +62,7 @@ export class FrameLine {
   }
 
   uncrossed() {
-    return !this.crossingPoint.fullyCrossed();
+    return !fullyCrossed(this.crossingPoint);
   }
 
   vector() {

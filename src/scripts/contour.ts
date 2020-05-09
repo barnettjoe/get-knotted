@@ -9,11 +9,10 @@ const theta = 1.5;
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
  */
-export default function Contour(strand) {
-  const { xCntrlPoints, yCntrlPoints } = matrixSolution(strand);
-
+export default function contour(strand) {
+  const { xControlPoints, yControlPoints } = matrixSolution(strand);
   return strand.map((point, index) => {
-    const polygon = getBezier(index, xCntrlPoints, yCntrlPoints, strand);
+    const polygon = getBezier(index, xControlPoints, yControlPoints, strand);
     return {
       ...point,
       outboundBezier: bezier(polygon),
@@ -28,41 +27,38 @@ function bezier(polygon) {
 // TODO - explain all the maths...
 function matrixSolution(strand) {
   const [matrix, equals] = constructMatrix(strand);
-  const cntrlPoints = numeric.solve(matrix, equals);
+  const controlPoints = numeric.solve(matrix, equals);
   return {
-    xCntrlPoints: cntrlPoints.slice(0, cntrlPoints.length / 2),
-    yCntrlPoints: cntrlPoints.slice(cntrlPoints.length / 2),
+    xControlPoints: controlPoints.slice(0, controlPoints.length / 2),
+    yControlPoints: controlPoints.slice(controlPoints.length / 2),
   };
 }
-function getBezier(index, xCntrlPoints, yCntrlPoints, strand) {
-  const bezPoints = [];
-  bezPoints.push([strand[index].x, strand[index].y]);
-  bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
-  bezPoints.push([xCntrlPoints.shift(), yCntrlPoints.shift()]);
+function getBezier(index, xControlPoints, yControlPoints, strand) {
   const nextPoint = pointFollowing(index, strand);
-  bezPoints.push([nextPoint.x, nextPoint.y]);
-  return bezPoints;
+  return [
+    [strand[index].x, strand[index].y],
+    [xControlPoints.shift(), yControlPoints.shift()],
+    [xControlPoints.shift(), yControlPoints.shift()],
+    [nextPoint.x, nextPoint.y],
+  ];
 }
 
-function constructMatrix(strand) {
+function constructMatrix(strand): [Matrix, number[]] {
   let matrix: Matrix = [];
   let equals: number[] = [];
   strand.forEach((point, index) => {
     [matrix, equals] = setC2continuity(index, strand, matrix, equals);
     [matrix, equals] = strand[index].pr
-      ? setPRangle(index, strand, matrix, equals)
+      ? setPointedReturnAngle(index, strand, matrix, equals)
       : setC1continuity(index, strand, matrix, equals);
   });
   return [matrix, equals];
 }
 
 function emptyRow(strand) {
-  let row = [];
-  strand.forEach(function() {
-    row = row.concat([0, 0]);
-  });
-  return row;
+  return Array(strand.length * 2).fill(0);
 }
+
 function condition(startIdx, entries, strand) {
   const row = emptyRow(strand);
   for (const x of entries) {
@@ -98,7 +94,7 @@ function setC2continuity(i, strand, matrix, equals) {
   return [newMatrix, newEquals];
 }
 
-function setPRangle(i, strand, matrix, equals) {
+function setPointedReturnAngle(i, strand, matrix, equals) {
   const newMatrix = matrix.slice();
   const newEquals = equals.slice();
   const point = strand[i];
@@ -106,8 +102,7 @@ function setPRangle(i, strand, matrix, equals) {
   const row1 = condition(2 * i - 1, [1, -Math.cos(angle)], strand);
   const row2 = condition(2 * i, [Math.sin(angle)], strand);
   const row3 = condition(2 * i, [-Math.sin(angle)], strand);
-  newMatrix.push(row1.concat(row2));
-  newMatrix.push(row3.concat(row1));
+  newMatrix.push(row1.concat(row2), row3.concat(row1));
   newEquals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y);
   newEquals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
   return [newMatrix, newEquals];
