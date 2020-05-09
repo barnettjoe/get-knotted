@@ -1,5 +1,5 @@
 import Knot from "./knot";
-import Frame from "./frame";
+import Frame, { fromExtrema, makeLines } from "./frame";
 import Node from "./node";
 import {
   rowAndCol,
@@ -100,7 +100,8 @@ const drawing: Drawing = {
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
-    frame.makeLines();
+    frame.lines = makeLines(frame.nodes, frame.adjacencyList);
+    frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
     frame.lines.forEach((line) => line.draw());
     this.knots.push(new Knot(frame));
   },
@@ -130,7 +131,7 @@ const drawing: Drawing = {
     });
   },
   drawFrame() {
-    currentFrame = Frame.fromExtrema(dragStart, dragEnd);
+    currentFrame = fromExtrema(dragStart, dragEnd);
     currentFrame.draw();
   },
   startDrawingGrid(e) {
@@ -150,7 +151,7 @@ const drawing: Drawing = {
         dragEnd,
         (() => {
           if (currentFrame) currentFrame.remove();
-          currentFrame = Frame.fromExtrema(dragStart, dragEnd);
+          currentFrame = fromExtrema(dragStart, dragEnd);
           currentFrame.draw();
         }).bind(this)
       );

@@ -11,13 +11,4 @@ export default class Grid {
     this.lines = [];
     this.options = options;
   }
-
-  remove() {
-    this.lines.forEach((line) => line.snapObj.remove());
-    this.lines = [];
-
-    if (this.nodes) {
-      this.nodes.forEach((node) => node.remove());
-    }
-  }
 }

@@ -14,7 +14,7 @@ import {
   CollectionIntersect,
   StrandElement,
 } from "./types";
-import Frame from "frame";
+import Frame, { makeLines } from "./frame";
 
 export default class Knot {
   // TODO - can we make some of these private or protected?
@@ -43,7 +43,10 @@ export default class Knot {
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
     mergedFrame.markAsAdjacent(lineStart, lineEnd);
-    mergedFrame.makeLines();
+    mergedFrame.lines = makeLines(mergedFrame.nodes, mergedFrame.adjacencyList);
+    mergedFrame.crossingPoints = mergedFrame.lines.map(
+      (line) => line.crossingPoint
+    );
     mergedFrame.draw();
     const mergedKnot = new Knot(mergedFrame);
     // TODO - this conditional is necessary because elements is undefined on objects before
@@ -65,7 +68,10 @@ export default class Knot {
   }
   addLineBetween(nodeA: INode, nodeB: INode) {
     this.frame.markAsAdjacent(nodeA, nodeB);
-    this.frame.makeLines();
+    this.frame.lines = makeLines(this.frame.nodes, this.frame.adjacencyList);
+    this.frame.crossingPoints = this.frame.lines.map(
+      (line) => line.crossingPoint
+    );
     this.frame.lines.forEach((line) => line.draw());
     this.init();
     this.draw();
@@ -139,7 +145,11 @@ export default class Knot {
       });
     });
     this.frame.remove();
-    this.frame.makeLines();
+    this.frame.lines = makeLines(this.frame.nodes, this.frame.adjacencyList);
+    this.frame.crossingPoints = this.frame.lines.map(
+      (line) => line.crossingPoint
+    );
+
     this.frame.draw();
   }
   drawOffsets(strandElement: StrandElement, offsets) {

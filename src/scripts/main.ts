@@ -23,6 +23,7 @@ function setUpButton(id: Mode) {
   }
 }
 
+// this is where the impurities will surface
 document.addEventListener(
   "DOMContentLoaded",
   () => {
