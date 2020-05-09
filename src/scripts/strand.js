@@ -1,5 +1,6 @@
 import StrandElement from "./strand-element.js";
 import { isCrossed, uncrossedDirection } from "./crossing-point.js";
+import { linesOutFrom } from "./frame";
 
 const strandState = {};
 
@@ -112,7 +113,10 @@ function getApexCoords(startPoint, endPoint) {
   ];
 }
 function nextLine() {
-  const roundabout = strandState.frame.linesOutFrom(strandState.targetNode);
+  const roundabout = linesOutFrom(
+    strandState.targetNode,
+    strandState.frame.lines
+  );
   const orderedLinesOut = roundabout.slice().sort(compareByAngle);
   const inIndex = orderedLinesOut.indexOf(strandState.currentLine);
 

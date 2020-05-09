@@ -14,7 +14,7 @@ import {
   CollectionIntersect,
   StrandElement,
 } from "./types";
-import Frame, { makeLines } from "./frame";
+import Frame, { lines, markAsAdjacent } from "./frame";
 
 export default class Knot {
   // TODO - can we make some of these private or protected?
@@ -42,8 +42,13 @@ export default class Knot {
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
     const mergedFrame = this.frame.merge(otherKnot.frame);
-    mergedFrame.markAsAdjacent(lineStart, lineEnd);
-    mergedFrame.lines = makeLines(mergedFrame.nodes, mergedFrame.adjacencyList);
+    mergedFrame.adjacencyList = markAsAdjacent(
+      lineStart,
+      lineEnd,
+      mergedFrame.nodes,
+      mergedFrame.adjacencyList
+    );
+    mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
     mergedFrame.crossingPoints = mergedFrame.lines.map(
       (line) => line.crossingPoint
     );
@@ -67,8 +72,13 @@ export default class Knot {
     return strands;
   }
   addLineBetween(nodeA: INode, nodeB: INode) {
-    this.frame.markAsAdjacent(nodeA, nodeB);
-    this.frame.lines = makeLines(this.frame.nodes, this.frame.adjacencyList);
+    this.frame.adjacencyList = markAsAdjacent(
+      nodeA,
+      nodeB,
+      this.frame.nodes,
+      this.frame.adjacencyList
+    );
+    this.frame.lines = lines(this.frame.nodes, this.frame.adjacencyList);
     this.frame.crossingPoints = this.frame.lines.map(
       (line) => line.crossingPoint
     );
@@ -145,7 +155,7 @@ export default class Knot {
       });
     });
     this.frame.remove();
-    this.frame.lines = makeLines(this.frame.nodes, this.frame.adjacencyList);
+    this.frame.lines = lines(this.frame.nodes, this.frame.adjacencyList);
     this.frame.crossingPoints = this.frame.lines.map(
       (line) => line.crossingPoint
     );

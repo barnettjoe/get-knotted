@@ -1,5 +1,10 @@
 import Knot from "./knot";
-import Frame, { fromExtrema, makeLines } from "./frame";
+import Frame, {
+  fromExtrema,
+  lines,
+  findProximalNode,
+  lineExistsBetween,
+} from "./frame";
 import Node from "./node";
 import {
   rowAndCol,
@@ -100,7 +105,7 @@ const drawing: Drawing = {
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
-    frame.lines = makeLines(frame.nodes, frame.adjacencyList);
+    frame.lines = lines(frame.nodes, frame.adjacencyList);
     frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
     frame.lines.forEach((line) => line.draw());
     this.knots.push(new Knot(frame));
@@ -176,7 +181,7 @@ const drawing: Drawing = {
     return (
       lineEnd &&
       lineEnd !== lineStart &&
-      !currentFrame.lineExistsBetween(lineStart, lineEnd)
+      !lineExistsBetween(lineStart, lineEnd, currentFrame.lines)
     );
   },
   finishDrawingLine(e) {
@@ -215,7 +220,7 @@ const drawing: Drawing = {
   nodeAt(coords: Coords) {
     let result;
     this.knots.some((knot) => {
-      result = knot.frame.findProximalNode(coords);
+      result = findProximalNode(coords, knot.frame.nodes);
       if (result) {
         return true;
       }

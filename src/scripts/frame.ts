@@ -24,17 +24,15 @@ function lineBetween(startNode, endNode) {
   });
 }
 
-export function makeLines(nodes, adjacencyList) {
-  const lines = [];
-  nodes.forEach((startNode, i) => {
-    adjacencyList[i].forEach((j) => {
-      // avoid drawing each line twice
-      if (i < j) {
-        lines.push(lineBetween(startNode, nodes[j]));
-      }
-    });
-  });
-  return lines;
+export function lines(nodes, adjacencyList) {
+  return nodes.reduce((lines, startNode, i) => {
+    return lines.concat(
+      adjacencyList[i]
+        // avoid drawing each line twice
+        .filter((j) => i < j)
+        .map((j) => lineBetween(startNode, nodes[j]))
+    );
+  }, []);
 }
 
 function coordinateSet({
@@ -55,16 +53,15 @@ function coordinateSet({
 
 // for drawing as a grid rather than individual nodes and lines...
 function allNeighborsAdjacent(nodes) {
-  const adjacencies = [];
-  nodes.forEach((firstNode) => {
-    adjacencies.push([]);
-    nodes.forEach((secondNode, j) => {
-      if (firstNode.isAdjacentTo(secondNode)) {
-        adjacencies[adjacencies.length - 1].push(j);
-      }
-    });
-  });
-  return adjacencies;
+  return nodes.reduce((adjacencies, firstNode) => {
+    return [
+      ...adjacencies,
+      nodes
+        .map((secondNode, j) => [secondNode, j])
+        .filter(([secondNode, j]) => firstNode.isAdjacentTo(secondNode))
+        .map(([secondNode, j]) => j),
+    ];
+  }, []);
 }
 export function fromExtrema(initialBox, finalBox) {
   const nodeCoords = coordinateSet({
@@ -82,73 +79,71 @@ export function fromExtrema(initialBox, finalBox) {
     });
   });
   const adjacencyList = allNeighborsAdjacent(nodes);
-  const lines = makeLines(nodes, adjacencyList);
+  const frameLines = lines(nodes, adjacencyList);
   const parent = Object.create(framePrototype);
   return Object.assign(parent, {
     nodes,
     adjacencyList,
-    lines,
-    crossingPoints: lines.map((line) => line.crossingPoint),
+    lines: frameLines,
+    crossingPoints: frameLines.map((line) => line.crossingPoint),
   });
 }
 
-const framePrototype = {
-  nodeIndex(node) {
-    return this.nodes.findIndex(function(someNode) {
-      return someNode.sameNode(node);
-    });
-  },
-  closestNodeToPoint(coords) {
-    return this.nodes.reduce(function(acc, node) {
-      if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
-        return node;
-      } else {
-        return acc;
-      }
-    });
-  },
-  findProximalNode(coords) {
-    const closestNode = this.closestNodeToPoint(coords);
-    const proximityThreshold = config.nodeSelectionMinProximity;
-    if (closestNode.distanceFromPoint(coords) < proximityThreshold) {
-      return closestNode;
+function nodeIndex(node, nodes) {
+  return nodes.findIndex(function(someNode) {
+    return someNode.sameNode(node);
+  });
+}
+
+function closestNodeToPoint(coords, nodes) {
+  return nodes.reduce(function(acc, node) {
+    if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
+      return node;
+    } else {
+      return acc;
     }
-    // explicit return to appease eslint
-    return undefined;
-  },
-  lineExistsBetween(nodeA, nodeB) {
-    const allLines = this.lines;
-    return !!allLines.find((line) => {
-      return line.isBetween(nodeA, nodeB);
-    });
-  },
-  joinNodesAtIndex(idxA, idxB) {
-    this.adjacencyList[idxA].push(idxB);
-    this.adjacencyList[idxB].push(idxA);
-  },
-  markAsAdjacent(nodeA, nodeB) {
-    this.joinNodesAtIndex(this.nodeIndex(nodeA), this.nodeIndex(nodeB));
-  },
-  hoverIn(node) {
-    return () => {
-      this.hoveredNode = node;
-    };
-  },
-  hoverOut() {
-    this.hoveredNode = undefined;
-  },
-  showCrossingPoints() {
-    this.lines.forEach((line) => line.drawCrossingPoints());
-  },
-  showAllNodes() {
-    this.nodes.forEach((node) => node.draw());
-  },
-  linesOutFrom(node) {
-    return this.lines.filter((line) => line.visits(node));
-  },
+  });
+}
+
+export function findProximalNode(coords, nodes) {
+  const closestNode = closestNodeToPoint(coords, nodes);
+  const proximityThreshold = config.nodeSelectionMinProximity;
+  if (closestNode.distanceFromPoint(coords) < proximityThreshold) {
+    return closestNode;
+  }
+  // explicit return to appease eslint
+  return undefined;
+}
+
+export function lineExistsBetween(nodeA, nodeB, lines) {
+  return !!lines.find((line) => {
+    return line.isBetween(nodeA, nodeB);
+  });
+}
+
+function joinNodesAtIndex(idxA, idxB, adjacencyList) {
+  const newAdjacencyList = [...adjacencyList];
+  newAdjacencyList[idxA] = [...newAdjacencyList[idxA], idxB];
+  newAdjacencyList[idxB] = [...newAdjacencyList[idxB], idxA];
+  return newAdjacencyList;
+}
+
+export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
+  return joinNodesAtIndex(
+    nodeIndex(nodeA, nodes),
+    nodeIndex(nodeB, nodes),
+    adjacencyList
+  );
+}
+
+export function linesOutFrom(node, lines) {
+  return lines.filter((line) => line.visits(node));
+}
+
+const framePrototype = {
   draw() {
     this.lines.forEach((line) => line.draw());
-    this.showAllNodes();
+    this.nodes.forEach((node) => node.draw());
   },
   overlapsExistingNode(pxX, pxY) {
     return this.nodes.some((node) => node.hasOverlap(pxX, pxY));
