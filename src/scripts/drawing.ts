@@ -1,9 +1,11 @@
 import Knot from "./knot";
-import Frame, {
+import {
   fromExtrema,
   lines,
   findProximalNode,
   lineExistsBetween,
+  overlapsExistingNode,
+  elementsForRemoval,
 } from "./frame";
 import Node from "./node";
 import {
@@ -118,8 +120,7 @@ const drawing: Drawing = {
         gridSystem: GridSystem.square,
       }),
     ];
-    const adjacencies = [[]];
-    return new Frame(nodes, adjacencies);
+    return { nodes, adjacencyList: [[]] };
   },
   placeNode(e) {
     const coords = closestGraphCoords(e);
@@ -132,12 +133,14 @@ const drawing: Drawing = {
   },
   isNodeOverlapping(coords) {
     return this.knots.some((knot) => {
-      return knot.frame.overlapsExistingNode(...coords);
+      return overlapsExistingNode(...coords, knot.frame.nodes);
     });
   },
   drawFrame() {
     currentFrame = fromExtrema(dragStart, dragEnd);
-    currentFrame.draw();
+    currentFrame.lines
+      .concat(currentFrame.nodes)
+      .forEach((element) => element.draw());
   },
   startDrawingGrid(e) {
     // TODO - should be able to remove type assertion after converting mouse.js
@@ -155,9 +158,16 @@ const drawing: Drawing = {
       doIfInGraph(
         dragEnd,
         (() => {
-          if (currentFrame) currentFrame.remove();
+          if (currentFrame) {
+            elementsForRemoval(currentFrame).forEach((element) =>
+              element.remove()
+            );
+            currentFrame.lines = [];
+          }
           currentFrame = fromExtrema(dragStart, dragEnd);
-          currentFrame.draw();
+          currentFrame.lines
+            .concat(currentFrame.nodes)
+            .forEach((element) => element.draw());
         }).bind(this)
       );
     }

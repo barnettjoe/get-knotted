@@ -1,6 +1,6 @@
 import StrandElement from "./strand-element.js";
 import { isCrossed, uncrossedDirection } from "./crossing-point.js";
-import { linesOutFrom } from "./frame";
+import { linesOutFrom, firstUncrossedLine } from "./frame";
 
 const strandState = {};
 
@@ -18,7 +18,7 @@ export function pointPreceding(index, strand) {
 
 function addAllElements(frame) {
   strandState.frame = frame;
-  strandState.currentLine = frame.firstUncrossedLine();
+  strandState.currentLine = firstUncrossedLine(frame.lines);
   strandState.direction = initialDirection();
   strandState.targetNode = initialTargetNode();
   addElement.call(this, frame);

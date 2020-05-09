@@ -1,7 +1,7 @@
 import config from "./config.js";
 import { FrameLine } from "./line";
 import Node from "./node";
-import { INode, GridSystem, Matrix } from "./types";
+import { GridSystem } from "./types";
 
 function cartesianProduct(arr1, arr2) {
   return arr1.reduce((acc, x) => {
@@ -22,17 +22,6 @@ function lineBetween(startNode, endNode) {
     endNode,
     style: config.frame,
   });
-}
-
-export function lines(nodes, adjacencyList) {
-  return nodes.reduce((lines, startNode, i) => {
-    return lines.concat(
-      adjacencyList[i]
-        // avoid drawing each line twice
-        .filter((j) => i < j)
-        .map((j) => lineBetween(startNode, nodes[j]))
-    );
-  }, []);
 }
 
 function coordinateSet({
@@ -63,6 +52,28 @@ function allNeighborsAdjacent(nodes) {
     ];
   }, []);
 }
+function nodeIndex(node, nodes) {
+  return nodes.findIndex(function(someNode) {
+    return someNode.sameNode(node);
+  });
+}
+
+function closestNodeToPoint(coords, nodes) {
+  return nodes.reduce(function(acc, node) {
+    if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
+      return node;
+    } else {
+      return acc;
+    }
+  });
+}
+
+function joinNodesAtIndex(idxA, idxB, adjacencyList) {
+  const newAdjacencyList = [...adjacencyList];
+  newAdjacencyList[idxA] = [...newAdjacencyList[idxA], idxB];
+  newAdjacencyList[idxB] = [...newAdjacencyList[idxB], idxA];
+  return newAdjacencyList;
+}
 export function fromExtrema(initialBox, finalBox) {
   const nodeCoords = coordinateSet({
     leftmost: Math.min(initialBox[0], finalBox[0]),
@@ -80,29 +91,12 @@ export function fromExtrema(initialBox, finalBox) {
   });
   const adjacencyList = allNeighborsAdjacent(nodes);
   const frameLines = lines(nodes, adjacencyList);
-  const parent = Object.create(framePrototype);
-  return Object.assign(parent, {
+  return {
     nodes,
     adjacencyList,
     lines: frameLines,
     crossingPoints: frameLines.map((line) => line.crossingPoint),
-  });
-}
-
-function nodeIndex(node, nodes) {
-  return nodes.findIndex(function(someNode) {
-    return someNode.sameNode(node);
-  });
-}
-
-function closestNodeToPoint(coords, nodes) {
-  return nodes.reduce(function(acc, node) {
-    if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
-      return node;
-    } else {
-      return acc;
-    }
-  });
+  };
 }
 
 export function findProximalNode(coords, nodes) {
@@ -121,13 +115,6 @@ export function lineExistsBetween(nodeA, nodeB, lines) {
   });
 }
 
-function joinNodesAtIndex(idxA, idxB, adjacencyList) {
-  const newAdjacencyList = [...adjacencyList];
-  newAdjacencyList[idxA] = [...newAdjacencyList[idxA], idxB];
-  newAdjacencyList[idxB] = [...newAdjacencyList[idxB], idxA];
-  return newAdjacencyList;
-}
-
 export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
   return joinNodesAtIndex(
     nodeIndex(nodeA, nodes),
@@ -136,42 +123,41 @@ export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
   );
 }
 
+export function elementsForRemoval(frame) {
+  return frame.lines.map((line) => line.snapObj).concat(frame.nodes || []);
+}
+
 export function linesOutFrom(node, lines) {
   return lines.filter((line) => line.visits(node));
 }
 
-const framePrototype = {
-  draw() {
-    this.lines.forEach((line) => line.draw());
-    this.nodes.forEach((node) => node.draw());
-  },
-  overlapsExistingNode(pxX, pxY) {
-    return this.nodes.some((node) => node.hasOverlap(pxX, pxY));
-  },
-  merge(otherFrame) {
-    const originalLength = this.nodes.length;
-    const nodes = this.nodes.concat(otherFrame.nodes);
-    const newAdjacencies = otherFrame.adjacencyList.map((arr) =>
-      arr.map((x) => x + originalLength)
+export function overlapsExistingNode(pxX, pxY, nodes) {
+  return nodes.some((node) => node.hasOverlap(pxX, pxY));
+}
+
+export function merge(frame, otherFrame) {
+  const originalLength = frame.nodes.length;
+  const newNodes = frame.nodes.concat(otherFrame.nodes);
+  const newAdjacencies = otherFrame.adjacencyList.map((arr) =>
+    arr.map((x) => x + originalLength)
+  );
+  return {
+    nodes: newNodes,
+    adjacencyList: frame.adjacencyList.concat(newAdjacencies),
+  };
+}
+
+export function firstUncrossedLine(lines) {
+  return lines.find((line) => line.uncrossed());
+}
+
+export function lines(nodes, adjacencyList) {
+  return nodes.reduce((lines, startNode, i) => {
+    return lines.concat(
+      adjacencyList[i]
+        // avoid drawing each line twice
+        .filter((j) => i < j)
+        .map((j) => lineBetween(startNode, nodes[j]))
     );
-    const adjacencies = this.adjacencyList.concat(newAdjacencies);
-    this.nodes = nodes;
-    this.adjacencyList = adjacencies;
-    return this;
-  },
-  firstUncrossedLine() {
-    return this.lines.find((line) => line.uncrossed());
-  },
-  remove() {
-    this.lines.forEach((line) => line.snapObj.remove());
-    this.lines = [];
-
-    if (this.nodes) {
-      this.nodes.forEach((node) => node.remove());
-    }
-  },
-};
-
-export default function Frame(nodes, adjacencyList) {
-  return Object.assign(Object.create(framePrototype), { nodes, adjacencyList });
+  }, []);
 }

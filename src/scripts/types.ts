@@ -1,5 +1,4 @@
 import Knot from "./knot";
-import Frame from "./frame";
 import Bezier from "./bezier/bezier";
 
 export type Matrix = number[][];

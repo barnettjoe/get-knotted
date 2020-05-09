@@ -14,7 +14,7 @@ import {
   CollectionIntersect,
   StrandElement,
 } from "./types";
-import Frame, { lines, markAsAdjacent } from "./frame";
+import { lines, markAsAdjacent, merge, elementsForRemoval } from "./frame";
 
 export default class Knot {
   // TODO - can we make some of these private or protected?
@@ -33,7 +33,8 @@ export default class Knot {
     if (this.elements) {
       this.elements.forEach((element: KnotElement) => element.remove());
     }
-    this.frame.remove();
+    elementsForRemoval(this.frame).forEach((element) => element.remove());
+    this.frame.lines = [];
   }
   init() {
     this.elements = [];
@@ -41,7 +42,7 @@ export default class Knot {
     this.overUnders = this.makeOverUnders(this.contours);
   }
   merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
-    const mergedFrame = this.frame.merge(otherKnot.frame);
+    const mergedFrame = merge(this.frame, otherKnot.frame);
     mergedFrame.adjacencyList = markAsAdjacent(
       lineStart,
       lineEnd,
@@ -52,7 +53,9 @@ export default class Knot {
     mergedFrame.crossingPoints = mergedFrame.lines.map(
       (line) => line.crossingPoint
     );
-    mergedFrame.draw();
+    mergedFrame.lines
+      .concat(mergedFrame.nodes)
+      .forEach((element) => element.draw());
     const mergedKnot = new Knot(mergedFrame);
     // TODO - this conditional is necessary because elements is undefined on objects before
     // calling init - maybe it would be neater if we initialize to an empty array or something,
@@ -154,13 +157,15 @@ export default class Knot {
         }
       });
     });
-    this.frame.remove();
+    elementsForRemoval(this.frame).forEach((element) => element.remove());
     this.frame.lines = lines(this.frame.nodes, this.frame.adjacencyList);
     this.frame.crossingPoints = this.frame.lines.map(
       (line) => line.crossingPoint
     );
 
-    this.frame.draw();
+    this.frame.lines
+      .concat(this.frame.nodes)
+      .forEach((element) => element.draw());
   }
   drawOffsets(strandElement: StrandElement, offsets) {
     const point = strandElement.point;
