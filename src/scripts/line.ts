@@ -1,5 +1,5 @@
 import surface from "./main";
-import { CrossingPoint, fullyCrossed } from "./crossing-point.js";
+import { makeCrossingPoint, fullyCrossed } from "./crossing-point.js";
 import {
   INode,
   GraphLineOptions,
@@ -36,7 +36,7 @@ export class FrameLine {
 
   public startNode: INode;
   public endNode: INode;
-  public crossingPoint: CrossingPoint;
+  public crossingPoint: crossingPoint;
 
   constructor(options: FrameLineOptions) {
     this.startNode = options.startNode;
@@ -45,7 +45,7 @@ export class FrameLine {
     this.startY = this.startNode.y;
     this.endX = this.endNode.x;
     this.endY = this.endNode.y;
-    this.crossingPoint = new CrossingPoint(
+    this.crossingPoint = makeCrossingPoint(
       this.startX,
       this.startY,
       this.endX,

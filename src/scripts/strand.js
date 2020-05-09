@@ -1,5 +1,5 @@
 import StrandElement from "./strand-element.js";
-import { isCrossed } from "./crossing-point.js";
+import { isCrossed, uncrossedDirection } from "./crossing-point.js";
 
 const strandState = {};
 
@@ -144,7 +144,7 @@ function pointedReturn() {
   return smallerAngle > 1.6;
 }
 function initialDirection() {
-  return strandState.currentLine.crossingPoint.uncrossedDirection();
+  return uncrossedDirection(strandState.currentLine.crossingPoint);
 }
 function initialTargetNode() {
   return strandState.currentLine.endNode;

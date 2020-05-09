@@ -13,26 +13,21 @@ export function fullyCrossed(crossingPoint) {
   return isCrossed(crossingPoint, "R") && isCrossed(crossingPoint, "L");
 }
 
-export function CrossingPoint(startX, startY, endX, endY, line) {
-  this.line = line;
-  // use proper getters / setters...
-  this.crossedLeft = false;
-  this.crossedRight = false;
-  this.coords = [(startX + endX) / 2, (startY + endY) / 2];
+export function uncrossedDirection(crossingPoint) {
+  if (fullyCrossed(crossingPoint)) {
+    return null;
+  } else if (isCrossed(crossingPoint, "L")) {
+    return "R";
+  } else {
+    return "L";
+  }
 }
 
-CrossingPoint.prototype = Object.assign(
-  Object.create(StrandElement.prototype),
-  {
-    constructor: CrossingPoint,
-    uncrossedDirection() {
-      if (fullyCrossed(this)) {
-        return null;
-      } else if (isCrossed(this, "L")) {
-        return "R";
-      } else {
-        return "L";
-      }
-    },
-  }
-);
+export function makeCrossingPoint(startX, startY, endX, endY, line) {
+  return {
+    line,
+    crossedLeft: false,
+    crossedRight: false,
+    coords: [(startX + endX) / 2, (startY + endY) / 2],
+  };
+}
