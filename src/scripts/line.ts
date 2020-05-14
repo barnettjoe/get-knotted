@@ -1,31 +1,6 @@
 import surface from "./main";
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point.js";
-import {
-  INode,
-  GraphLineOptions,
-  FrameLineOptions,
-  Vector,
-  Direction,
-} from "./types";
-
-export class GraphLine {
-  // TODO - how to share all these between GraphLine and FrameLine??
-  public startX: number;
-  public startY: number;
-  public endX: number;
-  public endY: number;
-  public snapObj: Snap.Element;
-
-  constructor(options: GraphLineOptions) {
-    this.startX = options.startX;
-    this.startY = options.startY;
-    this.endX = options.endX;
-    this.endY = options.endY;
-    this.snapObj = surface
-      .line(this.startX, this.startY, this.endX, this.endY)
-      .attr(options.style);
-  }
-}
+import { INode, FrameLineOptions, Vector, Direction } from "./types";
 
 export class FrameLine {
   public startX: number;

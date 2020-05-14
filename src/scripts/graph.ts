@@ -20,13 +20,13 @@ function verticalLines() {
     const [startX, startY] = pixelCoords([i, options.startRow]);
     const [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
 
-    return new GraphLine({
+    return {
       startX,
       startY,
       endX,
       endY,
       style: options.style,
-    });
+    };
   });
 }
 
@@ -37,13 +37,13 @@ function horizontalLines() {
   ).map((i) => {
     const [startX, startY] = pixelCoords([options.startCol, i]);
     const [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
-    return new GraphLine({
+    return {
       startX,
       startY,
       endX,
       endY,
       style: options.style,
-    });
+    };
   });
 }
 

@@ -4,11 +4,13 @@ import { Mode, MODES } from "./types";
 
 import Snap from "snapsvg";
 
-export default Snap("#surface");
+const surface = Snap("#surface");
+export default surface;
 
 function drawSquareGrid() {
-  // TODO - do the drawing here instead of in line.ts
-  graphLines();
+  graphLines().forEach(({ startX, startY, endX, endY, style }) => {
+    surface.line(startX, startY, endX, endY).attr(style);
+  });
 }
 
 function changeDrawingMode(newMode: Mode) {
