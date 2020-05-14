@@ -118,11 +118,11 @@ export default class Knot {
   }
   makeOverUnders(strands) {
     if (!strands) return;
-    const offsetSketches = strands.reduce(offsetSketch, new Map());
+    const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
     strands.forEach((strand, index) => {
       strand.forEach((strandElement, idx) => {
         const point = strandElement.point;
-        const sketchPoint = offsetSketches.get(point);
+        const sketchPoint = crossingPointOffsets.get(point);
         if (!strandElement.pr) {
           if (!point.trimmed) {
             this.trimUnder(sketchPoint, "R", "out");
@@ -134,7 +134,7 @@ export default class Knot {
         }
       });
     });
-    return offsetSketches;
+    return crossingPointOffsets;
   }
   draw() {
     // TODO - better to have this.strands always defined, so won't
