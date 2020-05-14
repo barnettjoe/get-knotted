@@ -34,6 +34,12 @@ const userLine: { element: Snap.Element | null; startNode: INode | null } = {
   startNode: null,
 };
 
+export function drawLine(line) {
+  line.snapObj = Snap("#surface")
+    .line(line.startX, line.startY, line.endX, line.endY)
+    .attr(line.style);
+}
+
 const drawing: Drawing = {
   knots: [],
   mode: "add-grid",
@@ -109,7 +115,7 @@ const drawing: Drawing = {
     const frame = this.singleNodeFrame(coords);
     frame.lines = lines(frame.nodes, frame.adjacencyList);
     frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
-    frame.lines.forEach((line) => line.draw());
+    frame.lines.forEach(drawLine);
     this.knots.push(new Knot(frame));
   },
   singleNodeFrame(coords) {
@@ -138,9 +144,8 @@ const drawing: Drawing = {
   },
   drawFrame() {
     currentFrame = fromExtrema(dragStart, dragEnd);
-    currentFrame.lines
-      .concat(currentFrame.nodes)
-      .forEach((element) => element.draw());
+    currentFrame.lines.forEach(drawLine);
+    currentFrame.nodes.forEach((node) => node.draw());
   },
   startDrawingGrid(e) {
     // TODO - should be able to remove type assertion after converting mouse.js
@@ -165,9 +170,8 @@ const drawing: Drawing = {
             currentFrame.lines = [];
           }
           currentFrame = fromExtrema(dragStart, dragEnd);
-          currentFrame.lines
-            .concat(currentFrame.nodes)
-            .forEach((element) => element.draw());
+          currentFrame.lines.forEach(drawLine);
+          currentFrame.nodes.forEach((node) => node.draw());
         }).bind(this)
       );
     }

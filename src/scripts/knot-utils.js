@@ -59,7 +59,7 @@ export function format(snapObj) {
   });
 }
 
-function rotateAboutOrigin(point, angle) {
+export function rotateAboutOrigin(point, angle) {
   const x = point[0];
   const y = point[1];
   const newX = x * Math.cos(angle) - y * Math.sin(angle);

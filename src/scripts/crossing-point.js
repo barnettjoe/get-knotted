@@ -23,9 +23,8 @@ export function uncrossedDirection(crossingPoint) {
   }
 }
 
-export function makeCrossingPoint(startX, startY, endX, endY, line) {
+export function makeCrossingPoint(startX, startY, endX, endY) {
   return {
-    line,
     crossedLeft: false,
     crossedRight: false,
     coords: [(startX + endX) / 2, (startY + endY) / 2],

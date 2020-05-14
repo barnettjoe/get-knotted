@@ -1,5 +1,7 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
 import surface from "./main";
+import { uncrossed } from "./line";
+import { drawLine } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
 import PointedReturn from "./pointed-return.js";
 import Contour from "./contour";
@@ -53,9 +55,8 @@ export default class Knot {
     mergedFrame.crossingPoints = mergedFrame.lines.map(
       (line) => line.crossingPoint
     );
-    mergedFrame.lines
-      .concat(mergedFrame.nodes)
-      .forEach((element) => element.draw());
+    mergedFrame.lines.forEach(drawLine);
+    mergedFrame.nodes.forEach((node) => node.draw());
     const mergedKnot = new Knot(mergedFrame);
     // TODO - this conditional is necessary because elements is undefined on objects before
     // calling init - maybe it would be neater if we initialize to an empty array or something,
@@ -69,7 +70,7 @@ export default class Knot {
   }
   makeStrands() {
     const strands = [];
-    while (this.frame.lines.some((line) => line.uncrossed())) {
+    while (this.frame.lines.some(uncrossed)) {
       strands.push(Strand(this.frame));
     }
     return strands;
@@ -85,7 +86,7 @@ export default class Knot {
     this.frame.crossingPoints = this.frame.lines.map(
       (line) => line.crossingPoint
     );
-    this.frame.lines.forEach((line) => line.draw());
+    this.frame.lines.forEach(drawLine);
     this.init();
     this.draw();
   }
@@ -163,9 +164,8 @@ export default class Knot {
       (line) => line.crossingPoint
     );
 
-    this.frame.lines
-      .concat(this.frame.nodes)
-      .forEach((element) => element.draw());
+    this.frame.lines.forEach(drawLine);
+    this.frame.nodes.forEach((node) => node.draw());
   }
   drawOffsets(strandElement: StrandElement, offsets) {
     const point = strandElement.point;

@@ -1,5 +1,5 @@
 import config from "./config.js";
-import { FrameLine } from "./line";
+import frameLine, { uncrossed, isBetween, visits } from "./line";
 import Node from "./node";
 import { GridSystem } from "./types";
 
@@ -16,7 +16,7 @@ function integerRange(first: number, last: number) {
 }
 
 function lineBetween(startNode, endNode) {
-  return new FrameLine({
+  return frameLine({
     method: "node",
     startNode,
     endNode,
@@ -111,7 +111,7 @@ export function findProximalNode(coords, nodes) {
 
 export function lineExistsBetween(nodeA, nodeB, lines) {
   return !!lines.find((line) => {
-    return line.isBetween(nodeA, nodeB);
+    return isBetween(line, nodeA, nodeB);
   });
 }
 
@@ -128,7 +128,7 @@ export function elementsForRemoval(frame) {
 }
 
 export function linesOutFrom(node, lines) {
-  return lines.filter((line) => line.visits(node));
+  return lines.filter((line) => visits(line, node));
 }
 
 export function overlapsExistingNode(pxX, pxY, nodes) {
@@ -148,7 +148,7 @@ export function merge(frame, otherFrame) {
 }
 
 export function firstUncrossedLine(lines) {
-  return lines.find((line) => line.uncrossed());
+  return lines.find(uncrossed);
 }
 
 export function lines(nodes, adjacencyList) {

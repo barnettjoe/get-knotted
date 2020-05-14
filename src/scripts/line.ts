@@ -1,103 +1,74 @@
-import surface from "./main";
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point.js";
-import { INode, FrameLineOptions, Vector, Direction } from "./types";
+import { INode, Vector, Direction } from "./types";
+import { rotateAboutOrigin } from "./knot-utils";
 
-export class FrameLine {
-  public startX: number;
-  public startY: number;
-  public endX: number;
-  public endY: number;
-  public snapObj: Snap.Element;
+export default function frameLine({ startNode, endNode, style }) {
+  return {
+    startNode: startNode,
+    endNode: endNode,
+    startX: startNode.x,
+    startY: startNode.y,
+    endX: endNode.x,
+    endY: endNode.y,
+    crossingPoint: makeCrossingPoint(
+      startNode.x,
+      startNode.y,
+      endNode.x,
+      endNode.y
+    ),
+    style: style,
+  };
+}
 
-  public startNode: INode;
-  public endNode: INode;
-  public crossingPoint: crossingPoint;
+export function uncrossed(line) {
+  return !fullyCrossed(line.crossingPoint);
+}
 
-  constructor(options: FrameLineOptions) {
-    this.startNode = options.startNode;
-    this.endNode = options.endNode;
-    this.startX = this.startNode.x;
-    this.startY = this.startNode.y;
-    this.endX = this.endNode.x;
-    this.endY = this.endNode.y;
-    this.crossingPoint = makeCrossingPoint(
-      this.startX,
-      this.startY,
-      this.endX,
-      this.endY,
-      this
-    );
-    this.style = options.style;
+function vector(line) {
+  return [line.endX - line.startX, line.endY - line.startY];
+}
+
+export function isBetween(line, nodeA: INode, nodeB: INode) {
+  const isForwards =
+    line.startNode.sameNode(nodeA) && line.endNode.sameNode(nodeB);
+  const isReversed =
+    line.startNode.sameNode(nodeB) && line.endNode.sameNode(nodeA);
+  return isForwards || isReversed;
+}
+
+function angle(line, options: { reverse?: boolean }) {
+  let v = vector(line);
+  if (options.reverse) {
+    v = v.map((coord) => coord * -1);
+  }
+  return Math.atan2(v[1], v[0]);
+}
+
+export function angleOutFrom(line, node: INode) {
+  if (line.startX === node.x && line.startY === node.y) {
+    return angle(line, { reverse: false });
+  }
+  return angle(line, { reverse: true });
+}
+
+export function visits(line, node: INode) {
+  return !!(line.startNode.sameNode(node) || line.endNode.sameNode(node));
+}
+
+export function angleOutCP(
+  line,
+  options: { direction: Direction; reverse?: boolean }
+) {
+  let vect = vector(line);
+  if (options.reverse) {
+    vect = vect.map((coord) => coord * -1) as Vector;
   }
 
-  draw() {
-    this.snapObj = surface
-      .line(this.startX, this.startY, this.endX, this.endY)
-      .attr(this.style);
+  let resultant;
+  if (options.direction === "R") {
+    resultant = rotateAboutOrigin(vect, Math.PI / 4);
+  } else {
+    resultant = rotateAboutOrigin(vect, -Math.PI / 4);
   }
-
-  uncrossed() {
-    return !fullyCrossed(this.crossingPoint);
-  }
-
-  vector() {
-    return [this.endX - this.startX, this.endY - this.startY] as Vector;
-  }
-
-  isBetween(nodeA: INode, nodeB: INode) {
-    const isForwards =
-      this.startNode.sameNode(nodeA) && this.endNode.sameNode(nodeB);
-    const isReversed =
-      this.startNode.sameNode(nodeB) && this.endNode.sameNode(nodeA);
-    return isForwards || isReversed;
-  }
-
-  rotateAboutOrigin(vector: Vector, angle: number) {
-    const x = vector[0];
-    const y = vector[1];
-    const newX = x * Math.cos(angle) - y * Math.sin(angle);
-    const newY = y * Math.cos(angle) + x * Math.sin(angle);
-    return [newX, newY];
-  }
-
-  angle(options: { reverse?: boolean }) {
-    let vector = this.vector();
-    if (options.reverse) {
-      vector = vector.map((coord) => coord * -1) as Vector;
-    }
-    const result = Math.atan2(vector[1], vector[0]); // return value is in radians
-    // result += 2 * Math.PI
-    // if (options.reverse) result *= -1;
-    return result; // % (2 * Math.PI);
-  }
-
-  angleOutFrom(node: INode) {
-    if (this.startX === node.x && this.startY === node.y) {
-      return this.angle({ reverse: false });
-    }
-    return this.angle({ reverse: true });
-  }
-
-  length() {
-    return this.snapObj.getTotalLength();
-  }
-
-  visits(node: INode) {
-    return !!(this.startNode.sameNode(node) || this.endNode.sameNode(node));
-  }
-
-  angleOutCP(options: { direction: Direction; reverse?: boolean }) {
-    let vect = this.vector();
-    if (options.reverse) {
-      vect = vect.map((coord) => coord * -1) as Vector;
-    }
-
-    let resultant;
-    if (options.direction === "R") {
-      resultant = this.rotateAboutOrigin(vect, Math.PI / 4);
-    } else {
-      resultant = this.rotateAboutOrigin(vect, -Math.PI / 4);
-    }
-    return Math.atan2(resultant[1], resultant[0]);
-  }
+  return Math.atan2(resultant[1], resultant[0]);
 }
