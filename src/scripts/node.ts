@@ -1,7 +1,7 @@
 import { pixelCoords } from "./mouse.js";
 import surface from "./main";
 import config from "./config.js";
-import { identicalObjects, distanceBetween } from "./general-utils.js";
+import { identicalObjects, distanceBetween } from "./general-utils";
 import { NodeOptions, GridSystem, Coords } from "./types";
 import { Element as SnapElement } from "snapsvg";
 
