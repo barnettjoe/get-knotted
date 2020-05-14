@@ -1,5 +1,5 @@
 import drawing from "./drawing";
-import Graph from "./graph";
+import graphLines from "./graph";
 import { Mode, MODES } from "./types";
 
 import Snap from "snapsvg";
@@ -7,7 +7,8 @@ import Snap from "snapsvg";
 export default Snap("#surface");
 
 function drawSquareGrid() {
-  drawing.graph = new Graph();
+  // TODO - do the drawing here instead of in line.ts
+  graphLines();
 }
 
 function changeDrawingMode(newMode: Mode) {

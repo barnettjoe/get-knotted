@@ -4,62 +4,49 @@ import { GraphLine } from "./line";
 
 import { GridOptions } from "types";
 
-export default class Graph {
-  constructor(options) {
-    this.lines = [];
-    this.options = options;
-    const options: GridOptions = {
-      startCol: 0,
-      startRow: 0,
-      cols: config.graphCols,
-      rows: config.graphRows,
-      style: config.graphLine,
-    };
-    this.createHorizontalLines(options);
-    this.createVerticalLines(options);
-  }
+const options: GridOptions = Object.freeze({
+  startCol: 0,
+  startRow: 0,
+  cols: config.graphCols,
+  rows: config.graphRows,
+  style: config.graphLine,
+});
 
-  // draw all horizontal lines
-  createHorizontalLines(options: GridOptions) {
-    for (
-      let i = options.startRow;
-      i <= options.startRow + options.rows;
-      i += 1
-    ) {
-      const [startX, startY] = pixelCoords([options.startCol, i]);
-      const [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
+function verticalLines() {
+  return Array.from(
+    Array(options.cols + 1),
+    (_, idx) => idx + options.startCol
+  ).map((i) => {
+    const [startX, startY] = pixelCoords([i, options.startRow]);
+    const [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
 
-      this.lines.push(
-        new GraphLine({
-          startX,
-          startY,
-          endX,
-          endY,
-          style: options.style,
-        })
-      );
-    }
-  }
+    return new GraphLine({
+      startX,
+      startY,
+      endX,
+      endY,
+      style: options.style,
+    });
+  });
+}
 
-  // draw all vertical lines
-  createVerticalLines(options: GridOptions) {
-    for (
-      let i = options.startCol;
-      i <= options.startCol + options.cols;
-      i += 1
-    ) {
-      const [startX, startY] = pixelCoords([i, options.startRow]);
-      const [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
+function horizontalLines() {
+  return Array.from(
+    Array(options.rows + 1),
+    (_, idx) => idx + options.startRow
+  ).map((i) => {
+    const [startX, startY] = pixelCoords([options.startCol, i]);
+    const [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
+    return new GraphLine({
+      startX,
+      startY,
+      endX,
+      endY,
+      style: options.style,
+    });
+  });
+}
 
-      this.lines.push(
-        new GraphLine({
-          startX,
-          startY,
-          endX,
-          endY,
-          style: options.style,
-        })
-      );
-    }
-  }
+export default function graphLines() {
+  return [...horizontalLines(), ...verticalLines()];
 }
