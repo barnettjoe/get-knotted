@@ -1,4 +1,8 @@
-import Knot from "./knot";
+import makeKnot, {
+  merge as mergeKnots,
+  addLineBetween,
+  remove as removeKnot,
+} from "./knot";
 import {
   fromExtrema,
   lines,
@@ -125,7 +129,7 @@ const drawing: Drawing = {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
   drawKnot() {
-    currentKnot = new Knot(currentFrame);
+    currentKnot = new makeKnot(currentFrame);
     this.knots.push(currentKnot);
   },
   addNode(coords) {
@@ -133,7 +137,7 @@ const drawing: Drawing = {
     frame.lines = lines(frame.nodes, frame.adjacencyList);
     frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
     frame.lines.forEach(drawLine);
-    this.knots.push(new Knot(frame));
+    this.knots.push(new makeKnot(frame));
   },
   singleNodeFrame(coords) {
     const nodes = [
@@ -225,25 +229,25 @@ const drawing: Drawing = {
     }
   },
   makeNewLine(lineStart, lineEnd) {
-    currentKnot && currentKnot.remove();
+    currentKnot && removeKnot(currentKnot);
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
     if (knotA && knotB && knotA !== knotB) {
-      this.mergeKnots(knotA, knotB, lineStart, lineEnd);
+      mergeKnots(knotA, knotB, lineStart, lineEnd);
     } else {
-      currentKnot.addLineBetween(lineStart, lineEnd);
+      addLineBetween(currentKnot, lineStart, lineEnd);
     }
   },
   mergeKnots(knotA, knotB, startNode, endNode) {
     // need to merge two frames...
     this.remove(knotA);
     this.remove(knotB);
-    currentKnot = knotA.merge(knotB, startNode, endNode);
+    currentKnot = mergeKnots(knotA, knotB, startNode, endNode);
     currentFrame = currentKnot.frame;
     this.knots.push(currentKnot);
   },
   remove(knot) {
-    knot.remove();
+    removeKnot(currentKnot);
     this.knots.splice(this.knots.indexOf(knot), 1);
   },
   nodeAt(coords: Coords) {

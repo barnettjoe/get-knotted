@@ -16,173 +16,179 @@ import {
   CollectionIntersect,
   StrandElement,
 } from "./types";
-import { lines, markAsAdjacent, merge, elementsForRemoval } from "./frame";
+import {
+  lines,
+  markAsAdjacent,
+  merge as mergeFrame,
+  elementsForRemoval as frameElementsForRemoval,
+} from "./frame";
 
-export default class Knot {
-  // TODO - can we make some of these private or protected?
-  public frame: Frame;
-  public elements?: KnotElement[];
-  public offsetSketches?: offsetSketch[];
-  public strands?: IStrand[];
-  public contours?: IContour[];
+export default function makeKnot(frame) {
+  const contours = makeStrands(frame).map(Contour);
+  // TODO - move this elsewhere...
+  const knot = {
+    frame,
+    elements: [],
+    contours,
+    overUnders: makeOverUnders(contours),
+  };
+  draw(knot);
+  return knot;
+}
 
-  constructor(frame: Frame) {
-    this.frame = frame;
-    this.init();
-    this.draw();
+// TODO - removals should happen elsewhere
+export function remove(knot) {
+  if (knot.elements) {
+    knot.elements.forEach((element: KnotElement) => element.remove());
   }
-  remove() {
-    if (this.elements) {
-      this.elements.forEach((element: KnotElement) => element.remove());
-    }
-    elementsForRemoval(this.frame).forEach(removeElement);
-    this.frame.lines = [];
+  frameElementsForRemoval(knot.frame).forEach(removeElement);
+  // TODO - EWW
+  knot.frame.lines = [];
+}
+
+export function merge(
+  knot: Knot,
+  otherKnot: Knot,
+  lineStart: INode,
+  lineEnd: INode
+) {
+  const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
+  mergedFrame.adjacencyList = markAsAdjacent(
+    lineStart,
+    lineEnd,
+    mergedFrame.nodes,
+    mergedFrame.adjacencyList
+  );
+  mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
+  mergedFrame.crossingPoints = mergedFrame.lines.map(
+    (line) => line.crossingPoint
+  );
+  // TODO EWW - drawing should happen elsewhere
+  mergedFrame.lines.forEach(drawLine);
+  mergedFrame.nodes.forEach(drawNode);
+  const mergedKnot = makeKnot(mergedFrame);
+  mergedKnot.elements = knot.elements.concat(otherKnot.elements);
+  return mergedKnot;
+}
+
+function makeStrands(frame) {
+  const strands = [];
+  while (frame.lines.some(uncrossed)) {
+    strands.push(Strand(frame));
   }
-  init() {
-    this.elements = [];
-    this.contours = this.makeStrands().map(Contour);
-    this.overUnders = this.makeOverUnders(this.contours);
+  return strands;
+}
+
+export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
+  const { frame } = knot;
+  frame.adjacencyList = markAsAdjacent(
+    nodeA,
+    nodeB,
+    frame.nodes,
+    frame.adjacencyList
+  );
+  frame.lines = lines(frame.nodes, frame.adjacencyList);
+  frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
+  frame.lines.forEach(drawLine);
+  // TODO - was init call here - is it necessary?
+  // TODO - move this draw call...
+  draw(knot);
+}
+function getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
+  if (bound === "out") {
+    return direction === "R" ? point.underOutRight : point.underOutLeft;
   }
-  merge(otherKnot: Knot, lineStart: INode, lineEnd: INode) {
-    const mergedFrame = merge(this.frame, otherKnot.frame);
-    mergedFrame.adjacencyList = markAsAdjacent(
-      lineStart,
-      lineEnd,
-      mergedFrame.nodes,
-      mergedFrame.adjacencyList
-    );
-    mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
-    mergedFrame.crossingPoints = mergedFrame.lines.map(
-      (line) => line.crossingPoint
-    );
-    mergedFrame.lines.forEach(drawLine);
-    mergedFrame.nodes.forEach(drawNode);
-    const mergedKnot = new Knot(mergedFrame);
-    // TODO - this conditional is necessary because elements is undefined on objects before
-    // calling init - maybe it would be neater if we initialize to an empty array or something,
-    // so it can never be undefined
-    if (this.elements && otherKnot.elements) {
-      this.elements = this.elements.concat(otherKnot.elements);
-    } else {
-      // TODO - throw an error?
-    }
-    return mergedKnot;
+  return direction === "R" ? point.underInRight : point.underInLeft;
+}
+function trim(
+  under: PolyLine,
+  intersect: CollectionIntersect,
+  bound: "in" | "out"
+) {
+  if (bound === "out") {
+    mutate(under, under.slice(intersect.idxA + 1));
+    under.unshift(intersect.intersection);
+  } else if (bound === "in") {
+    mutate(under, under.slice(0, intersect.idxA + 1));
+    under.push(intersect.intersection);
   }
-  makeStrands() {
-    const strands = [];
-    while (this.frame.lines.some(uncrossed)) {
-      strands.push(Strand(this.frame));
-    }
-    return strands;
+}
+function trimUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
+  const overLeft = point.overInLeft.concat(point.overOutLeft);
+  const overRight = point.overInRight.concat(point.overOutRight);
+  const under = getUnder(point, direction, bound);
+  const intersect =
+    collectionIntersect(under, overLeft) ||
+    collectionIntersect(under, overRight);
+  if (intersect) {
+    trim(under, intersect, bound);
   }
-  addLineBetween(nodeA: INode, nodeB: INode) {
-    this.frame.adjacencyList = markAsAdjacent(
-      nodeA,
-      nodeB,
-      this.frame.nodes,
-      this.frame.adjacencyList
-    );
-    this.frame.lines = lines(this.frame.nodes, this.frame.adjacencyList);
-    this.frame.crossingPoints = this.frame.lines.map(
-      (line) => line.crossingPoint
-    );
-    this.frame.lines.forEach(drawLine);
-    this.init();
-    this.draw();
-  }
-  getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
-    if (bound === "out") {
-      return direction === "R" ? point.underOutRight : point.underOutLeft;
-    }
-    return direction === "R" ? point.underInRight : point.underInLeft;
-  }
-  trim(under: PolyLine, intersect: CollectionIntersect, bound: "in" | "out") {
-    if (bound === "out") {
-      mutate(under, under.slice(intersect.idxA + 1));
-      under.unshift(intersect.intersection);
-    } else if (bound === "in") {
-      mutate(under, under.slice(0, intersect.idxA + 1));
-      under.push(intersect.intersection);
-    }
-  }
-  trimUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
-    const overLeft = point.overInLeft.concat(point.overOutLeft);
-    const overRight = point.overInRight.concat(point.overOutRight);
-    const under = this.getUnder(point, direction, bound);
-    const intersect =
-      collectionIntersect(under, overLeft) ||
-      collectionIntersect(under, overRight);
-    if (intersect) {
-      this.trim(under, intersect, bound);
-    }
-  }
-  makeOverUnders(strands) {
-    if (!strands) return;
-    const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
-    strands.forEach((strand, index) => {
-      strand.forEach((strandElement, idx) => {
-        const point = strandElement.point;
-        const sketchPoint = crossingPointOffsets.get(point);
-        if (!strandElement.pr) {
-          if (!point.trimmed) {
-            this.trimUnder(sketchPoint, "R", "out");
-            this.trimUnder(sketchPoint, "R", "in");
-            this.trimUnder(sketchPoint, "L", "out");
-            this.trimUnder(sketchPoint, "L", "in");
-          }
-          point.trimmed = true;
+}
+function makeOverUnders(strands) {
+  if (!strands) return;
+  const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
+  strands.forEach((strand, index) => {
+    strand.forEach((strandElement, idx) => {
+      const point = strandElement.point;
+      const sketchPoint = crossingPointOffsets.get(point);
+      if (!strandElement.pr) {
+        if (!point.trimmed) {
+          trimUnder(sketchPoint, "R", "out");
+          trimUnder(sketchPoint, "R", "in");
+          trimUnder(sketchPoint, "L", "out");
+          trimUnder(sketchPoint, "L", "in");
         }
-      });
+        point.trimmed = true;
+      }
     });
-    return crossingPointOffsets;
-  }
-  draw() {
-    // TODO - better to have this.strands always defined, so won't
-    // need this check -- it could just sometimes be an empty array
-    if (!this.contours) return;
-    this.contours.forEach((strand) => {
-      strand.forEach((strandElement, i) => {
-        const offsets = this.overUnders.get(strandElement.point);
-        // now draw everything except PRs
-        if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-          this.drawOffsets(strandElement, offsets);
-        } else if (strandElement.pr) {
-          // here we draw the PRs
-          const pr = new PointedReturn({
-            pr: strandElement,
-            elements: this.elements,
-            middleOutbound: pointPreceding(i, strand).outboundBezier,
-            middleInbound: strandElement.outboundBezier,
-          });
-          pr.draw(offsets);
-        }
-      });
+  });
+  return crossingPointOffsets;
+}
+function draw(knot) {
+  // TODO - better to have this.strands always defined, so won't
+  // need this check -- it could just sometimes be an empty array
+  if (!knot.contours) return;
+  knot.contours.forEach((strand) => {
+    strand.forEach((strandElement, i) => {
+      const offsets = knot.overUnders.get(strandElement.point);
+      // now draw everything except PRs
+      if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
+        drawOffsets(knot, strandElement, offsets);
+      } else if (strandElement.pr) {
+        // here we draw the PRs
+        const pr = new PointedReturn({
+          pr: strandElement,
+          elements: knot.elements,
+          middleOutbound: pointPreceding(i, strand).outboundBezier,
+          middleInbound: strandElement.outboundBezier,
+        });
+        pr.draw(offsets);
+      }
     });
-    elementsForRemoval(this.frame).forEach(removeElement);
-    this.frame.lines = lines(this.frame.nodes, this.frame.adjacencyList);
-    this.frame.crossingPoints = this.frame.lines.map(
-      (line) => line.crossingPoint
-    );
+  });
+  frameElementsForRemoval(knot.frame).forEach(removeElement);
+  knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
+  knot.frame.crossingPoints = knot.frame.lines.map(
+    (line) => line.crossingPoint
+  );
 
-    this.frame.lines.forEach(drawLine);
-    this.frame.nodes.forEach(drawNode);
+  knot.frame.lines.forEach(drawLine);
+  knot.frame.nodes.forEach(drawNode);
+}
+function drawOffsets(knot, strandElement: StrandElement, offsets) {
+  if (strandElement.direction === "R") {
+    drawPolyline(knot, offsets.overOutLeft);
+    drawPolyline(knot, offsets.overOutRight);
+  } else {
+    drawPolyline(knot, offsets.underOutLeft);
+    drawPolyline(knot, offsets.underOutRight);
   }
-  drawOffsets(strandElement: StrandElement, offsets) {
-    const point = strandElement.point;
-    if (strandElement.direction === "R") {
-      this.drawPolyline(offsets.overOutLeft);
-      this.drawPolyline(offsets.overOutRight);
-    } else {
-      this.drawPolyline(offsets.underOutLeft);
-      this.drawPolyline(offsets.underOutRight);
-    }
-  }
-  drawPolyline(outline: PolyLine) {
-    const points = outline.reduce(reducer, []);
-    const snp = surface.polyline(points);
-    // TODO - better to have this.strands always defined, so won't
-    // need this check -- it could just sometimes be an empty array
-    this.elements && this.elements.push(snp);
-    format(snp);
-  }
+}
+function drawPolyline(knot, outline: PolyLine) {
+  const points = outline.reduce(reducer, []);
+  const snp = surface.polyline(points);
+  // TODO - better to have this.strands always defined, so won't
+  // need this check -- it could just sometimes be an empty array
+  knot.elements && knot.elements.push(snp);
+  format(snp);
 }
