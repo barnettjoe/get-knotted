@@ -1,6 +1,11 @@
 import config from "./config.js";
 import frameLine, { uncrossed, isBetween, visits } from "./line";
-import Node from "./node";
+import node, {
+  sameNode,
+  hasOverlap,
+  distanceFromPoint,
+  isAdjacentTo,
+} from "./node";
 import { GridSystem } from "./types";
 
 function cartesianProduct(arr1, arr2) {
@@ -47,20 +52,20 @@ function allNeighborsAdjacent(nodes) {
       ...adjacencies,
       nodes
         .map((secondNode, j) => [secondNode, j])
-        .filter(([secondNode, j]) => firstNode.isAdjacentTo(secondNode))
+        .filter(([secondNode, j]) => isAdjacentTo(firstNode, secondNode))
         .map(([secondNode, j]) => j),
     ];
   }, []);
 }
 function nodeIndex(node, nodes) {
   return nodes.findIndex(function(someNode) {
-    return someNode.sameNode(node);
+    return sameNode(someNode, node);
   });
 }
 
 function closestNodeToPoint(coords, nodes) {
   return nodes.reduce(function(acc, node) {
-    if (node.distanceFromPoint(coords) < acc.distanceFromPoint(coords)) {
+    if (distanceFromPoint(node, coords) < distanceFromPoint(acc, coords)) {
       return node;
     } else {
       return acc;
@@ -83,7 +88,7 @@ export function fromExtrema(initialBox, finalBox) {
   });
 
   const nodes = nodeCoords.map((coord) => {
-    return new Node({
+    return node({
       x: coord[0],
       y: coord[1],
       gridSystem: GridSystem.square,
@@ -102,7 +107,7 @@ export function fromExtrema(initialBox, finalBox) {
 export function findProximalNode(coords, nodes) {
   const closestNode = closestNodeToPoint(coords, nodes);
   const proximityThreshold = config.nodeSelectionMinProximity;
-  if (closestNode.distanceFromPoint(coords) < proximityThreshold) {
+  if (distanceFromPoint(closestNode, coords) < proximityThreshold) {
     return closestNode;
   }
   // explicit return to appease eslint
@@ -132,7 +137,7 @@ export function linesOutFrom(node, lines) {
 }
 
 export function overlapsExistingNode(pxX, pxY, nodes) {
-  return nodes.some((node) => node.hasOverlap(pxX, pxY));
+  return nodes.some((node) => hasOverlap(node, pxX, pxY));
 }
 
 export function merge(frame, otherFrame) {

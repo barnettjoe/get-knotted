@@ -2,6 +2,7 @@ import StrandElement from "./strand-element.js";
 import { isCrossed, uncrossedDirection } from "./crossing-point.js";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";
+import { sameNode } from "./node";
 
 const strandState = {};
 
@@ -75,7 +76,7 @@ function logCrossing() {
   }
 }
 function traverseNextBackwards(frame) {
-  return nextLine(frame).endNode.sameNode(strandState.targetNode);
+  return sameNode(nextLine(frame).endNode, strandState.targetNode);
 }
 function compareByAngle(lineA, lineB) {
   if (
@@ -139,7 +140,7 @@ function nextBearing() {
   });
 }
 function goingBackwards() {
-  return strandState.currentLine.startNode.sameNode(strandState.targetNode);
+  return sameNode(strandState.currentLine.startNode, strandState.targetNode);
 }
 function pointedReturn() {
   const angleDelta = Math.abs(

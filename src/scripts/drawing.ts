@@ -35,9 +35,26 @@ const userLine: { element: Snap.Element | null; startNode: INode | null } = {
 };
 
 export function drawLine(line) {
+  // TODO - EWW
   line.snapObj = Snap("#surface")
     .line(line.startX, line.startY, line.endX, line.endY)
     .attr(line.style);
+}
+
+export function drawNode(node) {
+  // TODO - EWW
+  node.snapObj = Snap("#surface")
+    .circle(node.x, node.y, config.nodeStyle.radius)
+    .attr(config.nodeStyle);
+}
+
+export function removeElement(element) {
+  // nasty hack
+  if (element.remove) {
+    element.remove();
+  } else if (element.snapObj) {
+    element.snapObj.remove();
+  }
 }
 
 const drawing: Drawing = {
@@ -145,7 +162,7 @@ const drawing: Drawing = {
   drawFrame() {
     currentFrame = fromExtrema(dragStart, dragEnd);
     currentFrame.lines.forEach(drawLine);
-    currentFrame.nodes.forEach((node) => node.draw());
+    currentFrame.nodes.forEach(drawNode);
   },
   startDrawingGrid(e) {
     // TODO - should be able to remove type assertion after converting mouse.js
@@ -164,14 +181,12 @@ const drawing: Drawing = {
         dragEnd,
         (() => {
           if (currentFrame) {
-            elementsForRemoval(currentFrame).forEach((element) =>
-              element.remove()
-            );
+            elementsForRemoval(currentFrame).forEach(removeElement);
             currentFrame.lines = [];
           }
           currentFrame = fromExtrema(dragStart, dragEnd);
           currentFrame.lines.forEach(drawLine);
-          currentFrame.nodes.forEach((node) => node.draw());
+          currentFrame.nodes.forEach(drawNode);
         }).bind(this)
       );
     }
