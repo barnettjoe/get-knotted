@@ -25,15 +25,12 @@ import {
 
 export default function makeKnot(frame) {
   const contours = makeStrands(frame).map(Contour);
-  // TODO - move this elsewhere...
-  const knot = {
+  return {
     frame,
     elements: [],
     contours,
     overUnders: makeOverUnders(contours),
   };
-  draw(knot);
-  return knot;
 }
 
 // TODO - removals should happen elsewhere
@@ -43,7 +40,7 @@ export function remove(knot) {
   }
   frameElementsForRemoval(knot.frame).forEach(removeElement);
   // TODO - EWW
-  knot.frame.lines = [];
+  // knot.frame.lines = [];
 }
 
 export function merge(
@@ -52,6 +49,8 @@ export function merge(
   lineStart: INode,
   lineEnd: INode
 ) {
+  remove(knot);
+  remove(otherKnot);
   const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
   mergedFrame.adjacencyList = markAsAdjacent(
     lineStart,
@@ -67,6 +66,7 @@ export function merge(
   mergedFrame.lines.forEach(drawLine);
   mergedFrame.nodes.forEach(drawNode);
   const mergedKnot = makeKnot(mergedFrame);
+  draw(mergedKnot);
   mergedKnot.elements = knot.elements.concat(otherKnot.elements);
   return mergedKnot;
 }
@@ -90,8 +90,13 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   frame.lines = lines(frame.nodes, frame.adjacencyList);
   frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
   frame.lines.forEach(drawLine);
+  remove(knot);
+  Object.assign(knot, makeKnot(frame));
+  // knot.contours = makeStrands(frame).map(Contour);
   // TODO - was init call here - is it necessary?
   // TODO - move this draw call...
+  // should return a new knot based on that frame...
+  // this new know should be what's drawn...
   draw(knot);
 }
 function getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
@@ -144,51 +149,61 @@ function makeOverUnders(strands) {
   });
   return crossingPointOffsets;
 }
-function draw(knot) {
-  // TODO - better to have this.strands always defined, so won't
-  // need this check -- it could just sometimes be an empty array
-  if (!knot.contours) return;
-  knot.contours.forEach((strand) => {
-    strand.forEach((strandElement, i) => {
-      const offsets = knot.overUnders.get(strandElement.point);
-      // now draw everything except PRs
-      if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-        drawOffsets(knot, strandElement, offsets);
-      } else if (strandElement.pr) {
-        // here we draw the PRs
-        const pr = new PointedReturn({
-          pr: strandElement,
-          elements: knot.elements,
-          middleOutbound: pointPreceding(i, strand).outboundBezier,
-          middleInbound: strandElement.outboundBezier,
-        });
-        pr.draw(offsets);
+
+function elementsForDrawing(knot) {
+  return knot.contours.reduce(
+    function(result, strand) {
+      const morePolylines = [];
+      for (let i = 0; i < strand.length; i++) {
+        const strandElement = strand[i];
+        const offsets = knot.overUnders.get(strandElement.point);
+        // now draw everything except PRs
+        if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
+          morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
+        } else if (strandElement.pr) {
+          const pr = new PointedReturn({
+            pr: strandElement,
+            elements: knot.elements,
+            middleOutbound: pointPreceding(i, strand).outboundBezier,
+            middleInbound: strandElement.outboundBezier,
+          });
+          pr.draw(offsets);
+          // // here we draw the PRs
+        }
       }
-    });
-  });
+      return {
+        ...result,
+        polylines: [...result.polylines, ...morePolylines],
+      };
+    },
+    { polylines: [] }
+  );
+}
+
+export function draw(knot) {
+  if (!knot.contours) return;
   frameElementsForRemoval(knot.frame).forEach(removeElement);
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
   knot.frame.crossingPoints = knot.frame.lines.map(
     (line) => line.crossingPoint
   );
-
+  const { polylines } = elementsForDrawing(knot);
+  polylines.forEach((points) => {
+    const snp = surface.polyline(points);
+    knot.elements && knot.elements.push(snp);
+    format(snp);
+  });
   knot.frame.lines.forEach(drawLine);
   knot.frame.nodes.forEach(drawNode);
 }
-function drawOffsets(knot, strandElement: StrandElement, offsets) {
-  if (strandElement.direction === "R") {
-    drawPolyline(knot, offsets.overOutLeft);
-    drawPolyline(knot, offsets.overOutRight);
-  } else {
-    drawPolyline(knot, offsets.underOutLeft);
-    drawPolyline(knot, offsets.underOutRight);
+
+function offsetPolyLines(knot, strandElement: StrandElement, offsets) {
+  function polylinePoints(outline) {
+    return outline.reduce(reducer, []);
   }
-}
-function drawPolyline(knot, outline: PolyLine) {
-  const points = outline.reduce(reducer, []);
-  const snp = surface.polyline(points);
-  // TODO - better to have this.strands always defined, so won't
-  // need this check -- it could just sometimes be an empty array
-  knot.elements && knot.elements.push(snp);
-  format(snp);
+  const { overOutLeft, overOutRight, underOutLeft, underOutRight } = offsets;
+  return (strandElement.direction === "R"
+    ? [overOutLeft, overOutRight]
+    : [underOutLeft, underOutRight]
+  ).map(polylinePoints);
 }

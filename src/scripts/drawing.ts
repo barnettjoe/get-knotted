@@ -2,6 +2,7 @@ import makeKnot, {
   merge as mergeKnots,
   addLineBetween,
   remove as removeKnot,
+  draw as drawKnot,
 } from "./knot";
 import {
   fromExtrema,
@@ -129,7 +130,8 @@ const drawing: Drawing = {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
   drawKnot() {
-    currentKnot = new makeKnot(currentFrame);
+    currentKnot = makeKnot(currentFrame);
+    drawKnot(currentKnot);
     this.knots.push(currentKnot);
   },
   addNode(coords) {
@@ -137,7 +139,9 @@ const drawing: Drawing = {
     frame.lines = lines(frame.nodes, frame.adjacencyList);
     frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
     frame.lines.forEach(drawLine);
-    this.knots.push(new makeKnot(frame));
+    const newKnot = makeKnot(frame);
+    drawKnot(newKnot);
+    this.knots.push(newKnot);
   },
   singleNodeFrame(coords) {
     const nodes = [
@@ -232,8 +236,9 @@ const drawing: Drawing = {
     currentKnot && removeKnot(currentKnot);
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
+    debugger;
     if (knotA && knotB && knotA !== knotB) {
-      mergeKnots(knotA, knotB, lineStart, lineEnd);
+      this.mergeKnots(knotA, knotB, lineStart, lineEnd);
     } else {
       addLineBetween(currentKnot, lineStart, lineEnd);
     }
