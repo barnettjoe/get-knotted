@@ -5,6 +5,7 @@ import vertexShader from "./vertex-shader.glsl";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
+let vertexBuffer;
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -30,13 +31,14 @@ export function addGridLine() {}
 
 export function drawGrid() {}
 
-const points = [[0, 0], [0, 1], [1, 0]];
+const lines: number[][] = [];
 
 function drawLoop() {
-  console.log("webgl drawloop");
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  if (lines.length > 0) {
+    gl.drawArrays(gl.LINES, 0, lines.length * 2);
+  }
   drawGrid();
   requestAnimationFrame(drawLoop);
 }
@@ -49,6 +51,21 @@ function flatten(arr: number[][]) {
   return new Float32Array(result);
 }
 
+export function addLine(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number
+) {
+  lines.push([startX, startY, endX, endY]);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    // TODO - do the scaling properly, with matrix transform in the shader...
+    flatten(lines).map((x) => x / 1000),
+    gl.STATIC_DRAW
+  );
+}
+
 export function start(context: OnscreenWebglContext) {
   gl = context;
   program = initShaders(gl, { vertexShader, fragmentShader });
@@ -56,10 +73,9 @@ export function start(context: OnscreenWebglContext) {
   gl.useProgram(program);
 
   // Load the data into the GPU
-  const bufferId = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+  vertexBuffer = gl.createBuffer();
 
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   // Associate our shader variables with our data buffer
   const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.enableVertexAttribArray(vPosition);

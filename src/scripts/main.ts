@@ -1,6 +1,7 @@
 import drawing from "./drawing";
 import graphLines from "./graph";
 import { Mode, MODES } from "./types";
+import * as webgl from "./webgl/draw-webgl";
 
 import Snap from "snapsvg";
 
@@ -10,6 +11,7 @@ export default surface;
 function drawSquareGrid() {
   graphLines().forEach(({ startX, startY, endX, endY, style }) => {
     surface.line(startX, startY, endX, endY).attr(style);
+    webgl.addLine(startX, startY, endX, endY);
   });
 }
 
