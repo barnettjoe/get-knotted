@@ -1,4 +1,4 @@
-import config from "./config.js";
+import config from "./config";
 import StrandElement from "./strand-element.js";
 
 export function isCrossed(crossingPoint, direction) {

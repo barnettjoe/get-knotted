@@ -1,4 +1,4 @@
-import config from "./config.js";
+import config from "./config";
 import { polyline } from "./knot-utils.js";
 import { pointFollowing } from "./strand.js";
 

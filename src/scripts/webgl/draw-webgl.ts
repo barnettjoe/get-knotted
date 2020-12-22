@@ -6,6 +6,7 @@ import vertexShader from "./vertex-shader.glsl";
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
 let vertexBuffer;
+// let uCanvasWidth: WebGLUniformLocation;
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -36,6 +37,7 @@ const lines: number[][] = [];
 function drawLoop() {
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
+  // gl.uniform1f(uCanvasWidth, gl.canvas.width);
   if (lines.length > 0) {
     gl.drawArrays(gl.LINES, 0, lines.length * 2);
   }
@@ -74,6 +76,11 @@ export function start(context: OnscreenWebglContext) {
   // Associate our shader variables with our data buffer
   const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.enableVertexAttribArray(vPosition);
+  // const uniformLocationMaybe = gl.getUniformLocation(program, "uCanvasWidth");
+  // if (uniformLocationMaybe === null) {
+  //   throw new Error("could not get location for uCanvasWidth uniform");
+  // }
+  // uCanvasWidth = uniformLocationMaybe;
   // Describe the form of the data in the vertex array.
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
   drawLoop();

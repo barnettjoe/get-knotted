@@ -43,9 +43,9 @@ export default {
     radius: 7,
   },
 
-  // necessary to ensure that frame and graph are properly...
+  // necessary to ensure that frame and graph are properly
   // aligned even when either one has greater strokeWidth
-  shiftFactor: function(style) {
+  shiftFactor: function(style: { strokeWidth: number }) {
     if (style.strokeWidth === this.maxStrokeWidth()) {
       return 0;
     } else {

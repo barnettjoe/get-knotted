@@ -70,6 +70,8 @@ export type IStrand = StrandElement[];
 export type Direction = "L" | "R";
 
 export interface StrandElement {
+  x: number;
+  y: number;
   direction: Direction;
   point: IPoint;
   pr: boolean;
@@ -97,7 +99,8 @@ export interface CollectionIntersect {
 
 export type PolyLine = Coords[];
 
-export interface IContour {}
+export interface Contour {}
+export type Strand = StrandElement[];
 
 export interface OffsetSketch {
   foo: string;
@@ -153,3 +156,5 @@ export function isOnscreenWebglContext(
     value.canvas instanceof HTMLCanvasElement
   );
 }
+
+export type Polygon = number[][];

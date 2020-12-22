@@ -1,11 +1,16 @@
 attribute vec4 vPosition;
+uniform float uCanvasWidth;
 
-float scale_factor = 1.0 / 1000.0;
-mat3 scale = mat3(scale_factor, 0.0, 0.0, 0.0, scale_factor, 0.0, 0.0, 0.0, 1.0);
+float scale_factor = 1.0 / 300.0;
+float translation_delta = -1.0;
 
-void main()
-{
+mat2 scale = mat2(
+    scale_factor, 0.0,
+    0.0, scale_factor
+);
+
+void main() {
     gl_PointSize = 1.0;
-    vec3 position = scale * vPosition.xyz;
-    gl_Position = vec4(position, 1.0);
+    vec2 scaled_position =  scale * vPosition.xy;
+    gl_Position = vec4(scaled_position + translation_delta, 0, 1.0);
 }

@@ -1,4 +1,4 @@
-import config from "./config.js";
+import config from "./config";
 import { pixelCoords } from "./mouse.js";
 import { GraphLine } from "./line";
 

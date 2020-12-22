@@ -1,5 +1,5 @@
 import { pixelCoords } from "./mouse.js";
-import config from "./config.js";
+import config from "./config";
 import { identicalObjects, distanceBetween } from "./general-utils";
 import { NodeOptions, GridSystem, Coords } from "./types";
 

@@ -1,11 +1,11 @@
-import config from './config.js';
+import config from "./config";
 
 // for getting coords relative to graph area from absolute coords...
 // (i.e. relative to whole window)
 export function relativeCoords(e) {
   const absX = e.clientX;
   const absY = e.clientY;
-  const surface = document.getElementById('surface');
+  const surface = document.getElementById("surface");
   const svgPosition = surface.getBoundingClientRect();
   const leftOffset = svgPosition.left;
   const topOffset = svgPosition.top;

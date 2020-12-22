@@ -22,8 +22,8 @@ import {
 } from "./mouse.js";
 import { identicalObjects } from "./general-utils";
 import Snap from "snapsvg";
-import config from "./config.js";
-import { start as startWebglDrawing } from "./webgl/draw-webgl";
+import config from "./config";
+import * as webgl from "./webgl/draw-webgl";
 
 import {
   Coords,
@@ -82,7 +82,7 @@ const drawing: Drawing = {
     }
     const webglContext = webglCanvas.getContext("webgl");
     if (isOnscreenWebglContext(webglContext)) {
-      startWebglDrawing(webglContext);
+      webgl.start(webglContext);
     } else {
       throw new Error("failed to get webgl context");
     }
