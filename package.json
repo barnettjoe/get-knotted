@@ -61,6 +61,7 @@
     "core-js": "3",
     "kld-intersections": "^0.4.3",
     "numeric": "^1.2.6",
+    "raw-loader": "^4.0.2",
     "snapsvg": "^0.5.1"
   }
 }

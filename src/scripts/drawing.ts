@@ -23,7 +23,15 @@ import {
 import { identicalObjects } from "./general-utils";
 import Snap from "snapsvg";
 import config from "./config.js";
-import { Coords, Drawing, INode, GridSystem } from "./types";
+import { start as startWebglDrawing } from "./webgl/draw-webgl";
+
+import {
+  Coords,
+  Drawing,
+  INode,
+  GridSystem,
+  isOnscreenWebglContext,
+} from "./types";
 
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
@@ -32,6 +40,7 @@ let dragEnd: [number, number];
 // for keeping track of which knot / frame is currently being manipulated
 let currentKnot: Knot;
 let currentFrame: Frame;
+let webglContext: CanvasRenderingContext;
 
 // for keeping track of the line currently being drawn (in 'add-line' mode)
 const userLine: { element: Snap.Element | null; startNode: INode | null } = {
@@ -66,6 +75,18 @@ const drawing: Drawing = {
   knots: [],
   mode: "add-grid",
   mouseIsDown: false,
+  setupWebglContext() {
+    const webglCanvas = document.getElementById("webgl-surface");
+    if (!(webglCanvas instanceof HTMLCanvasElement)) {
+      throw new Error("no canvas for webgl");
+    }
+    const webglContext = webglCanvas.getContext("webgl");
+    if (isOnscreenWebglContext(webglContext)) {
+      startWebglDrawing(webglContext);
+    } else {
+      throw new Error("failed to get webgl context");
+    }
+  },
   handleMouseDown(this: Drawing, e: MouseEvent) {
     this.mouseIsDown = true;
     switch (this.mode) {

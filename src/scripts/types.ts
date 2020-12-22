@@ -130,6 +130,7 @@ export interface Drawing {
   placeNode(e: MouseEvent): void;
   remove(knot: Knot): void;
   removeUserLine(): void;
+  setupWebglContext(): void;
   singleNodeFrame(coords: Coords): Frame;
   startDrawingGrid(e: MouseEvent): void;
   startDrawingLine(coords: Coords): void;
@@ -138,4 +139,17 @@ export interface Drawing {
   knots: Knot[]; // TODO -- array of what??
   mode: Mode;
   mouseIsDown: boolean;
+}
+
+export type OnscreenWebglContext = WebGLRenderingContext & {
+  canvas: HTMLCanvasElement;
+};
+
+export function isOnscreenWebglContext(
+  value: unknown
+): value is OnscreenWebglContext {
+  return (
+    value instanceof WebGLRenderingContext &&
+    value.canvas instanceof HTMLCanvasElement
+  );
 }

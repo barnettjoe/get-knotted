@@ -30,6 +30,7 @@ function setUpButton(id: Mode) {
 document.addEventListener(
   "DOMContentLoaded",
   () => {
+    drawing.setupWebglContext();
     drawing.addMouseListeners();
     MODES.forEach(setUpButton);
     drawSquareGrid();
