@@ -23,6 +23,7 @@ import {
 import { identicalObjects } from "./general-utils";
 import Snap from "snapsvg";
 import config from "./config";
+import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
 import {
@@ -39,7 +40,6 @@ let dragEnd: [number, number];
 
 // for keeping track of which knot / frame is currently being manipulated
 let currentKnot: Knot;
-let currentFrame: Frame;
 let webglContext: CanvasRenderingContext;
 
 // for keeping track of the line currently being drawn (in 'add-line' mode)
@@ -108,7 +108,7 @@ const drawing: Drawing = {
       this.mouseIsDown = false;
       switch (this.mode) {
         case "add-grid":
-          currentFrame && this.drawKnot();
+          model.getFrame() && this.drawKnot();
           break;
         case "add-line":
           this.finishDrawingLine(e);
@@ -151,7 +151,7 @@ const drawing: Drawing = {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
   drawKnot() {
-    currentKnot = makeKnot(currentFrame);
+    currentKnot = makeKnot(model.getFrame());
     drawKnot(currentKnot);
     this.knots.push(currentKnot);
   },
@@ -189,9 +189,9 @@ const drawing: Drawing = {
     });
   },
   drawFrame() {
-    currentFrame = fromExtrema(dragStart, dragEnd);
-    currentFrame.lines.forEach(drawLine);
-    currentFrame.nodes.forEach(drawNode);
+    model.setFrame(fromExtrema(dragStart, dragEnd));
+    model.getFrame().lines.forEach(drawLine);
+    model.getFrame().nodes.forEach(drawNode);
   },
   startDrawingGrid(e) {
     // TODO - should be able to remove type assertion after converting mouse.js
@@ -209,11 +209,13 @@ const drawing: Drawing = {
       doIfInGraph(
         dragEnd,
         (() => {
+          let currentFrame = model.getFrame();
           if (currentFrame) {
             elementsForRemoval(currentFrame).forEach(removeElement);
             currentFrame.lines = [];
           }
           currentFrame = fromExtrema(dragStart, dragEnd);
+          model.setFrame(currentFrame);
           currentFrame.lines.forEach(drawLine);
           currentFrame.nodes.forEach(drawNode);
         }).bind(this)
@@ -236,6 +238,7 @@ const drawing: Drawing = {
     userLine.startNode = null;
   },
   newLineIsValid(lineStart, lineEnd) {
+    const currentFrame = model.getFrame();
     return (
       lineEnd &&
       lineEnd !== lineStart &&
@@ -269,7 +272,7 @@ const drawing: Drawing = {
     this.remove(knotA);
     this.remove(knotB);
     currentKnot = mergeKnots(knotA, knotB, startNode, endNode);
-    currentFrame = currentKnot.frame;
+    model.setFrame(currentKnot.frame);
     this.knots.push(currentKnot);
   },
   remove(knot) {
@@ -300,7 +303,7 @@ const drawing: Drawing = {
       const foundKnot = this.findKnotWith(lineStart);
       if (foundKnot) {
         currentKnot = foundKnot;
-        currentFrame = currentKnot.frame;
+        model.setFrame(currentKnot.frame);
         this.drawUserLine(lineStart, coords);
       }
     }
