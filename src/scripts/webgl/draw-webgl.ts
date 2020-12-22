@@ -58,12 +58,7 @@ export function addLine(
   endY: number
 ) {
   lines.push([startX, startY, endX, endY]);
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    // TODO - do the scaling properly, with matrix transform in the shader...
-    flatten(lines).map((x) => x / 1000),
-    gl.STATIC_DRAW
-  );
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(lines), gl.STATIC_DRAW);
 }
 
 export function start(context: OnscreenWebglContext) {
