@@ -1,7 +1,6 @@
-import config from "./config";
-import StrandElement from "./strand-element.js";
+import { CrossingPoint, Direction } from "./types";
 
-export function isCrossed(crossingPoint, direction) {
+export function isCrossed(crossingPoint: CrossingPoint, direction: Direction) {
   if (direction === "L") {
     return crossingPoint.crossedLeft;
   } else {
@@ -9,11 +8,11 @@ export function isCrossed(crossingPoint, direction) {
   }
 }
 
-export function fullyCrossed(crossingPoint) {
+export function fullyCrossed(crossingPoint: CrossingPoint) {
   return isCrossed(crossingPoint, "R") && isCrossed(crossingPoint, "L");
 }
 
-export function uncrossedDirection(crossingPoint) {
+export function uncrossedDirection(crossingPoint: CrossingPoint) {
   if (fullyCrossed(crossingPoint)) {
     return null;
   } else if (isCrossed(crossingPoint, "L")) {
@@ -23,7 +22,12 @@ export function uncrossedDirection(crossingPoint) {
   }
 }
 
-export function makeCrossingPoint(startX, startY, endX, endY) {
+export function makeCrossingPoint(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number
+): CrossingPoint {
   return {
     crossedLeft: false,
     crossedRight: false,

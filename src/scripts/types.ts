@@ -74,7 +74,7 @@ export interface StrandElement {
   y: number;
   direction: Direction;
   point: IPoint;
-  pr: boolean;
+  pr: string;
   outboundBezier: Bezier;
   inboundBezier: Bezier;
 }
@@ -158,3 +158,14 @@ export function isOnscreenWebglContext(
 }
 
 export type Polygon = number[][];
+
+export interface CrossingPoint {
+  crossedLeft: boolean;
+  crossedRight: boolean;
+  coords: [number, number];
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}

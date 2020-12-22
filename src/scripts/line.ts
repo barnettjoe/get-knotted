@@ -1,4 +1,4 @@
-import { makeCrossingPoint, fullyCrossed } from "./crossing-point.js";
+import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
 import { INode, Vector, Direction } from "./types";
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
