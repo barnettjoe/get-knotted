@@ -34,6 +34,7 @@ document.addEventListener(
   () => {
     drawing.setupWebglContext();
     drawing.addMouseListeners();
+    drawing.startDrawLoop();
     MODES.forEach(setUpButton);
     drawSquareGrid();
   },

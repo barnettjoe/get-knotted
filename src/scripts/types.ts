@@ -117,7 +117,7 @@ export interface Drawing {
   addMouseListeners(): void;
   addNode(coords: Coords): void;
   dragFrame(e: MouseEvent): void;
-  drawKnot(): void;
+  createKnot(): void;
   drawFrame(): void;
   drawUserLine(startNode: INode, coords: Coords): void;
   findKnotWith(node: INode): Knot | null;

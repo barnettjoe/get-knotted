@@ -46,6 +46,8 @@ const userLine: { element: Snap.Element | null; startNode: INode | null } = {
   startNode: null,
 };
 
+let dirty = false;
+
 export function drawLine(line) {
   // TODO - EWW
   line.snapObj = Snap("#surface")
@@ -67,6 +69,15 @@ export function removeElement(element) {
   } else if (element.snapObj) {
     element.snapObj.remove();
   }
+}
+
+function drawLoop() {
+  const currentKnot = model.getCurrentKnot();
+  if (currentKnot && dirty) {
+    drawKnot(currentKnot);
+    dirty = false;
+  }
+  requestAnimationFrame(drawLoop);
 }
 
 const drawing: Drawing = {
@@ -106,7 +117,7 @@ const drawing: Drawing = {
       this.mouseIsDown = false;
       switch (this.mode) {
         case "add-grid":
-          model.getFrame() && this.drawKnot();
+          model.getFrame() && this.createKnot();
           break;
         case "add-line":
           this.finishDrawingLine(e);
@@ -148,11 +159,14 @@ const drawing: Drawing = {
     }
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
-  drawKnot() {
+  startDrawLoop() {
+    requestAnimationFrame(drawLoop);
+  },
+  createKnot() {
     const knot = makeKnot(model.getFrame());
     model.setCurrentKnot(knot);
-    drawKnot(knot);
     this.knots.push(knot);
+    dirty = true;
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
