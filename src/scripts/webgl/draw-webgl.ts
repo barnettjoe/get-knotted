@@ -5,7 +5,7 @@ import vertexShader from "./vertex-shader.glsl";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
-let vertexBuffer;
+let linesVertexBuffer;
 // let uCanvasWidth: WebGLUniformLocation;
 
 function setCanvasSize() {
@@ -34,7 +34,7 @@ export function drawGrid() {}
 
 const lines: number[][] = [];
 
-function drawLoop() {
+export function draw() {
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
   // gl.uniform1f(uCanvasWidth, gl.canvas.width);
@@ -42,7 +42,6 @@ function drawLoop() {
     gl.drawArrays(gl.LINES, 0, lines.length * 2);
   }
   drawGrid();
-  requestAnimationFrame(drawLoop);
 }
 
 function flatten(arr: number[][]) {
@@ -63,6 +62,8 @@ export function addLine(
   gl.bufferData(gl.ARRAY_BUFFER, flatten(lines), gl.STATIC_DRAW);
 }
 
+export function addFrameLine() {}
+
 export function start(context: OnscreenWebglContext) {
   gl = context;
   program = initShaders(gl, { vertexShader, fragmentShader });
@@ -70,9 +71,9 @@ export function start(context: OnscreenWebglContext) {
   gl.useProgram(program);
 
   // Load the data into the GPU
-  vertexBuffer = gl.createBuffer();
+  linesVertexBuffer = gl.createBuffer();
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, linesVertexBuffer);
   // Associate our shader variables with our data buffer
   const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.enableVertexAttribArray(vPosition);
@@ -83,5 +84,4 @@ export function start(context: OnscreenWebglContext) {
   // uCanvasWidth = uniformLocationMaybe;
   // Describe the form of the data in the vertex array.
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-  drawLoop();
 }

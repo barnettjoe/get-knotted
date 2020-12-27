@@ -46,7 +46,7 @@ const userLine: { element: Snap.Element | null; startNode: INode | null } = {
   startNode: null,
 };
 
-let dirty = false;
+let dirty = true;
 
 export function drawLine(line) {
   // TODO - EWW
@@ -73,10 +73,25 @@ export function removeElement(element) {
 
 function drawLoop() {
   const currentKnot = model.getCurrentKnot();
-  if (currentKnot && dirty) {
-    model.getFrame().lines.forEach(drawLine);
-    model.getFrame().nodes.forEach(drawNode);
-    drawKnot(currentKnot);
+  const currentFrame = model.getFrame();
+  if (dirty) {
+    model.getGridLines().forEach(({ startX, startY, endX, endY, style }) => {
+      Snap("#surface")
+        .line(startX, startY, endX, endY)
+        .attr(style);
+      webgl.addLine(startX, startY, endX, endY);
+    });
+    webgl.draw();
+    if (currentFrame) {
+      model.getFrame().lines.forEach((line) => {
+        drawLine(line);
+        webgl.addFrameLine(line);
+      });
+      model.getFrame().nodes.forEach(drawNode);
+    }
+    if (currentKnot) {
+      drawKnot(currentKnot);
+    }
     dirty = false;
   }
   requestAnimationFrame(drawLoop);

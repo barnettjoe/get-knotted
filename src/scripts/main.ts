@@ -1,18 +1,15 @@
 import drawing from "./drawing";
 import graphLines from "./graph";
 import { Mode, MODES } from "./types";
-import * as webgl from "./webgl/draw-webgl";
 
 import Snap from "snapsvg";
+import model from "./model";
 
 const surface = Snap("#surface");
 export default surface;
 
 function drawSquareGrid() {
-  graphLines().forEach(({ startX, startY, endX, endY, style }) => {
-    surface.line(startX, startY, endX, endY).attr(style);
-    webgl.addLine(startX, startY, endX, endY);
-  });
+  model.setGridLines(graphLines());
 }
 
 function changeDrawingMode(newMode: Mode) {
@@ -28,7 +25,6 @@ function setUpButton(id: Mode) {
   }
 }
 
-// this is where the impurities will surface
 document.addEventListener(
   "DOMContentLoaded",
   () => {

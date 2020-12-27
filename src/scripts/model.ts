@@ -2,6 +2,7 @@ import { Frame, Knot } from "./types";
 
 let currentFrame: Frame | null = null;
 let currentKnot: Knot | null = null;
+let gridLines = [];
 
 export default {
   setFrame(frame: Frame) {
@@ -15,5 +16,11 @@ export default {
   },
   getCurrentKnot() {
     return currentKnot;
+  },
+  setGridLines(lines) {
+    gridLines = lines;
+  },
+  getGridLines() {
+    return gridLines;
   },
 };
