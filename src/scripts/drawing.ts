@@ -74,6 +74,8 @@ export function removeElement(element) {
 function drawLoop() {
   const currentKnot = model.getCurrentKnot();
   if (currentKnot && dirty) {
+    model.getFrame().lines.forEach(drawLine);
+    model.getFrame().nodes.forEach(drawNode);
     drawKnot(currentKnot);
     dirty = false;
   }
@@ -201,17 +203,16 @@ const drawing: Drawing = {
       return overlapsExistingNode(...coords, knot.frame.nodes);
     });
   },
-  drawFrame() {
+  updateFrame() {
     model.setFrame(fromExtrema(dragStart, dragEnd));
-    model.getFrame().lines.forEach(drawLine);
-    model.getFrame().nodes.forEach(drawNode);
+    dirty = true;
   },
   startDrawingGrid(e) {
     // TODO - should be able to remove type assertion after converting mouse.js
     // into typescript
     dragStart = rowAndCol(e) as Coords;
     dragEnd = dragStart;
-    doIfInGraph(dragStart, this.drawFrame.bind(this));
+    doIfInGraph(dragStart, this.updateFrame.bind(this));
   },
   dragFrame(e: MouseEvent) {
     const previousBox = dragEnd;
