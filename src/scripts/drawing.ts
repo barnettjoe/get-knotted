@@ -38,8 +38,6 @@ import {
 let dragStart: [number, number];
 let dragEnd: [number, number];
 
-// for keeping track of which knot / frame is currently being manipulated
-let currentKnot: Knot;
 let webglContext: CanvasRenderingContext;
 
 // for keeping track of the line currently being drawn (in 'add-line' mode)
@@ -151,9 +149,10 @@ const drawing: Drawing = {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
   drawKnot() {
-    currentKnot = makeKnot(model.getFrame());
-    drawKnot(currentKnot);
-    this.knots.push(currentKnot);
+    const knot = makeKnot(model.getFrame());
+    model.setCurrentKnot(knot);
+    drawKnot(knot);
+    this.knots.push(knot);
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
@@ -257,10 +256,10 @@ const drawing: Drawing = {
     }
   },
   makeNewLine(lineStart, lineEnd) {
+    const currentKnot = model.getCurrentKnot();
     currentKnot && removeKnot(currentKnot);
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
-    debugger;
     if (knotA && knotB && knotA !== knotB) {
       this.mergeKnots(knotA, knotB, lineStart, lineEnd);
     } else {
@@ -271,12 +270,13 @@ const drawing: Drawing = {
     // need to merge two frames...
     this.remove(knotA);
     this.remove(knotB);
-    currentKnot = mergeKnots(knotA, knotB, startNode, endNode);
-    model.setFrame(currentKnot.frame);
-    this.knots.push(currentKnot);
+    const knot = mergeKnots(knotA, knotB, startNode, endNode);
+    model.setCurrentKnot(knot);
+    model.setFrame(knot.frame);
+    this.knots.push(knot);
   },
   remove(knot) {
-    removeKnot(currentKnot);
+    removeKnot(model.getCurrentKnot());
     this.knots.splice(this.knots.indexOf(knot), 1);
   },
   nodeAt(coords: Coords) {
@@ -302,8 +302,8 @@ const drawing: Drawing = {
     if (lineStart) {
       const foundKnot = this.findKnotWith(lineStart);
       if (foundKnot) {
-        currentKnot = foundKnot;
-        model.setFrame(currentKnot.frame);
+        model.setCurrentKnot(foundKnot);
+        model.setFrame(foundKnot.frame);
         this.drawUserLine(lineStart, coords);
       }
     }

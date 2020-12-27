@@ -53,17 +53,17 @@ export interface LineStyle {
 export type Coords = [number, number];
 export type Vector = Coords;
 
-// export interface Frame {
-//   nodes: INode[];
-//   lines: FrameLine[];
-//   draw(): void;
-//   drawLines(): void;
-//   findProximalNode(coords: Coords): INode;
-//   remove(): void;
-//   merge(otherFrame: Frame): Frame;
-//   markAsAdjacent(lineStart: INode, lineEnd: INode): void;
-//   overlapsExistingNode(x: number, y: number): boolean;
-// }
+export interface Frame {
+  nodes: INode[];
+  lines: FrameLine[];
+  draw(): void;
+  drawLines(): void;
+  findProximalNode(coords: Coords): INode;
+  remove(): void;
+  merge(otherFrame: Frame): Frame;
+  markAsAdjacent(lineStart: INode, lineEnd: INode): void;
+  overlapsExistingNode(x: number, y: number): boolean;
+}
 
 export type IStrand = StrandElement[];
 
