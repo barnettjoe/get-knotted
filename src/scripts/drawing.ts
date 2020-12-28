@@ -83,6 +83,7 @@ function drawLoop() {
     });
     webgl.draw();
     if (currentFrame) {
+      debugger;
       model.getFrame().lines.forEach((line) => {
         drawLine(line);
         webgl.addLine(line);

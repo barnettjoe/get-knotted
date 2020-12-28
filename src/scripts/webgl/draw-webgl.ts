@@ -8,10 +8,12 @@ let gl: OnscreenWebglContext;
 let program: WebGLProgram;
 let singlePixelLinesBuffer: WebGLBuffer;
 let linesBuffer;
+let linesVAO;
+let trianglesVAO;
 // let uCanvasWidth: WebGLUniformLocation;
 
 const singlePixelLines: number[][] = [];
-const lines: number[][] = [];
+let lines: number[][] = [];
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -40,11 +42,18 @@ export function drawGrid() {}
 export function draw() {
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
-  // gl.uniform1f(uCanvasWidth, gl.canvas.width);
   if (singlePixelLines.length > 0) {
+    gl.bindVertexArray(linesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(singlePixelLines), gl.STATIC_DRAW);
+    debugger;
     gl.drawArrays(gl.LINES, 0, singlePixelLines.length * 2);
+  }
+  if (lines.length > 0) {
+    gl.bindVertexArray(trianglesVAO);
+    gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lines), gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, lines.length / 2);
   }
   drawGrid();
 }
@@ -83,15 +92,21 @@ export function start(context: OnscreenWebglContext) {
   program = initShaders(gl, { vertexShader, fragmentShader });
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.useProgram(program);
+  const vPosition = gl.getAttribLocation(program, "vPosition");
 
-  // Load the data into the GPU
+  linesVAO = gl.createVertexArray();
   singlePixelLinesBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
+  gl.bindVertexArray(linesVAO);
+  // Load the data into the GPU
   // Associate our shader variables with our data buffer
-  const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.enableVertexAttribArray(vPosition);
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
 
+  trianglesVAO = gl.createVertexArray();
   linesBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
+  gl.bindVertexArray(trianglesVAO);
+  gl.enableVertexAttribArray(vPosition);
+  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
 }

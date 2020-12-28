@@ -142,7 +142,7 @@ export interface Drawing {
   mouseIsDown: boolean;
 }
 
-export type OnscreenWebglContext = WebGLRenderingContext & {
+export type OnscreenWebglContext = WebGL2RenderingContext & {
   canvas: HTMLCanvasElement;
 };
 
