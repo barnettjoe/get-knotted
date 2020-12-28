@@ -1,12 +1,17 @@
 import { OnscreenWebglContext } from "../types";
+import { normal, lineVector, addVectors, scaleVector } from "../general-utils";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
-let linesVertexBuffer;
+let singlePixelLinesBuffer: WebGLBuffer;
+let linesBuffer;
 // let uCanvasWidth: WebGLUniformLocation;
+
+const singlePixelLines: number[][] = [];
+const lines: number[][] = [];
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -32,14 +37,14 @@ export function addGridLine() {}
 
 export function drawGrid() {}
 
-const lines: number[][] = [];
-
 export function draw() {
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
   // gl.uniform1f(uCanvasWidth, gl.canvas.width);
-  if (lines.length > 0) {
-    gl.drawArrays(gl.LINES, 0, lines.length * 2);
+  if (singlePixelLines.length > 0) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(singlePixelLines), gl.STATIC_DRAW);
+    gl.drawArrays(gl.LINES, 0, singlePixelLines.length * 2);
   }
   drawGrid();
 }
@@ -52,17 +57,26 @@ function flatten(arr: number[][]) {
   return new Float32Array(result);
 }
 
-export function addLine(
+export function addSinglePixelLine(
   startX: number,
   startY: number,
   endX: number,
   endY: number
 ) {
-  lines.push([startX, startY, endX, endY]);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(lines), gl.STATIC_DRAW);
+  singlePixelLines.push([startX, startY, endX, endY]);
 }
 
-export function addFrameLine() {}
+export function addLine({ startX, startY, endX, endY }) {
+  const width = 10;
+  const norm = normal(lineVector([startX, startY], [endX, endY]));
+  // if it's worth it we could later move part of this calculation into the vertex shader
+  lines.push(
+    ...addVectors([startX, startY], scaleVector(norm, width / 2)),
+    ...addVectors([endX, endY], scaleVector(norm, -width / 2)),
+    ...addVectors([startX, startY], scaleVector(norm, -width / 2)),
+    ...addVectors([endX, endY], scaleVector(norm, width / 2))
+  );
+}
 
 export function start(context: OnscreenWebglContext) {
   gl = context;
@@ -71,17 +85,13 @@ export function start(context: OnscreenWebglContext) {
   gl.useProgram(program);
 
   // Load the data into the GPU
-  linesVertexBuffer = gl.createBuffer();
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, linesVertexBuffer);
+  singlePixelLinesBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
   // Associate our shader variables with our data buffer
   const vPosition = gl.getAttribLocation(program, "vPosition");
   gl.enableVertexAttribArray(vPosition);
-  // const uniformLocationMaybe = gl.getUniformLocation(program, "uCanvasWidth");
-  // if (uniformLocationMaybe === null) {
-  //   throw new Error("could not get location for uCanvasWidth uniform");
-  // }
-  // uCanvasWidth = uniformLocationMaybe;
-  // Describe the form of the data in the vertex array.
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+
+  linesBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
 }

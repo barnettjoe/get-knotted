@@ -51,8 +51,6 @@ export interface LineStyle {
 }
 
 export type Coords = [number, number];
-export type Vector = Coords;
-
 export interface Frame {
   nodes: INode[];
   lines: FrameLine[];
@@ -152,7 +150,7 @@ export function isOnscreenWebglContext(
   value: unknown
 ): value is OnscreenWebglContext {
   return (
-    value instanceof WebGLRenderingContext &&
+    value instanceof WebGL2RenderingContext &&
     value.canvas instanceof HTMLCanvasElement
   );
 }
@@ -169,3 +167,5 @@ export interface Point {
   x: number;
   y: number;
 }
+
+export type Vector = [number, number];

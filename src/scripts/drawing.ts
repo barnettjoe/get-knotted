@@ -79,13 +79,13 @@ function drawLoop() {
       Snap("#surface")
         .line(startX, startY, endX, endY)
         .attr(style);
-      webgl.addLine(startX, startY, endX, endY);
+      webgl.addSinglePixelLine(startX, startY, endX, endY);
     });
     webgl.draw();
     if (currentFrame) {
       model.getFrame().lines.forEach((line) => {
         drawLine(line);
-        webgl.addFrameLine(line);
+        webgl.addLine(line);
       });
       model.getFrame().nodes.forEach(drawNode);
     }
@@ -106,7 +106,7 @@ const drawing: Drawing = {
     if (!(webglCanvas instanceof HTMLCanvasElement)) {
       throw new Error("no canvas for webgl");
     }
-    const webglContext = webglCanvas.getContext("webgl");
+    const webglContext = webglCanvas.getContext("webgl2");
     if (isOnscreenWebglContext(webglContext)) {
       webgl.start(webglContext);
     } else {
