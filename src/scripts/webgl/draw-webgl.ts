@@ -7,13 +7,13 @@ import vertexShader from "./vertex-shader.glsl";
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
 let singlePixelLinesBuffer: WebGLBuffer;
-let linesBuffer;
-let linesVAO;
-let trianglesVAO;
+let linesBuffer: WebGLBuffer;
+let linesVAO: WebGLVertexArrayObject;
+let trianglesVAO: WebGLVertexArrayObject;
 // let uCanvasWidth: WebGLUniformLocation;
 
 const singlePixelLines: number[][] = [];
-let lines: number[][] = [];
+let lines: number[] = [];
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -75,17 +75,72 @@ export function addSinglePixelLine(
   singlePixelLines.push([startX, startY, endX, endY]);
 }
 
-export function addLine({ startX, startY, endX, endY }) {
+export function addLine({
+  startX,
+  startY,
+  endX,
+  endY,
+}: {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}) {
   const width = 5;
   const norm = normal(lineVector([startX, startY], [endX, endY]));
   // if it's worth it we could later move part of this calculation into the vertex shader
   lines.push(
     ...addVectors([startX, startY], scaleVector(norm, width / 2)),
     ...addVectors([endX, endY], scaleVector(norm, -width / 2)),
-    ...addVectors([startX, startY], scaleVector(norm, -width / 2))
+    ...addVectors([startX, startY], scaleVector(norm, -width / 2)),
     ...addVectors([startX, startY], scaleVector(norm, width / 2)),
     ...addVectors([endX, endY], scaleVector(norm, width / 2)),
-    ...addVectors([endX, endY], scaleVector(norm, -width / 2)),
+    ...addVectors([endX, endY], scaleVector(norm, -width / 2))
+  );
+}
+
+function createVAO(context: OnscreenWebglContext): WebGLVertexArrayObject {
+  const maybeVAO = context.createVertexArray();
+  if (maybeVAO === null) {
+    throw new Error("failed to create vertex array object");
+  }
+  return maybeVAO;
+}
+
+function createBuffer(context: OnscreenWebglContext): WebGLBuffer {
+  const maybeBuffer = context.createBuffer();
+  if (maybeBuffer === null) {
+    throw new Error("failed to create buffer");
+  }
+  return maybeBuffer;
+}
+
+function setupAttribute(
+  context: OnscreenWebglContext,
+  program: WebGLProgram,
+  shaderVariableName: string,
+  vao: WebGLVertexArrayObject,
+  buffer: WebGLBuffer,
+  vertexSize: number,
+  dataType: number,
+  normalized = false,
+  stride = 0,
+  offset = 0
+) {
+  const attributeLocation = context.getAttribLocation(
+    program,
+    shaderVariableName
+  );
+  context.bindVertexArray(vao);
+  context.enableVertexAttribArray(attributeLocation);
+  context.bindBuffer(context.ARRAY_BUFFER, buffer);
+  context.vertexAttribPointer(
+    attributeLocation,
+    vertexSize,
+    dataType,
+    normalized,
+    stride,
+    offset
   );
 }
 
@@ -95,9 +150,8 @@ export function start(context: OnscreenWebglContext) {
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.useProgram(program);
   const vPosition = gl.getAttribLocation(program, "vPosition");
-
-  linesVAO = gl.createVertexArray();
-  singlePixelLinesBuffer = gl.createBuffer();
+  linesVAO = createVAO(gl);
+  singlePixelLinesBuffer = createBuffer(gl);
   gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
   gl.bindVertexArray(linesVAO);
   // Load the data into the GPU
@@ -105,8 +159,8 @@ export function start(context: OnscreenWebglContext) {
   gl.enableVertexAttribArray(vPosition);
   gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
 
-  trianglesVAO = gl.createVertexArray();
-  linesBuffer = gl.createBuffer();
+  trianglesVAO = createVAO(gl);
+  linesBuffer = createBuffer(gl);
   gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
   gl.bindVertexArray(trianglesVAO);
   gl.enableVertexAttribArray(vPosition);
