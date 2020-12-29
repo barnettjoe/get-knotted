@@ -46,7 +46,6 @@ export function draw() {
     gl.bindVertexArray(linesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(singlePixelLines), gl.STATIC_DRAW);
-    debugger;
     gl.drawArrays(gl.LINES, 0, singlePixelLines.length * 2);
   }
   if (lines.length > 0) {
@@ -132,8 +131,8 @@ function setupAttribute(
     shaderVariableName
   );
   context.bindVertexArray(vao);
-  context.enableVertexAttribArray(attributeLocation);
   context.bindBuffer(context.ARRAY_BUFFER, buffer);
+  context.enableVertexAttribArray(attributeLocation);
   context.vertexAttribPointer(
     attributeLocation,
     vertexSize,
@@ -149,20 +148,40 @@ export function start(context: OnscreenWebglContext) {
   program = initShaders(gl, { vertexShader, fragmentShader });
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.useProgram(program);
-  const vPosition = gl.getAttribLocation(program, "vPosition");
   linesVAO = createVAO(gl);
-  singlePixelLinesBuffer = createBuffer(gl);
-  gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
-  gl.bindVertexArray(linesVAO);
-  // Load the data into the GPU
-  // Associate our shader variables with our data buffer
-  gl.enableVertexAttribArray(vPosition);
-  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
-
   trianglesVAO = createVAO(gl);
   linesBuffer = createBuffer(gl);
-  gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
-  gl.bindVertexArray(trianglesVAO);
-  gl.enableVertexAttribArray(vPosition);
-  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+  singlePixelLinesBuffer = createBuffer(gl);
+  setupAttribute(
+    gl,
+    program,
+    "vPosition",
+    linesVAO,
+    singlePixelLinesBuffer,
+    2,
+    gl.FLOAT
+  );
+  setupAttribute(
+    gl,
+    program,
+    "vPosition",
+    trianglesVAO,
+    linesBuffer,
+    2,
+    gl.FLOAT
+  );
+  // const vPosition = gl.getAttribLocation(program, "vPosition");
+  // singlePixelLinesBuffer = createBuffer(gl);
+  // gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
+  // gl.bindVertexArray(linesVAO);
+  // // Load the data into the GPU
+  // // Associate our shader variables with our data buffer
+  // gl.enableVertexAttribArray(vPosition);
+  // gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+  // gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+  // const vPosition = gl.getAttribLocation(program, "vPosition");
+  // gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
+  // gl.bindVertexArray(trianglesVAO);
+  // gl.enableVertexAttribArray(vPosition);
+  // gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
 }
