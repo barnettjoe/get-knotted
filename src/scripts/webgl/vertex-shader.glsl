@@ -13,5 +13,6 @@ void main() {
     );
     gl_PointSize = 1.0;
     vec2 scaled_position =  scale * vPosition.xy;
-    gl_Position = vec4(scaled_position + translation_delta, 0, 1.0);
+    vec2 pos = scaled_position + translation_delta;
+    gl_Position = vec4(pos.x, -pos.y, 0, 1.0);
 }

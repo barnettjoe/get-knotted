@@ -53,7 +53,7 @@ export function draw() {
     gl.bindVertexArray(trianglesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lines), gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, lines.length / 2);
+    gl.drawArrays(gl.TRIANGLES, 0, lines.length / 2);
   }
   drawGrid();
 }
@@ -76,14 +76,16 @@ export function addSinglePixelLine(
 }
 
 export function addLine({ startX, startY, endX, endY }) {
-  const width = 10;
+  const width = 5;
   const norm = normal(lineVector([startX, startY], [endX, endY]));
   // if it's worth it we could later move part of this calculation into the vertex shader
   lines.push(
     ...addVectors([startX, startY], scaleVector(norm, width / 2)),
     ...addVectors([endX, endY], scaleVector(norm, -width / 2)),
-    ...addVectors([startX, startY], scaleVector(norm, -width / 2)),
-    ...addVectors([endX, endY], scaleVector(norm, width / 2))
+    ...addVectors([startX, startY], scaleVector(norm, -width / 2))
+    ...addVectors([startX, startY], scaleVector(norm, width / 2)),
+    ...addVectors([endX, endY], scaleVector(norm, width / 2)),
+    ...addVectors([endX, endY], scaleVector(norm, -width / 2)),
   );
 }
 
