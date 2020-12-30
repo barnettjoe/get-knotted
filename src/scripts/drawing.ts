@@ -53,6 +53,7 @@ export function drawLine(line) {
   line.snapObj = Snap("#surface")
     .line(line.startX, line.startY, line.endX, line.endY)
     .attr(line.style);
+  webgl.addLine(line);
 }
 
 export function drawNode(node) {
@@ -60,6 +61,7 @@ export function drawNode(node) {
   node.snapObj = Snap("#surface")
     .circle(node.x, node.y, config.nodeStyle.radius)
     .attr(config.nodeStyle);
+  webgl.addCircle(node.x, node.y, config.nodeStyle.radius);
 }
 
 export function removeElement(element) {
@@ -83,11 +85,7 @@ function drawLoop() {
     });
     webgl.draw();
     if (currentFrame) {
-      debugger;
-      model.getFrame().lines.forEach((line) => {
-        drawLine(line);
-        webgl.addLine(line);
-      });
+      model.getFrame().lines.forEach(drawLine);
       model.getFrame().nodes.forEach(drawNode);
     }
     if (currentKnot) {

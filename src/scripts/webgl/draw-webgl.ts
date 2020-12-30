@@ -1,5 +1,6 @@
 import { OnscreenWebglContext } from "../types";
 import { normal, lineVector, addVectors, scaleVector } from "../general-utils";
+import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
@@ -8,11 +9,16 @@ let gl: OnscreenWebglContext;
 let program: WebGLProgram;
 let singlePixelLinesBuffer: WebGLBuffer;
 let linesBuffer: WebGLBuffer;
+let circlesBuffer: WebGLBuffer;
 let linesVAO: WebGLVertexArrayObject;
 let trianglesVAO: WebGLVertexArrayObject;
+let circlesVAO: WebGLVertexArrayObject;
+
+const arrayElementsPerVertex = 2;
 
 const singlePixelLines: number[][] = [];
-let lines: number[][] = [];
+const lines: number[][] = [];
+const circles: number[][] = [];
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -44,24 +50,23 @@ export function draw() {
   if (singlePixelLines.length > 0) {
     gl.bindVertexArray(linesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(singlePixelLines), gl.STATIC_DRAW);
-    // TODO - get the number of vertices to draw by:
-    // - assuming we want to use the entirety of the data in the array
-    // - finding the set of active attributes (i.e. the enables attributes from the currently bound VAO)
-    // - for one of these attributes, find the length of the buffer it's attached to
-    // - divide the length of the buffer by the vertex size for that attribute
-    // - this should give you the number of vertices we are drawing, to pass into drawArrays.
-    // - you should get the same result regardless of which of the active attributes you choose from
-    // the current VAO.
-    // - it might be nice to check that you get the same result for all of the active attributes, and to
-    // throw an error, or just log a warning otherwise.
-    gl.drawArrays(gl.LINES, 0, singlePixelLines.length * 2);
+    const data = flatten(singlePixelLines);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    gl.drawArrays(gl.LINES, 0, data.length / arrayElementsPerVertex);
   }
   if (lines.length > 0) {
     gl.bindVertexArray(trianglesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(lines), gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLES, 0, lines.length);
+    const data = flatten(lines);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
+  }
+  if (circles.length > 0) {
+    gl.bindVertexArray(circlesVAO);
+    gl.bindBuffer(gl.ARRAY_BUFFER, circlesBuffer);
+    const data = flatten(circles);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
   }
   drawGrid();
 }
@@ -105,6 +110,19 @@ export function addLine({
     addVectors([endX, endY], scaleVector(norm, width / 2)),
     addVectors([endX, endY], scaleVector(norm, -width / 2))
   );
+}
+
+export function addCircle(x: number, y: number, radius: number) {
+  const points = Array(config.webgl.circleSides)
+    .fill(0)
+    .map((_, idx) => {
+      const theta = (idx / config.webgl.circleSides) * 2 * Math.PI;
+      return [x + radius * Math.cos(theta), y + radius * Math.sin(theta)];
+    });
+  points.forEach((point, idx) => {
+    circles.push([x, y], point, points[idx - 1] || points[points.length - 1]);
+  });
+  debugger;
 }
 
 function createVAO(context: OnscreenWebglContext): WebGLVertexArrayObject {
@@ -159,8 +177,10 @@ export function start(context: OnscreenWebglContext) {
   gl.useProgram(program);
   linesVAO = createVAO(gl);
   trianglesVAO = createVAO(gl);
+  circlesVAO = createVAO(gl);
   linesBuffer = createBuffer(gl);
   singlePixelLinesBuffer = createBuffer(gl);
+  circlesBuffer = createBuffer(gl);
   // We have two separate VAOs for drawing the single-pixel grid lines and the
   // frame lines, which have some width. Both VAOs use the same shader attribute
   // vPosition, but in each VAO the attribute is bound to a different buffer.
@@ -179,6 +199,15 @@ export function start(context: OnscreenWebglContext) {
     "vPosition",
     trianglesVAO,
     linesBuffer,
+    2,
+    gl.FLOAT
+  );
+  setupAttribute(
+    gl,
+    program,
+    "vPosition",
+    circlesVAO,
+    circlesBuffer,
     2,
     gl.FLOAT
   );

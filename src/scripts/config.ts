@@ -26,7 +26,9 @@ export default {
     strokeWidth: 2,
     strokeOpacity: 1,
   },
-
+  webgl: {
+    circleSides: 10,
+  },
   maxStrokeWidth: function() {
     return Math.max(this.graphLine.strokeWidth, this.frame.strokeWidth);
   },
