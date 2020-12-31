@@ -71,6 +71,7 @@ export function drawPolyline(polyline) {
     strokeWidth: config.knot.borderWidth,
     fill: "none",
   });
+  console.log("webgl.addPolyline");
   webgl.addPolyline(polyline);
   return snp;
 }
@@ -94,7 +95,6 @@ function drawLoop() {
         .attr(style);
       webgl.addSinglePixelLine(startX, startY, endX, endY);
     });
-    webgl.draw();
     if (currentFrame) {
       model.getFrame().lines.forEach(drawLine);
       model.getFrame().nodes.forEach(drawNode);
@@ -102,6 +102,7 @@ function drawLoop() {
     if (currentKnot) {
       drawKnot(currentKnot);
     }
+    webgl.draw();
     dirty = false;
   }
   requestAnimationFrame(drawLoop);
