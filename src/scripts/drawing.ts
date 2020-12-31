@@ -147,6 +147,8 @@ const drawing: Drawing = {
     }
   },
   handleMouseMove(this: Drawing, e: MouseEvent) {
+    model.setMouseTracker(relativeCoords(e));
+    dirty = true;
     if (this.mouseIsDown) {
       switch (this.mode) {
         case "add-grid":

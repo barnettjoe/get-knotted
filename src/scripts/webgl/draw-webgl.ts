@@ -36,6 +36,10 @@ function setCanvasSize() {
     canvas.width = displayWidth;
     canvas.height = displayHeight;
   }
+  const uCanvasWidth = gl.getUniformLocation(program, "uCanvasWidth");
+  const uCanvasHeight = gl.getUniformLocation(program, "uCanvasHeight");
+  gl.uniform1f(uCanvasWidth, canvas.width);
+  gl.uniform1f(uCanvasHeight, canvas.height);
   // tell webgl how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
@@ -63,6 +67,7 @@ export function draw() {
     gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
   }
   if (circles.length > 0) {
+    console.log(circles);
     gl.bindVertexArray(circlesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, circlesBuffer);
     const data = flatten(circles);
