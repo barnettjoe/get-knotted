@@ -124,7 +124,11 @@ export function addCircle(x: number, y: number, radius: number) {
   });
 }
 
-export function addPolyline(polyline: number[]) {}
+export function addPolyline(polyline: number[]) {
+  for (let i = 0; i < polyline.length - 4; i += 2) {
+    singlePixelLines.push(polyline.slice(i, i + 4));
+  }
+}
 
 function createVAO(context: OnscreenWebglContext): WebGLVertexArrayObject {
   const maybeVAO = context.createVertexArray();
