@@ -3,7 +3,7 @@ import surface from "./main";
 import { uncrossed } from "./line";
 import { drawLine, drawNode, drawPolyline, removeElement } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
-import PointedReturn from "./pointed-return.js";
+import PointedReturn from "./pointed-return";
 import Contour from "./contour";
 import offsetSketch from "./offset-sketch";
 import {

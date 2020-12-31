@@ -1,6 +1,6 @@
 import { reducer, collectionIntersect, format } from "./knot-utils.js";
 import surface from "./main";
-
+import * as webgl from "./webgl/draw-webgl";
 export default function PointedReturn(options) {
   this.options = options;
   this.pr = options.pr;
@@ -56,6 +56,7 @@ PointedReturn.prototype = {
     );
     const points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
     const snp = surface.polyline(points);
+    webgl.addPolyline(points);
     this.elements.push(snp);
     format(snp);
   },
@@ -89,6 +90,7 @@ PointedReturn.prototype = {
     );
     const pointList = points.reduce(reducer, []);
     const snp = surface.polyline(pointList);
+    webgl.addPolyline(pointList);
     this.elements.push(snp);
     format(snp);
   },
