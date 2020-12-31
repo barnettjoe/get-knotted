@@ -66,7 +66,7 @@ export function merge(
   mergedFrame.lines.forEach(drawLine);
   mergedFrame.nodes.forEach(drawNode);
   const mergedKnot = makeKnot(mergedFrame);
-  draw(mergedKnot);
+  drawAndReturnPolylines(mergedKnot);
   mergedKnot.elements = knot.elements.concat(otherKnot.elements);
   return mergedKnot;
 }
@@ -97,7 +97,7 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   // TODO - move this draw call...
   // should return a new knot based on that frame...
   // this new know should be what's drawn...
-  draw(knot);
+  drawAndReturnPolylines(knot);
 }
 function getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
   if (bound === "out") {
@@ -167,7 +167,8 @@ function elementsForDrawing(knot) {
             middleOutbound: pointPreceding(i, strand).outboundBezier,
             middleInbound: strandElement.outboundBezier,
           });
-          pr.draw(offsets);
+          const prPolylines = pr.draw(offsets);
+          morePolylines.push(...prPolylines);
           // // here we draw the PRs
         }
       }
@@ -180,7 +181,7 @@ function elementsForDrawing(knot) {
   );
 }
 
-export function draw(knot) {
+export function drawAndReturnPolylines(knot) {
   if (!knot.contours) return;
   frameElementsForRemoval(knot.frame).forEach(removeElement);
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
@@ -194,6 +195,7 @@ export function draw(knot) {
   });
   knot.frame.lines.forEach(drawLine);
   knot.frame.nodes.forEach(drawNode);
+  return polylines;
 }
 
 function offsetPolyLines(knot, strandElement: StrandElement, offsets) {

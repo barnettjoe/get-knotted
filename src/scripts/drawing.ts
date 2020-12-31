@@ -2,7 +2,7 @@ import makeKnot, {
   merge as mergeKnots,
   addLineBetween,
   remove as removeKnot,
-  draw as drawKnot,
+  drawAndReturnPolylines as drawKnot,
 } from "./knot";
 import {
   fromExtrema,
@@ -21,7 +21,6 @@ import {
   pixelCoords,
 } from "./mouse.js";
 import { identicalObjects } from "./general-utils";
-import Snap from "snapsvg";
 import config from "./config";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
@@ -50,33 +49,33 @@ let dirty = true;
 
 export function drawLine(line) {
   // TODO - EWW
-  line.snapObj = Snap("#surface")
-    .line(line.startX, line.startY, line.endX, line.endY)
-    .attr(line.style);
-  webgl.addLine(line);
+  // line.snapObj = Snap("#surface")
+  //   .line(line.startX, line.startY, line.endX, line.endY)
+  //   .attr(line.style);
+  // webgl.addLine(line);
 }
 
 export function drawNode(node) {
   // TODO - EWW
-  node.snapObj = Snap("#surface")
-    .circle(node.x, node.y, config.nodeStyle.radius)
-    .attr(config.nodeStyle);
+  // node.snapObj = Snap("#surface")
+  //   .circle(node.x, node.y, config.nodeStyle.radius)
+  //   .attr(config.nodeStyle);
   webgl.addCircle(node.x, node.y, config.nodeStyle.radius);
 }
 
 export function drawPolyline(polyline) {
-  const snp = Snap("#surface").polyline(polyline);
-  snp.attr({
-    stroke: "black",
-    strokeWidth: config.knot.borderWidth,
-    fill: "none",
-  });
-  console.log("webgl.addPolyline");
+  // const snp = Snap("#surface").polyline(polyline);
+  // snp.attr({
+  //   stroke: "black",
+  //   strokeWidth: config.knot.borderWidth,
+  //   fill: "none",
+  // });
   webgl.addPolyline(polyline);
-  return snp;
+  // return snp;
 }
 
 export function removeElement(element) {
+  if (!element) return;
   // nasty hack
   if (element.remove) {
     element.remove();
@@ -89,12 +88,6 @@ function drawLoop() {
   const currentKnot = model.getCurrentKnot();
   const currentFrame = model.getFrame();
   if (dirty) {
-    model.getGridLines().forEach(({ startX, startY, endX, endY, style }) => {
-      Snap("#surface")
-        .line(startX, startY, endX, endY)
-        .attr(style);
-      webgl.addSinglePixelLine(startX, startY, endX, endY);
-    });
     if (currentFrame) {
       model.getFrame().lines.forEach(drawLine);
       model.getFrame().nodes.forEach(drawNode);
@@ -170,7 +163,7 @@ const drawing: Drawing = {
     }
   },
   addMouseListeners() {
-    const wrapper = document.getElementById("wrapper");
+    const wrapper = document.getElementById("webgl-wrapper");
     if (wrapper) {
       wrapper.addEventListener(
         "mousedown",
@@ -265,11 +258,11 @@ const drawing: Drawing = {
   drawUserLine(lineStart, toCoords) {
     userLine.element && userLine.element.remove();
     userLine.startNode = lineStart;
-    userLine.element = Snap("#surface").line(
-      lineStart.x,
-      lineStart.y,
-      ...toCoords
-    );
+    // userLine.element = Snap("#surface").line(
+    //   lineStart.x,
+    //   lineStart.y,
+    //   ...toCoords
+    // );
     userLine.element.attr(config.frame);
   },
   removeUserLine() {

@@ -5,7 +5,7 @@ import config from "./config";
 export function relativeCoords(e) {
   const absX = e.clientX;
   const absY = e.clientY;
-  const surface = document.getElementById("surface");
+  const surface = document.getElementById("webgl-wrapper");
   const svgPosition = surface.getBoundingClientRect();
   const leftOffset = svgPosition.left;
   const topOffset = svgPosition.top;

@@ -2,11 +2,7 @@ import drawing from "./drawing";
 import graphLines from "./graph";
 import { Mode, MODES } from "./types";
 
-import Snap from "snapsvg";
 import model from "./model";
-
-const surface = Snap("#surface");
-export default surface;
 
 function drawSquareGrid() {
   model.setGridLines(graphLines());

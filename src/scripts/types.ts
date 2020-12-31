@@ -169,3 +169,9 @@ export interface Point {
 }
 
 export type Vector = [number, number];
+
+export interface Primitives {
+  lines: number[][];
+  singlePixelLines: number[][];
+  circles: number[][];
+}

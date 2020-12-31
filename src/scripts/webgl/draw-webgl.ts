@@ -1,9 +1,9 @@
-import { OnscreenWebglContext } from "../types";
-import { normal, lineVector, addVectors, scaleVector } from "../general-utils";
+import { OnscreenWebglContext, Primitives } from "../types";
 import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
+import getPrimitives from "../primitives";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
@@ -47,6 +47,7 @@ export function drawGrid() {}
 export function draw() {
   setCanvasSize();
   gl.clear(gl.COLOR_BUFFER_BIT);
+  const { singlePixelLines, lines, circles } = getPrimitives();
   if (singlePixelLines.length > 0) {
     gl.bindVertexArray(linesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
@@ -77,39 +78,6 @@ function flatten(arr: number[][]) {
     result.push(...subArray);
   });
   return new Float32Array(result);
-}
-
-export function addSinglePixelLine(
-  startX: number,
-  startY: number,
-  endX: number,
-  endY: number
-) {
-  singlePixelLines.push([startX, startY, endX, endY]);
-}
-
-export function addLine({
-  startX,
-  startY,
-  endX,
-  endY,
-}: {
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-}) {
-  const width = 5;
-  const norm = normal(lineVector([startX, startY], [endX, endY]));
-  // if it's worth it we could later move part of this calculation into the vertex shader
-  lines.push(
-    addVectors([startX, startY], scaleVector(norm, width / 2)),
-    addVectors([endX, endY], scaleVector(norm, -width / 2)),
-    addVectors([startX, startY], scaleVector(norm, -width / 2)),
-    addVectors([startX, startY], scaleVector(norm, width / 2)),
-    addVectors([endX, endY], scaleVector(norm, width / 2)),
-    addVectors([endX, endY], scaleVector(norm, -width / 2))
-  );
 }
 
 export function addCircle(x: number, y: number, radius: number) {

@@ -9,8 +9,7 @@ export default function PointedReturn(options) {
 
 PointedReturn.prototype = {
   draw(offsets) {
-    this.drawInners(offsets);
-    this.drawOuters(offsets);
+    return [this.drawInners(offsets), this.drawOuters(offsets)];
   },
   clippedOutboundPath(intersection, polyline) {
     const points = polyline.slice(0, intersection.idxA + 1);
@@ -55,10 +54,11 @@ PointedReturn.prototype = {
       innerInboundPolyline
     );
     const points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
-    const snp = surface.polyline(points);
-    webgl.addPolyline(points);
-    this.elements.push(snp);
-    format(snp);
+    // const snp = surface.polyline(points);
+    // // webgl.addPolyline(points);
+    // this.elements.push(snp);
+    // format(snp);
+    return points;
   },
   drawOuters(offsets) {
     const direction = this.pr.pr;
@@ -89,9 +89,10 @@ PointedReturn.prototype = {
       [outerTip].concat(outerInboundPolyline)
     );
     const pointList = points.reduce(reducer, []);
-    const snp = surface.polyline(pointList);
-    webgl.addPolyline(pointList);
-    this.elements.push(snp);
-    format(snp);
+    // const snp = surface.polyline(pointList);
+    // webgl.addPolyline(pointList);
+    // this.elements.push(snp);
+    // format(snp);
+    return pointList;
   },
 };

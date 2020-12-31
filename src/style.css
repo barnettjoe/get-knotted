@@ -36,7 +36,6 @@ body {
   overflow: hidden;
 }
 
-#surface,
 #webgl-surface {
   height: 100%;
   width: 100%;
