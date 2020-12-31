@@ -1,7 +1,7 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
 import surface from "./main";
 import { uncrossed } from "./line";
-import { drawLine, drawNode, removeElement } from "./drawing";
+import { drawLine, drawNode, drawPolyline, removeElement } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
 import PointedReturn from "./pointed-return.js";
 import Contour from "./contour";
@@ -188,10 +188,9 @@ export function draw(knot) {
     (line) => line.crossingPoint
   );
   const { polylines } = elementsForDrawing(knot);
-  polylines.forEach((points) => {
-    const snp = surface.polyline(points);
+  polylines.forEach((polyline) => {
+    const snp = drawPolyline(polyline);
     knot.elements && knot.elements.push(snp);
-    format(snp);
   });
   knot.frame.lines.forEach(drawLine);
   knot.frame.nodes.forEach(drawNode);

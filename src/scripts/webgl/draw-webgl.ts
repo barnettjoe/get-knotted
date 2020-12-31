@@ -122,8 +122,9 @@ export function addCircle(x: number, y: number, radius: number) {
   points.forEach((point, idx) => {
     circles.push([x, y], point, points[idx - 1] || points[points.length - 1]);
   });
-  debugger;
 }
+
+export function addPolyline(polyline: number[]) {}
 
 function createVAO(context: OnscreenWebglContext): WebGLVertexArrayObject {
   const maybeVAO = context.createVertexArray();

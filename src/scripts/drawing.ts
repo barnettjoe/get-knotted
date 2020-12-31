@@ -64,6 +64,17 @@ export function drawNode(node) {
   webgl.addCircle(node.x, node.y, config.nodeStyle.radius);
 }
 
+export function drawPolyline(polyline) {
+  const snp = Snap("#surface").polyline(polyline);
+  snp.attr({
+    stroke: "black",
+    strokeWidth: config.knot.borderWidth,
+    fill: "none",
+  });
+  webgl.addPolyline(polyline);
+  return snp;
+}
+
 export function removeElement(element) {
   // nasty hack
   if (element.remove) {
