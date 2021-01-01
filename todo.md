@@ -4,3 +4,4 @@
 - [ ] add color buffers to allow color drawing...
 - [ ] tidy up webgl code
 - [ ] identify hot code for performance improvements
+- [ ] fix debug tools

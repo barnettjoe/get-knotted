@@ -51,7 +51,7 @@ function getBezier(
 function constructMatrix(strand: Strand): [Matrix, number[]] {
   let matrix: Matrix = [];
   let equals: number[] = [];
-  strand.forEach((point, index) => {
+  strand.forEach((_point, index) => {
     [matrix, equals] = setC2continuity(index, strand, matrix, equals);
     [matrix, equals] = strand[index].pr
       ? setPointedReturnAngle(index, strand, matrix, equals)
@@ -83,7 +83,7 @@ function setC1continuity(
   strand: Strand,
   matrix: number[][],
   equals: number[]
-) {
+): [Matrix, number[]] {
   const newMatrix = matrix.slice();
   const newEquals = equals.slice();
   const row = condition(2 * i - 1, [1, 1], strand);
@@ -98,7 +98,7 @@ function setC2continuity(
   strand: Strand,
   matrix: number[][],
   equals: number[]
-) {
+): [Matrix, number[]] {
   const newMatrix = matrix.slice();
   const newEquals = equals.slice();
   const row = condition(2 * i, [1, -2, 2, -1], strand);
@@ -114,7 +114,7 @@ function setPointedReturnAngle(
   strand: Strand,
   matrix: number[][],
   equals: number[]
-) {
+): [Matrix, number[]] {
   const newMatrix = matrix.slice();
   const newEquals = equals.slice();
   const point = strand[i];

@@ -1,7 +1,7 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils";
 import surface from "./main";
 import { uncrossed } from "./line";
-import { drawNode, drawPolyline } from "./drawing";
+import { drawNode } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
@@ -53,7 +53,7 @@ export function merge(
   );
   mergedFrame.nodes.forEach(drawNode);
   const mergedKnot = makeKnot(mergedFrame);
-  drawAndReturnPolylines(mergedKnot);
+  knotPolylines(mergedKnot);
   mergedKnot.elements = knot.elements.concat(otherKnot.elements);
   return mergedKnot;
 }
@@ -82,7 +82,7 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   // TODO - move this draw call...
   // should return a new knot based on that frame...
   // this new know should be what's drawn...
-  drawAndReturnPolylines(knot);
+  knotPolylines(knot);
 }
 function getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
   if (bound === "out") {
@@ -166,20 +166,13 @@ function elementsForDrawing(knot) {
   );
 }
 
-export function drawAndReturnPolylines(knot) {
+export function knotPolylines(knot) {
   if (!knot.contours) return;
-  // frameElementsForRemoval(knot.frame).forEach(removeElement);
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
   knot.frame.crossingPoints = knot.frame.lines.map(
     (line) => line.crossingPoint
   );
-  const { polylines } = elementsForDrawing(knot);
-  polylines.forEach((polyline) => {
-    const snp = drawPolyline(polyline);
-    knot.elements && knot.elements.push(snp);
-  });
-  knot.frame.nodes.forEach(drawNode);
-  return polylines;
+  return elementsForDrawing(knot).polylines;
 }
 
 function offsetPolyLines(knot, strandElement: StrandElement, offsets) {

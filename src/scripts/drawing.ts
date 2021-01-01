@@ -1,7 +1,7 @@
 import makeKnot, {
   merge as mergeKnots,
   addLineBetween,
-  drawAndReturnPolylines as drawKnot,
+  knotPolylines as drawKnot,
 } from "./knot";
 import {
   fromExtrema,
@@ -9,7 +9,6 @@ import {
   findProximalNode,
   lineExistsBetween,
   overlapsExistingNode,
-  elementsForRemoval,
 } from "./frame";
 import Node from "./node";
 import {
@@ -27,36 +26,21 @@ import * as webgl from "./webgl/draw-webgl";
 import {
   Coords,
   Drawing,
-  INode,
   GridSystem,
   isOnscreenWebglContext,
+  OnscreenWebglContext,
 } from "./types";
 
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
 let dragEnd: [number, number];
 
-let webglContext: CanvasRenderingContext;
+let webglContext: OnscreenWebglContext;
 
 let dirty = true;
 
 export function drawNode(node) {
-  // TODO - EWW
-  // node.snapObj = Snap("#surface")
-  //   .circle(node.x, node.y, config.nodeStyle.radius)
-  //   .attr(config.nodeStyle);
   webgl.addCircle(node.x, node.y, config.nodeStyle.radius);
-}
-
-export function drawPolyline(polyline) {
-  // const snp = Snap("#surface").polyline(polyline);
-  // snp.attr({
-  //   stroke: "black",
-  //   strokeWidth: config.knot.borderWidth,
-  //   fill: "none",
-  // });
-  webgl.addPolyline(polyline);
-  // return snp;
 }
 
 function drawLoop() {

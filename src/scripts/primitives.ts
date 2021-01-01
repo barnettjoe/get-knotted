@@ -1,7 +1,7 @@
 import model from "./model";
 import { Primitives } from "./types";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
-import { drawAndReturnPolylines } from "./knot";
+import { knotPolylines } from "./knot";
 import config from "./config";
 
 let lines: number[][] = [];
@@ -55,7 +55,7 @@ export default function getPrimitives(): Primitives {
   }
 
   if (model.knot) {
-    const polylines = drawAndReturnPolylines(model.knot);
+    const polylines = knotPolylines(model.knot);
     if (polylines) {
       polylines.forEach((polyline) => {
         for (let i = 0; i < polyline.length - 4; i += 2) {
