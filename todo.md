@@ -1,11 +1,5 @@
-- [x] always fill canvas with grid
-- [x] get mouseevents to stay aligned with browser zoom
-- [x] get mouseevents to stay aligned on retina screen
-- [x] fix "add line" in webgl
-- [x] show new frame after adding lines
-- [ ] set up netlify
-- [ ] fully switch to model/primitives/drawloop
 - [ ] fully convert to TS and turn on strict mode
+- [ ] fully switch to model/primitives/drawloop
 - [ ] draw beziers with width
 - [ ] add color buffers to allow color drawing...
 - [ ] tidy up webgl code
