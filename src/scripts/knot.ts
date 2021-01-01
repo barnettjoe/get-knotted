@@ -5,8 +5,10 @@ import PointedReturn from "./pointed-return";
 import Contour from "./contour";
 import offsetSketch from "./offset-sketch";
 import {
+  Contour as ContourType,
   Frame,
   INode,
+  IStrand,
   Knot,
   OverUnderPoint,
   PolyLine,
@@ -18,10 +20,14 @@ import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
   const contours = makeStrands(frame).map(Contour);
+  const overUnders = makeOverUnders(contours);
+  if (overUnders === null) {
+    throw new Error("failed to create overUnders");
+  }
   return {
     frame,
     contours,
-    overUnders: makeOverUnders(contours),
+    overUnders,
   };
 }
 
@@ -44,7 +50,7 @@ export function merge(
   return mergedKnot;
 }
 
-function makeStrands(frame) {
+function makeStrands(frame: Frame): IStrand[] {
   const strands = [];
   while (frame.lines.some(uncrossed)) {
     strands.push(Strand(frame));
@@ -108,11 +114,11 @@ function trimUnder(
   }
 }
 
-function makeOverUnders(strands): OverUnders {
-  if (!strands) return;
+function makeOverUnders(strands: ContourType[]): OverUnders | null {
+  if (!strands) return null;
   const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
-  strands.forEach((strand, index) => {
-    strand.forEach((strandElement, idx) => {
+  strands.forEach((strand) => {
+    strand.forEach((strandElement) => {
       const point = strandElement.point;
       const sketchPoint = crossingPointOffsets.get(point);
       if (!strandElement.pr) {
@@ -129,8 +135,8 @@ function makeOverUnders(strands): OverUnders {
   return crossingPointOffsets;
 }
 
-export function knotPolylines(knot) {
-  if (!knot.contours) return;
+export function knotPolylines(knot: Knot): Polylines | null {
+  if (!knot.contours) return null;
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
   return knot.contours.reduce(function(result, strand) {
     const morePolylines = [];

@@ -98,8 +98,10 @@ export interface CollectionIntersect {
 }
 
 export type PolyLine = Coords[];
-
-export interface Contour {}
+interface ContourElement extends StrandElement {
+  outboundBezier: Bezier;
+}
+export type Contour = ContourElement[];
 export type Strand = StrandElement[];
 
 export interface OffsetSketch {

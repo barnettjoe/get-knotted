@@ -3,18 +3,25 @@ import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";
 import { sameNode } from "./node";
+import { Frame, IStrand, StrandElement as StrandElementType } from "./types";
 
 const strandState = {};
 
-export function Strand(frame) {
-  const result = [];
+export function Strand(frame: Frame): IStrand {
+  const result: IStrand = [];
   addAllElements.call(result, frame);
   return result;
 }
-export function pointFollowing(index, strand) {
+export function pointFollowing(
+  index: number,
+  strand: IStrand
+): StrandElementType {
   return strand[(index + 1) % strand.length];
 }
-export function pointPreceding(index, strand) {
+export function pointPreceding(
+  index: number,
+  strand: IStrand
+): StrandElementType {
   return strand[index - 1] || strand[strand.length - 1];
 }
 
