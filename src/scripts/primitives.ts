@@ -49,17 +49,12 @@ export default function getPrimitives(): Primitives {
   singlePixelLines = [];
   circles = [];
 
-  const frame = model.frame;
-  const currentKnot = model.currentKnot;
-  const gridLines = model.gridLines;
-  const mouseTracker = model.mouseTracker;
-
-  if (frame) {
-    frame.lines.forEach(addLine);
+  if (model.frame) {
+    model.frame.lines.forEach(addLine);
   }
 
-  if (currentKnot) {
-    const polylines = drawAndReturnPolylines(currentKnot);
+  if (model.currentKnot) {
+    const polylines = drawAndReturnPolylines(model.currentKnot);
     if (polylines) {
       polylines.forEach((polyline) => {
         for (let i = 0; i < polyline.length - 4; i += 2) {
@@ -69,12 +64,20 @@ export default function getPrimitives(): Primitives {
     }
   }
 
-  gridLines.forEach(({ startX, startY, endX, endY, style }) => {
+  model.gridLines.forEach(({ startX, startY, endX, endY, style }) => {
     singlePixelLines.push([startX, startY, endX, endY]);
   });
 
-  if (mouseTracker) {
-    addCircle(...mouseTracker, 2);
+  if (model.mouseTracker) {
+    addCircle(...model.mouseTracker, 2);
+  }
+
+  if (model.userLine) {
+    singlePixelLines.push([
+      model.userLine.startNode.x,
+      model.userLine.startNode.y,
+      ...model.userLine.toCoords,
+    ]);
   }
 
   return {
