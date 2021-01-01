@@ -4,7 +4,6 @@ import * as webgl from "./webgl/draw-webgl";
 export default function PointedReturn(options) {
   this.options = options;
   this.pr = options.pr;
-  this.elements = options.elements;
 }
 
 PointedReturn.prototype = {

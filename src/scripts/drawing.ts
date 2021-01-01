@@ -144,7 +144,6 @@ const drawing: Drawing = {
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
     frame.lines = lines(frame.nodes, frame.adjacencyList);
-    frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
     const newKnot = makeKnot(frame);
     drawKnot(newKnot);
     this.knots.push(newKnot);
@@ -195,7 +194,6 @@ const drawing: Drawing = {
         (() => {
           let currentFrame = model.frame;
           if (currentFrame) {
-            // elementsForRemoval(currentFrame).forEach(removeElement);
             currentFrame.lines = [];
           }
           model.frame = fromExtrema(dragStart, dragEnd);

@@ -53,7 +53,8 @@ export interface LineStyle {
 export type Coords = [number, number];
 export interface Frame {
   nodes: INode[];
-  lines: FrameLine[];
+  adjacencyList: Matrix;
+  lines: Line[];
   draw(): void;
   drawLines(): void;
   findProximalNode(coords: Coords): INode;
@@ -71,13 +72,13 @@ export interface StrandElement {
   x: number;
   y: number;
   direction: Direction;
-  point: IPoint;
+  point: OverUnderPoint;
   pr: string;
   outboundBezier: Bezier;
   inboundBezier: Bezier;
 }
 
-export interface IPoint {
+export interface OverUnderPoint {
   trimmed: boolean;
   underOutLeft: PolyLine;
   underOutRight: PolyLine;
@@ -89,6 +90,7 @@ export interface IPoint {
   overInRight: PolyLine;
 }
 
+export type OverUnders = Record<CrossingPoint, OverUnderPoint>;
 export interface CollectionIntersect {
   intersection: Coords;
   idxA: number;
@@ -176,10 +178,27 @@ export interface Primitives {
   circles: number[][];
 }
 
+export interface Knot {
+  frame: Frame;
+  contours: Contour[];
+  overUnders: OverUnders;
+}
+
+export interface UserLine {
+  startNode: Node;
+  toCoords: Coords;
+}
+
+export interface Line {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
 export interface Model {
   frame: Frame | null;
   knot: Knot | null;
-  userLine: Line | null;
+  userLine: UserLine | null;
   gridLines: Line[] | null;
   mouseTracker: Coords | null;
   canvasWidth: number;

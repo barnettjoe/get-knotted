@@ -1,33 +1,25 @@
-import { collectionIntersect, format, mutate, reducer } from "./knot-utils";
-import surface from "./main";
+import { collectionIntersect, mutate, reducer } from "./knot-utils";
 import { uncrossed } from "./line";
 import { Strand, pointFollowing, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
 import offsetSketch from "./offset-sketch";
 import {
-  KnotElement,
+  Frame,
   INode,
-  IStrand,
-  IContour,
-  IPoint,
+  Knot,
+  OverUnderPoint,
   PolyLine,
   CollectionIntersect,
   StrandElement,
+  OverUnders,
 } from "./types";
-import {
-  lines,
-  markAsAdjacent,
-  merge as mergeFrame,
-  elementsForRemoval as frameElementsForRemoval,
-} from "./frame";
-import model from "./model";
+import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
-export default function makeKnot(frame) {
+export default function makeKnot(frame: Frame): Knot {
   const contours = makeStrands(frame).map(Contour);
   return {
     frame,
-    elements: [],
     contours,
     overUnders: makeOverUnders(contours),
   };
@@ -47,12 +39,8 @@ export function merge(
     mergedFrame.adjacencyList
   );
   mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
-  mergedFrame.crossingPoints = mergedFrame.lines.map(
-    (line) => line.crossingPoint
-  );
   const mergedKnot = makeKnot(mergedFrame);
   knotPolylines(mergedKnot);
-  mergedKnot.elements = knot.elements.concat(otherKnot.elements);
   return mergedKnot;
 }
 
@@ -73,7 +61,6 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
     frame.adjacencyList
   );
   frame.lines = lines(frame.nodes, frame.adjacencyList);
-  frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
   Object.assign(knot, makeKnot(frame));
   // knot.contours = makeStrands(frame).map(Contour);
   // TODO - was init call here - is it necessary?
@@ -82,7 +69,11 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   // this new know should be what's drawn...
   knotPolylines(knot);
 }
-function getUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
+function getUnder(
+  point: OverUnderPoint,
+  direction: "L" | "R",
+  bound: "in" | "out"
+) {
   if (bound === "out") {
     return direction === "R" ? point.underOutRight : point.underOutLeft;
   }
@@ -101,7 +92,11 @@ function trim(
     under.push(intersect.intersection);
   }
 }
-function trimUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
+function trimUnder(
+  point: OverUnderPoint,
+  direction: "L" | "R",
+  bound: "in" | "out"
+) {
   const overLeft = point.overInLeft.concat(point.overOutLeft);
   const overRight = point.overInRight.concat(point.overOutRight);
   const under = getUnder(point, direction, bound);
@@ -112,7 +107,8 @@ function trimUnder(point: IPoint, direction: "L" | "R", bound: "in" | "out") {
     trim(under, intersect, bound);
   }
 }
-function makeOverUnders(strands) {
+
+function makeOverUnders(strands): OverUnders {
   if (!strands) return;
   const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
   strands.forEach((strand, index) => {
@@ -133,44 +129,30 @@ function makeOverUnders(strands) {
   return crossingPointOffsets;
 }
 
-function elementsForDrawing(knot) {
-  return knot.contours.reduce(
-    function(result, strand) {
-      const morePolylines = [];
-      for (let i = 0; i < strand.length; i++) {
-        const strandElement = strand[i];
-        const offsets = knot.overUnders.get(strandElement.point);
-        // now draw everything except PRs
-        if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-          morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
-        } else if (strandElement.pr) {
-          const pr = new PointedReturn({
-            pr: strandElement,
-            elements: knot.elements,
-            middleOutbound: pointPreceding(i, strand).outboundBezier,
-            middleInbound: strandElement.outboundBezier,
-          });
-          const prPolylines = pr.draw(offsets);
-          morePolylines.push(...prPolylines);
-          // // here we draw the PRs
-        }
-      }
-      return {
-        ...result,
-        polylines: [...result.polylines, ...morePolylines],
-      };
-    },
-    { polylines: [] }
-  );
-}
-
 export function knotPolylines(knot) {
   if (!knot.contours) return;
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
-  knot.frame.crossingPoints = knot.frame.lines.map(
-    (line) => line.crossingPoint
-  );
-  return elementsForDrawing(knot).polylines;
+  return knot.contours.reduce(function(result, strand) {
+    const morePolylines = [];
+    for (let i = 0; i < strand.length; i++) {
+      const strandElement = strand[i];
+      const offsets = knot.overUnders.get(strandElement.point);
+      // now draw everything except PRs
+      if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
+        morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
+      } else if (strandElement.pr) {
+        const pr = new PointedReturn({
+          pr: strandElement,
+          middleOutbound: pointPreceding(i, strand).outboundBezier,
+          middleInbound: strandElement.outboundBezier,
+        });
+        const prPolylines = pr.draw(offsets);
+        morePolylines.push(...prPolylines);
+        // // here we draw the PRs
+      }
+    }
+    return [...result, ...morePolylines];
+  }, []);
 }
 
 function offsetPolyLines(knot, strandElement: StrandElement, offsets) {

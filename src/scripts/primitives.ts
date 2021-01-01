@@ -65,9 +65,11 @@ export default function getPrimitives(): Primitives {
     }
   }
 
-  model.gridLines.forEach(({ startX, startY, endX, endY, style }) => {
-    singlePixelLines.push([startX, startY, endX, endY]);
-  });
+  if (model.gridLines) {
+    model.gridLines.forEach(({ startX, startY, endX, endY, style }) => {
+      singlePixelLines.push([startX, startY, endX, endY]);
+    });
+  }
 
   if (model.mouseTracker) {
     addCircle(...model.mouseTracker, 2);

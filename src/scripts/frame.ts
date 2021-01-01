@@ -6,7 +6,7 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import { GridSystem } from "./types";
+import { GridSystem, Frame } from "./types";
 
 function cartesianProduct(arr1, arr2) {
   return arr1.reduce((acc, x) => {
@@ -100,7 +100,6 @@ export function fromExtrema(initialBox, finalBox) {
     nodes,
     adjacencyList,
     lines: frameLines,
-    crossingPoints: frameLines.map((line) => line.crossingPoint),
   };
 }
 
@@ -128,10 +127,6 @@ export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
   );
 }
 
-export function elementsForRemoval(frame) {
-  return frame.lines.map((line) => line.snapObj).concat(frame.nodes || []);
-}
-
 export function linesOutFrom(node, lines) {
   return lines.filter((line) => visits(line, node));
 }
@@ -140,7 +135,7 @@ export function overlapsExistingNode(pxX, pxY, nodes) {
   return nodes.some((node) => hasOverlap(node, pxX, pxY));
 }
 
-export function merge(frame, otherFrame) {
+export function merge(frame: Frame, otherFrame: Frame): Frame {
   const originalLength = frame.nodes.length;
   const newNodes = frame.nodes.concat(otherFrame.nodes);
   const newAdjacencies = otherFrame.adjacencyList.map((arr) =>
