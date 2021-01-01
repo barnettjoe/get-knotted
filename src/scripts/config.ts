@@ -13,8 +13,9 @@ export default {
     fill: "none",
   },
   graphRows: 10,
-  graphCols: 10,
+  graphCols: 20,
   squareHeight: 70,
+  targetSquareSize: 100,
   graphLine: {
     stroke: "gray",
     strokeWidth: 1,

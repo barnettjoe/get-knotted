@@ -1,5 +1,9 @@
-- [ ] get mouseevents to stay aligned with browser zoom
 - [ ] always fill canvas with grid
+- [ ] get mouseevents to stay aligned with browser zoom
 - [ ] fix "add line" in webgl
 - [ ] fully switch to model/primitives/drawloop
 - [ ] fully convert to TS and turn on strict mode
+- [ ] draw beziers with width
+- [ ] add color buffers to allow color drawing...
+- [ ] tidy up webgl code
+- [ ] identify hot code for performance improvements

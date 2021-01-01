@@ -5,7 +5,7 @@ import { Mode, MODES } from "./types";
 import model from "./model";
 
 function drawSquareGrid() {
-  model.setGridLines(graphLines());
+  model.gridLines = graphLines();
 }
 
 function changeDrawingMode(newMode: Mode) {

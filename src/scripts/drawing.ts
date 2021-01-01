@@ -85,12 +85,12 @@ export function removeElement(element) {
 }
 
 function drawLoop() {
-  const currentKnot = model.getCurrentKnot();
-  const currentFrame = model.getFrame();
+  const currentKnot = model.currentKnot;
+  const currentFrame = model.frame;
   if (dirty) {
     if (currentFrame) {
-      model.getFrame().lines.forEach(drawLine);
-      model.getFrame().nodes.forEach(drawNode);
+      model.frame.lines.forEach(drawLine);
+      model.frame.nodes.forEach(drawNode);
     }
     if (currentKnot) {
       drawKnot(currentKnot);
@@ -138,7 +138,7 @@ const drawing: Drawing = {
       this.mouseIsDown = false;
       switch (this.mode) {
         case "add-grid":
-          model.getFrame() && this.createKnot();
+          model.frame && this.createKnot();
           break;
         case "add-line":
           this.finishDrawingLine(e);
@@ -147,7 +147,7 @@ const drawing: Drawing = {
     }
   },
   handleMouseMove(this: Drawing, e: MouseEvent) {
-    model.setMouseTracker(relativeCoords(e));
+    model.mouseTracker = relativeCoords(e);
     dirty = true;
     if (this.mouseIsDown) {
       switch (this.mode) {
@@ -186,8 +186,8 @@ const drawing: Drawing = {
     requestAnimationFrame(drawLoop);
   },
   createKnot() {
-    const knot = makeKnot(model.getFrame());
-    model.setCurrentKnot(knot);
+    const knot = makeKnot(model.frame);
+    model.currentKnot = knot;
     this.knots.push(knot);
     dirty = true;
   },
@@ -225,7 +225,7 @@ const drawing: Drawing = {
     });
   },
   updateFrame() {
-    model.setFrame(fromExtrema(dragStart, dragEnd));
+    model.frame = fromExtrema(dragStart, dragEnd);
     dirty = true;
   },
   startDrawingGrid(e) {
@@ -244,13 +244,13 @@ const drawing: Drawing = {
       doIfInGraph(
         dragEnd,
         (() => {
-          let currentFrame = model.getFrame();
+          let currentFrame = model.frame;
           if (currentFrame) {
             elementsForRemoval(currentFrame).forEach(removeElement);
             currentFrame.lines = [];
           }
           currentFrame = fromExtrema(dragStart, dragEnd);
-          model.setFrame(currentFrame);
+          model.frame = currentFrame;
           currentFrame.lines.forEach(drawLine);
           currentFrame.nodes.forEach(drawNode);
         }).bind(this)
@@ -273,7 +273,7 @@ const drawing: Drawing = {
     userLine.startNode = null;
   },
   newLineIsValid(lineStart, lineEnd) {
-    const currentFrame = model.getFrame();
+    const currentFrame = model.frame;
     return (
       lineEnd &&
       lineEnd !== lineStart &&
@@ -292,7 +292,7 @@ const drawing: Drawing = {
     }
   },
   makeNewLine(lineStart, lineEnd) {
-    const currentKnot = model.getCurrentKnot();
+    const currentKnot = model.currentKnot;
     currentKnot && removeKnot(currentKnot);
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
@@ -307,12 +307,12 @@ const drawing: Drawing = {
     this.remove(knotA);
     this.remove(knotB);
     const knot = mergeKnots(knotA, knotB, startNode, endNode);
-    model.setCurrentKnot(knot);
-    model.setFrame(knot.frame);
+    model.currentKnot = knot;
+    model.frame = knot.frame;
     this.knots.push(knot);
   },
   remove(knot) {
-    removeKnot(model.getCurrentKnot());
+    removeKnot(model.currentKnot);
     this.knots.splice(this.knots.indexOf(knot), 1);
   },
   nodeAt(coords: Coords) {
@@ -338,8 +338,8 @@ const drawing: Drawing = {
     if (lineStart) {
       const foundKnot = this.findKnotWith(lineStart);
       if (foundKnot) {
-        model.setCurrentKnot(foundKnot);
-        model.setFrame(foundKnot.frame);
+        model.currentKnot = foundKnot;
+        model.frame = foundKnot.frame;
         this.drawUserLine(lineStart, coords);
       }
     }

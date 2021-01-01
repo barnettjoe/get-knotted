@@ -49,10 +49,10 @@ export default function getPrimitives(): Primitives {
   singlePixelLines = [];
   circles = [];
 
-  const frame = model.getFrame();
-  const currentKnot = model.getCurrentKnot();
-  const gridLines = model.getGridLines();
-  const mouseTracker = model.getMouseTracker();
+  const frame = model.frame;
+  const currentKnot = model.currentKnot;
+  const gridLines = model.gridLines;
+  const mouseTracker = model.mouseTracker;
 
   if (frame) {
     frame.lines.forEach(addLine);
