@@ -1,12 +1,5 @@
 import drawing from "./drawing";
-import graphLines from "./graph";
 import { Mode, MODES } from "./types";
-
-import model from "./model";
-
-function drawSquareGrid() {
-  model.gridLines = graphLines();
-}
 
 function changeDrawingMode(newMode: Mode) {
   return () => (drawing.mode = newMode);
@@ -28,7 +21,6 @@ document.addEventListener(
     drawing.addMouseListeners();
     drawing.startDrawLoop();
     MODES.forEach(setUpButton);
-    drawSquareGrid();
   },
   false
 );

@@ -1,5 +1,6 @@
-- [ ] always fill canvas with grid
-- [ ] get mouseevents to stay aligned with browser zoom
+- [x] always fill canvas with grid
+- [x] get mouseevents to stay aligned with browser zoom
+- [x] get mouseevents to stay aligned on retina screen
 - [ ] fix "add line" in webgl
 - [ ] fully switch to model/primitives/drawloop
 - [ ] fully convert to TS and turn on strict mode

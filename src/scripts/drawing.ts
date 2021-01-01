@@ -85,15 +85,13 @@ export function removeElement(element) {
 }
 
 function drawLoop() {
-  const currentKnot = model.currentKnot;
-  const currentFrame = model.frame;
   if (dirty) {
-    if (currentFrame) {
+    if (model.frame) {
       model.frame.lines.forEach(drawLine);
       model.frame.nodes.forEach(drawNode);
     }
-    if (currentKnot) {
-      drawKnot(currentKnot);
+    if (model.currentKnot) {
+      drawKnot(model.currentKnot);
     }
     webgl.draw();
     dirty = false;
@@ -183,6 +181,7 @@ const drawing: Drawing = {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   },
   startDrawLoop() {
+    // TODO - why is the requestAnimationFrame necessary here??
     requestAnimationFrame(drawLoop);
   },
   createKnot() {

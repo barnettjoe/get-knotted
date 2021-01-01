@@ -1,24 +1,20 @@
 import config from "./config";
 import { pixelCoords } from "./mouse.js";
+import model from "./model";
 import { GraphLine } from "./line";
 
 import { GridOptions } from "types";
 
 const options: GridOptions = Object.freeze({
-  startCol: 0,
-  startRow: 0,
   cols: config.graphCols,
   rows: config.graphRows,
   style: config.graphLine,
 });
 
 function verticalLines() {
-  return Array.from(
-    Array(options.cols + 1),
-    (_, idx) => idx + options.startCol
-  ).map((i) => {
-    const [startX, startY] = pixelCoords([i, options.startRow]);
-    const [endX, endY] = pixelCoords([i, options.startRow + options.rows]);
+  return Array.from(Array(model.columns + 1), (_, idx) => idx).map((i) => {
+    const [startX, startY] = pixelCoords([i, 0]);
+    const [endX, endY] = pixelCoords([i, model.rows]);
 
     return {
       startX,
@@ -31,12 +27,9 @@ function verticalLines() {
 }
 
 function horizontalLines() {
-  return Array.from(
-    Array(options.rows + 1),
-    (_, idx) => idx + options.startRow
-  ).map((i) => {
-    const [startX, startY] = pixelCoords([options.startCol, i]);
-    const [endX, endY] = pixelCoords([options.startCol + options.cols, i]);
+  return Array.from(Array(model.rows + 1), (_, idx) => idx).map((i) => {
+    const [startX, startY] = pixelCoords([0, i]);
+    const [endX, endY] = pixelCoords([model.columns, i]);
     return {
       startX,
       startY,

@@ -4,6 +4,8 @@ import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
 import getPrimitives from "../primitives";
+import model from "../model";
+import graphLines from "../graph";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
@@ -35,6 +37,8 @@ function setCanvasSize() {
   if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
     canvas.width = displayWidth;
     canvas.height = displayHeight;
+    model.canvasHeight = displayHeight;
+    model.canvasWidth = displayWidth;
   }
   const uCanvasWidth = gl.getUniformLocation(program, "uCanvasWidth");
   const uCanvasHeight = gl.getUniformLocation(program, "uCanvasHeight");
@@ -48,8 +52,19 @@ export function addGridLine() {}
 
 export function drawGrid() {}
 
+function setGrid() {
+  model.columns = Math.floor(model.canvasWidth / config.targetSquareSize);
+  model.rows = Math.floor(model.canvasHeight / config.targetSquareSize);
+  model.gridLines = graphLines();
+  model.squareSize = Math.min(
+    model.canvasWidth / model.columns,
+    model.canvasHeight / model.rows
+  );
+}
+
 export function draw() {
   setCanvasSize();
+  setGrid();
   gl.clear(gl.COLOR_BUFFER_BIT);
   const { singlePixelLines, lines, circles } = getPrimitives();
   if (singlePixelLines.length > 0) {
@@ -67,7 +82,6 @@ export function draw() {
     gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
   }
   if (circles.length > 0) {
-    console.log(circles);
     gl.bindVertexArray(circlesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, circlesBuffer);
     const data = flatten(circles);
