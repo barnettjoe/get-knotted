@@ -48,13 +48,14 @@ export default function getPrimitives(): Primitives {
   lines = [];
   singlePixelLines = [];
   circles = [];
-
   if (model.frame) {
-    model.frame.lines.forEach(addLine);
+    model.frame.lines.forEach((line) => {
+      addLine(line);
+    });
   }
 
-  if (model.currentKnot) {
-    const polylines = drawAndReturnPolylines(model.currentKnot);
+  if (model.knot) {
+    const polylines = drawAndReturnPolylines(model.knot);
     if (polylines) {
       polylines.forEach((polyline) => {
         for (let i = 0; i < polyline.length - 4; i += 2) {
@@ -79,7 +80,6 @@ export default function getPrimitives(): Primitives {
       ...model.userLine.toCoords,
     ]);
   }
-
   return {
     singlePixelLines,
     lines,

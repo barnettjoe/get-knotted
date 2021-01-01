@@ -1,7 +1,8 @@
 - [x] always fill canvas with grid
 - [x] get mouseevents to stay aligned with browser zoom
 - [x] get mouseevents to stay aligned on retina screen
-- [ ] fix "add line" in webgl
+- [x] fix "add line" in webgl
+- [ ] show new frame after adding lines
 - [ ] fully switch to model/primitives/drawloop
 - [ ] fully convert to TS and turn on strict mode
 - [ ] draw beziers with width

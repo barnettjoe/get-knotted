@@ -1,8 +1,8 @@
 import config from "./config";
 
 export default {
-  currentFrame: null,
-  currentKnot: null,
+  frame: null,
+  knot: null,
   userLine: null,
   gridLines: null,
   mouseTracker: null,

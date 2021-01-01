@@ -1,7 +1,7 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
 import surface from "./main";
 import { uncrossed } from "./line";
-import { drawLine, drawNode, drawPolyline } from "./drawing";
+import { drawNode, drawPolyline } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
@@ -22,6 +22,7 @@ import {
   merge as mergeFrame,
   elementsForRemoval as frameElementsForRemoval,
 } from "./frame";
+import model from "./model";
 
 export default function makeKnot(frame) {
   const contours = makeStrands(frame).map(Contour);
@@ -50,8 +51,6 @@ export function merge(
   mergedFrame.crossingPoints = mergedFrame.lines.map(
     (line) => line.crossingPoint
   );
-  // TODO EWW - drawing should happen elsewhere
-  mergedFrame.lines.forEach(drawLine);
   mergedFrame.nodes.forEach(drawNode);
   const mergedKnot = makeKnot(mergedFrame);
   drawAndReturnPolylines(mergedKnot);
@@ -77,7 +76,6 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   );
   frame.lines = lines(frame.nodes, frame.adjacencyList);
   frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
-  frame.lines.forEach(drawLine);
   Object.assign(knot, makeKnot(frame));
   // knot.contours = makeStrands(frame).map(Contour);
   // TODO - was init call here - is it necessary?
@@ -180,7 +178,6 @@ export function drawAndReturnPolylines(knot) {
     const snp = drawPolyline(polyline);
     knot.elements && knot.elements.push(snp);
   });
-  knot.frame.lines.forEach(drawLine);
   knot.frame.nodes.forEach(drawNode);
   return polylines;
 }

@@ -23,7 +23,7 @@ function normalize(vector: Vector): Vector {
  * The normalized perpendicular vector, pointing to the RHS relative to the vector direction.
  */
 export function normal(vector: Vector): Vector {
-  return normalize([vector[1], vector[0]]);
+  return normalize([-vector[1], vector[0]]);
 }
 
 /**
