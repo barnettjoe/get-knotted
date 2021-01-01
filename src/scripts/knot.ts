@@ -1,7 +1,7 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
 import surface from "./main";
 import { uncrossed } from "./line";
-import { drawLine, drawNode, drawPolyline, removeElement } from "./drawing";
+import { drawLine, drawNode, drawPolyline } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand.js";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
@@ -33,24 +33,12 @@ export default function makeKnot(frame) {
   };
 }
 
-// TODO - removals should happen elsewhere
-export function remove(knot) {
-  if (knot.elements) {
-    knot.elements.forEach((element: KnotElement) => element.remove());
-  }
-  frameElementsForRemoval(knot.frame).forEach(removeElement);
-  // TODO - EWW
-  // knot.frame.lines = [];
-}
-
 export function merge(
   knot: Knot,
   otherKnot: Knot,
   lineStart: INode,
   lineEnd: INode
 ) {
-  remove(knot);
-  remove(otherKnot);
   const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
   mergedFrame.adjacencyList = markAsAdjacent(
     lineStart,
@@ -90,7 +78,6 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   frame.lines = lines(frame.nodes, frame.adjacencyList);
   frame.crossingPoints = frame.lines.map((line) => line.crossingPoint);
   frame.lines.forEach(drawLine);
-  remove(knot);
   Object.assign(knot, makeKnot(frame));
   // knot.contours = makeStrands(frame).map(Contour);
   // TODO - was init call here - is it necessary?
@@ -183,7 +170,7 @@ function elementsForDrawing(knot) {
 
 export function drawAndReturnPolylines(knot) {
   if (!knot.contours) return;
-  frameElementsForRemoval(knot.frame).forEach(removeElement);
+  // frameElementsForRemoval(knot.frame).forEach(removeElement);
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
   knot.frame.crossingPoints = knot.frame.lines.map(
     (line) => line.crossingPoint

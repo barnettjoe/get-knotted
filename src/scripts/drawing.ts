@@ -1,7 +1,6 @@
 import makeKnot, {
   merge as mergeKnots,
   addLineBetween,
-  remove as removeKnot,
   drawAndReturnPolylines as drawKnot,
 } from "./knot";
 import {
@@ -39,12 +38,6 @@ let dragEnd: [number, number];
 
 let webglContext: CanvasRenderingContext;
 
-// for keeping track of the line currently being drawn (in 'add-line' mode)
-const userLine: { element: Snap.Element | null; startNode: INode | null } = {
-  element: null,
-  startNode: null,
-};
-
 let dirty = true;
 
 export function drawLine(line) {
@@ -72,16 +65,6 @@ export function drawPolyline(polyline) {
   // });
   webgl.addPolyline(polyline);
   // return snp;
-}
-
-export function removeElement(element) {
-  if (!element) return;
-  // nasty hack
-  if (element.remove) {
-    element.remove();
-  } else if (element.snapObj) {
-    element.snapObj.remove();
-  }
 }
 
 function drawLoop() {
@@ -153,10 +136,10 @@ const drawing: Drawing = {
           this.dragFrame(e);
           break;
         case "add-line":
-          if (userLine.startNode) {
+          if (model.userLine?.startNode) {
             // TODO - should be able to remove type assertion after converting mouse.js
             // into typescript
-            this.drawUserLine(userLine.startNode, relativeCoords(e) as Coords);
+            this.drawUserLine(model.userLine.startNode, relativeCoords(e) as Coords);
           }
           break;
       }
@@ -245,7 +228,7 @@ const drawing: Drawing = {
         (() => {
           let currentFrame = model.frame;
           if (currentFrame) {
-            elementsForRemoval(currentFrame).forEach(removeElement);
+            // elementsForRemoval(currentFrame).forEach(removeElement);
             currentFrame.lines = [];
           }
           currentFrame = fromExtrema(dragStart, dragEnd);
@@ -257,19 +240,13 @@ const drawing: Drawing = {
     }
   },
   drawUserLine(lineStart, toCoords) {
-    userLine.element && userLine.element.remove();
-    userLine.startNode = lineStart;
-    // userLine.element = Snap("#surface").line(
-    //   lineStart.x,
-    //   lineStart.y,
-    //   ...toCoords
-    // );
-    userLine.element.attr(config.frame);
+    model.userLine = {
+      startNode: lineStart,
+      toCoords,
+    };
   },
   removeUserLine() {
-    userLine.element && userLine.element.remove();
-    userLine.element = null;
-    userLine.startNode = null;
+    model.userLine = null;
   },
   newLineIsValid(lineStart, lineEnd) {
     const currentFrame = model.frame;
@@ -280,7 +257,7 @@ const drawing: Drawing = {
     );
   },
   finishDrawingLine(e) {
-    const lineStart = userLine.startNode;
+    const lineStart = model.userLine.startNode;
     this.removeUserLine();
     const coords = relativeCoords(e);
     // TODO - should be able to remove type assertion after converting mouse.js
@@ -292,7 +269,6 @@ const drawing: Drawing = {
   },
   makeNewLine(lineStart, lineEnd) {
     const currentKnot = model.currentKnot;
-    currentKnot && removeKnot(currentKnot);
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
     if (knotA && knotB && knotA !== knotB) {
@@ -303,16 +279,10 @@ const drawing: Drawing = {
   },
   mergeKnots(knotA, knotB, startNode, endNode) {
     // need to merge two frames...
-    this.remove(knotA);
-    this.remove(knotB);
     const knot = mergeKnots(knotA, knotB, startNode, endNode);
     model.currentKnot = knot;
     model.frame = knot.frame;
     this.knots.push(knot);
-  },
-  remove(knot) {
-    removeKnot(model.currentKnot);
-    this.knots.splice(this.knots.indexOf(knot), 1);
   },
   nodeAt(coords: Coords) {
     let result;
