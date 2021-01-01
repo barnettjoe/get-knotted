@@ -1,30 +1,12 @@
-A website that generates celtic-style knots (*icovellavna*) based on user-defined graphs.
+[![Netlify Status](https://api.netlify.com/api/v1/badges/8203d5a7-3ee3-45b0-bd4d-6cfc72283d1d/deploy-status)](https://app.netlify.com/sites/epic-carson-664eae/deploys)
 
-# Demo
+[knots.joebarnett.co.uk](https://knots.joebarnett.co.uk)
 
-![knot demo](https://media.giphy.com/media/d2RPhHfiQ0LgfyQ3sz/giphy.gif)
+A web app for drawing celtic-style knots
+
 
 # To Do
 
-### add unit tests
-
-### refactoring
-
-- improve ensapsulation
-
-### style
-
--  concanenate SVG properly into paths
-
-### performance stuff
-
-- investigate performance - offset calcs are most costly?
-- avoid unneccessary strand-recalculations
-- strand calculations are relatively fast - could start doing them before mouseup
-- fuzzy memoization of offset calculations?
-- web workers?
-
-### extra features
-
+- perf investigation
 - triangular and circular grids, and freeform (including real-time dragging)
 - user configuration
