@@ -53,12 +53,7 @@ PointedReturn.prototype = {
       intersection,
       innerInboundPolyline
     );
-    const points = this.outClipped.concat(this.inClipped).reduce(reducer, []);
-    // const snp = surface.polyline(points);
-    // // webgl.addPolyline(points);
-    // this.elements.push(snp);
-    // format(snp);
-    return points;
+    return this.outClipped.concat(this.inClipped).reduce(reducer, []);
   },
   drawOuters(offsets) {
     const direction = this.pr.pr;
@@ -84,15 +79,9 @@ PointedReturn.prototype = {
       y: 2 * midTip.y - innerTip.y,
     };
 
-    //surface.circle(outerTip.x, outerTip.y, 1).attr({ fill: 'red' });
     const points = outerOutboundPolyline.concat(
       [outerTip].concat(outerInboundPolyline)
     );
-    const pointList = points.reduce(reducer, []);
-    // const snp = surface.polyline(pointList);
-    // webgl.addPolyline(pointList);
-    // this.elements.push(snp);
-    // format(snp);
-    return pointList;
+    return points.reduce(reducer, []);
   },
 };

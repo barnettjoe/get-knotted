@@ -1,4 +1,4 @@
-import { OnscreenWebglContext, Primitives } from "../types";
+import { OnscreenWebglContext } from "../types";
 import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
@@ -9,18 +9,16 @@ import graphLines from "../graph";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
+
 let singlePixelLinesBuffer: WebGLBuffer;
 let linesBuffer: WebGLBuffer;
 let circlesBuffer: WebGLBuffer;
+
 let linesVAO: WebGLVertexArrayObject;
 let trianglesVAO: WebGLVertexArrayObject;
 let circlesVAO: WebGLVertexArrayObject;
 
 const arrayElementsPerVertex = 2;
-
-const singlePixelLines: number[][] = [];
-const lines: number[][] = [];
-const circles: number[][] = [];
 
 function setCanvasSize() {
   const canvas = gl.canvas;
@@ -47,10 +45,6 @@ function setCanvasSize() {
   // tell webgl how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 }
-
-export function addGridLine() {}
-
-export function drawGrid() {}
 
 function setGrid() {
   model.columns = Math.floor(model.canvasWidth / config.targetSquareSize);
@@ -88,7 +82,6 @@ export function draw() {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
   }
-  drawGrid();
 }
 
 function flatten(arr: number[][]) {
@@ -97,24 +90,6 @@ function flatten(arr: number[][]) {
     result.push(...subArray);
   });
   return new Float32Array(result);
-}
-
-export function addCircle(x: number, y: number, radius: number) {
-  const points = Array(config.webgl.circleSides)
-    .fill(0)
-    .map((_, idx) => {
-      const theta = (idx / config.webgl.circleSides) * 2 * Math.PI;
-      return [x + radius * Math.cos(theta), y + radius * Math.sin(theta)];
-    });
-  points.forEach((point, idx) => {
-    circles.push([x, y], point, points[idx - 1] || points[points.length - 1]);
-  });
-}
-
-export function addPolyline(polyline: number[]) {
-  for (let i = 0; i < polyline.length - 4; i += 2) {
-    singlePixelLines.push(polyline.slice(i, i + 4));
-  }
 }
 
 function createVAO(context: OnscreenWebglContext): WebGLVertexArrayObject {

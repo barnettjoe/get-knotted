@@ -39,10 +39,6 @@ let webglContext: OnscreenWebglContext;
 
 let dirty = true;
 
-export function drawNode(node) {
-  webgl.addCircle(node.x, node.y, config.nodeStyle.radius);
-}
-
 function drawLoop() {
   if (dirty) {
     if (model.knot) {
@@ -203,7 +199,6 @@ const drawing: Drawing = {
             currentFrame.lines = [];
           }
           model.frame = fromExtrema(dragStart, dragEnd);
-          currentFrame.nodes.forEach(drawNode);
         }).bind(this)
       );
     }

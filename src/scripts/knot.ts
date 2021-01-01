@@ -1,7 +1,6 @@
 import { collectionIntersect, format, mutate, reducer } from "./knot-utils";
 import surface from "./main";
 import { uncrossed } from "./line";
-import { drawNode } from "./drawing";
 import { Strand, pointFollowing, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
@@ -51,7 +50,6 @@ export function merge(
   mergedFrame.crossingPoints = mergedFrame.lines.map(
     (line) => line.crossingPoint
   );
-  mergedFrame.nodes.forEach(drawNode);
   const mergedKnot = makeKnot(mergedFrame);
   knotPolylines(mergedKnot);
   mergedKnot.elements = knot.elements.concat(otherKnot.elements);

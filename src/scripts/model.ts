@@ -1,6 +1,7 @@
 import config from "./config";
+import { Model } from "./types";
 
-export default {
+const model: Model = {
   frame: null,
   knot: null,
   userLine: null,
@@ -12,3 +13,5 @@ export default {
   rows: 0,
   squareSize: config.targetSquareSize,
 };
+
+export default model;

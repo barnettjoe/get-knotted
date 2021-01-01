@@ -175,3 +175,16 @@ export interface Primitives {
   singlePixelLines: number[][];
   circles: number[][];
 }
+
+export interface Model {
+  frame: Frame | null;
+  knot: Knot | null;
+  userLine: Line | null;
+  gridLines: Line[] | null;
+  mouseTracker: Coords | null;
+  canvasWidth: number;
+  canvasHeight: number;
+  columns: number;
+  rows: number;
+  squareSize: number;
+}
