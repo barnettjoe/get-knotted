@@ -1,4 +1,4 @@
-import StrandElement from "./strand-element.js";
+import StrandElement from "./strand-element";
 import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";

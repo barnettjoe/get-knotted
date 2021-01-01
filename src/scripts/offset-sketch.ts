@@ -1,6 +1,6 @@
 import config from "./config";
-import { polyline } from "./knot-utils.js";
-import { pointFollowing } from "./strand.js";
+import { polyline } from "./knot-utils";
+import { pointFollowing } from "./strand";
 
 const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 

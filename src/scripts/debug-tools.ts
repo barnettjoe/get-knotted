@@ -1,4 +1,4 @@
-import { bezString } from "./knot-utils.js";
+import { bezString } from "./knot-utils";
 import Bezier from "./bezier/bezier";
 import { Point } from "./types";
 

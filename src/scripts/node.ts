@@ -1,4 +1,4 @@
-import { pixelCoords } from "./mouse.js";
+import { pixelCoords } from "./mouse";
 import config from "./config";
 import { identicalObjects, distanceBetween } from "./general-utils";
 import { NodeOptions, GridSystem, Coords } from "./types";

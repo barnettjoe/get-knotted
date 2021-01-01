@@ -1,5 +1,5 @@
 import config from "./config";
-import { pixelCoords } from "./mouse.js";
+import { pixelCoords } from "./mouse";
 import model from "./model";
 import { GraphLine } from "./line";
 

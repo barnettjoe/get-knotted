@@ -1,16 +1,14 @@
 /* eslint-env node */
-const path = require('path');
-const merge = require('webpack-merge');
-const TerserPlugin = require('terser-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const common = require('./webpack.common.js');
+const path = require("path");
+const merge = require("webpack-merge");
+const TerserPlugin = require("terser-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const common = require("./webpack.common.js");
 
 module.exports = merge(common, {
-  plugins: [
-    new MiniCssExtractPlugin(),
-  ],
-  mode: 'production',
+  plugins: [new MiniCssExtractPlugin()],
+  mode: "production",
   optimization: {
     minimizer: [
       new TerserPlugin({
@@ -23,15 +21,18 @@ module.exports = merge(common, {
     rules: [
       {
         test: /\.ts/,
-        loader: 'ts-loader',
+        loader: "ts-loader",
         exclude: /node_modules/,
-        include: path.resolve(__dirname, 'src'),
+        include: path.resolve(__dirname, "src"),
+        options: {
+          transpileOnly: true,
+        },
       },
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
-        include: path.resolve(__dirname, 'src'),
+        loader: "babel-loader",
+        include: path.resolve(__dirname, "src"),
       },
     ],
   },

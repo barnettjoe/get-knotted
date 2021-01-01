@@ -18,7 +18,7 @@ import {
   relativeCoords,
   closestGraphCoords,
   pixelCoords,
-} from "./mouse.js";
+} from "./mouse";
 import { identicalObjects } from "./general-utils";
 import config from "./config";
 import model from "./model";

@@ -1,8 +1,8 @@
-import { collectionIntersect, format, mutate, reducer } from "./knot-utils.js";
+import { collectionIntersect, format, mutate, reducer } from "./knot-utils";
 import surface from "./main";
 import { uncrossed } from "./line";
 import { drawNode, drawPolyline } from "./drawing";
-import { Strand, pointFollowing, pointPreceding } from "./strand.js";
+import { Strand, pointFollowing, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
 import Contour from "./contour";
 import offsetSketch from "./offset-sketch";

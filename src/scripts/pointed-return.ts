@@ -1,4 +1,4 @@
-import { reducer, collectionIntersect, format } from "./knot-utils.js";
+import { reducer, collectionIntersect, format } from "./knot-utils";
 import surface from "./main";
 import * as webgl from "./webgl/draw-webgl";
 export default function PointedReturn(options) {

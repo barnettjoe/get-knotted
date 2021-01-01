@@ -1,7 +1,7 @@
 import numeric from "numeric";
 
 import Bezier from "./bezier/bezier.js";
-import { pointFollowing } from "./strand.js";
+import { pointFollowing } from "./strand";
 import { Contour, Strand, Matrix, Polygon } from "./types";
 
 const theta = 1.5;
