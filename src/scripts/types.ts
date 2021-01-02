@@ -54,7 +54,7 @@ export type Coords = [number, number];
 export interface Frame {
   nodes: INode[];
   adjacencyList: Matrix;
-  lines: Line[];
+  lines: FrameLine[];
 }
 
 export type IStrand = StrandElement[];
@@ -65,10 +65,10 @@ export interface StrandElement {
   x: number;
   y: number;
   direction: Direction;
-  point: OverUnderPoint;
+  point: CrossingPoint;
   pr: string;
-  outboundBezier: Bezier;
-  inboundBezier: Bezier;
+  outboundBezier?: Bezier;
+  inboundBezier?: Bezier;
 }
 
 export interface OverUnderPoint {
@@ -184,6 +184,16 @@ export interface Line {
   startY: number;
   endX: number;
   endY: number;
+}
+
+export interface FrameLine {
+  startNode: INode;
+  endNode: INode;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  crossingPoint: CrossingPoint;
 }
 export interface Model {
   frame: Frame | null;

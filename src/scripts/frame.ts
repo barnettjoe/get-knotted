@@ -6,7 +6,7 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import { Coords, GridSystem, Frame, INode, Matrix } from "./types";
+import { Coords, GridSystem, Frame, FrameLine, INode, Matrix } from "./types";
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
   return arr1.reduce(
@@ -122,13 +122,22 @@ export function findProximalNode(coords: Coords, nodes: INode[]): INode | null {
   return null;
 }
 
-export function lineExistsBetween(nodeA, nodeB, lines) {
+export function lineExistsBetween(
+  nodeA: INode,
+  nodeB: INode,
+  lines: FrameLine[]
+) {
   return !!lines.find((line) => {
     return isBetween(line, nodeA, nodeB);
   });
 }
 
-export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
+export function markAsAdjacent(
+  nodeA: INode,
+  nodeB: INode,
+  nodes: INode[],
+  adjacencyList: Matrix
+) {
   return joinNodesAtIndex(
     nodeIndex(nodeA, nodes),
     nodeIndex(nodeB, nodes),
@@ -136,11 +145,11 @@ export function markAsAdjacent(nodeA, nodeB, nodes, adjacencyList) {
   );
 }
 
-export function linesOutFrom(node, lines) {
+export function linesOutFrom(node: INode, lines: FrameLine[]) {
   return lines.filter((line) => visits(line, node));
 }
 
-export function overlapsExistingNode(pxX, pxY, nodes) {
+export function overlapsExistingNode(pxX: number, pxY: number, nodes: INode[]) {
   return nodes.some((node) => hasOverlap(node, pxX, pxY));
 }
 
@@ -153,20 +162,24 @@ export function merge(frame: Frame, otherFrame: Frame): Frame {
   return {
     nodes: newNodes,
     adjacencyList: frame.adjacencyList.concat(newAdjacencies),
+    lines: [],
   };
 }
 
-export function firstUncrossedLine(lines) {
-  return lines.find(uncrossed);
+export function firstUncrossedLine(lines: FrameLine[]): FrameLine | null {
+  return lines.find(uncrossed) || null;
 }
 
-export function lines(nodes, adjacencyList) {
-  return nodes.reduce((lines, startNode, i) => {
-    return lines.concat(
-      adjacencyList[i]
-        // avoid drawing each line twice
-        .filter((j) => i < j)
-        .map((j) => lineBetween(startNode, nodes[j]))
-    );
-  }, []);
+export function lines(nodes: INode[], adjacencyList: Matrix): FrameLine[] {
+  return nodes.reduce(
+    (lines, startNode, i) => {
+      return lines.concat(
+        adjacencyList[i]
+          // avoid drawing each line twice
+          .filter((j) => i < j)
+          .map((j) => lineBetween(startNode, nodes[j]))
+      );
+    },
+    [] as FrameLine[]
+  );
 }

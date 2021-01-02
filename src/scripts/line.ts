@@ -1,5 +1,5 @@
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
-import { INode, Vector, Direction, FrameLineOptions } from "./types";
+import { INode, Vector, FrameLine, Direction, FrameLineOptions } from "./types";
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
 
@@ -33,7 +33,7 @@ function vector(line) {
   return [line.endX - line.startX, line.endY - line.startY];
 }
 
-export function isBetween(line, nodeA: INode, nodeB: INode) {
+export function isBetween(line: FrameLine, nodeA: INode, nodeB: INode) {
   const isForwards =
     sameNode(line.startNode, nodeA) && sameNode(line.endNode, nodeB);
   const isReversed =

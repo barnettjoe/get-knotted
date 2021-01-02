@@ -12,7 +12,9 @@ export function fullyCrossed(crossingPoint: CrossingPoint) {
   return isCrossed(crossingPoint, "R") && isCrossed(crossingPoint, "L");
 }
 
-export function uncrossedDirection(crossingPoint: CrossingPoint) {
+export function uncrossedDirection(
+  crossingPoint: CrossingPoint
+): Direction | null {
   if (fullyCrossed(crossingPoint)) {
     return null;
   } else if (isCrossed(crossingPoint, "L")) {

@@ -3,9 +3,23 @@ import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";
 import { sameNode } from "./node";
-import { Frame, IStrand, StrandElement as StrandElementType } from "./types";
+import {
+  Direction,
+  INode,
+  Frame,
+  FrameLine,
+  IStrand,
+  StrandElement as StrandElementType,
+} from "./types";
 
-const strandState = {};
+interface StrandState {
+  frame: Frame;
+  currentLine: FrameLine;
+  direction: Direction;
+  targetNode: INode;
+}
+
+let strandState: StrandState | null = null;
 
 export function Strand(frame: Frame): IStrand {
   const result: IStrand = [];
@@ -25,11 +39,24 @@ export function pointPreceding(
   return strand[index - 1] || strand[strand.length - 1];
 }
 
-function addAllElements(frame) {
-  strandState.frame = frame;
-  strandState.currentLine = firstUncrossedLine(frame.lines);
-  strandState.direction = initialDirection();
-  strandState.targetNode = initialTargetNode();
+function initialStrandState(frame: Frame) {
+  const currentLine = firstUncrossedLine(frame.lines);
+  if (currentLine === null) {
+    throw new Error("no uncrossed line to initialize strand state");
+  }
+  const direction = uncrossedDirection(currentLine.crossingPoint);
+  if (direction === null) {
+    throw new Error(
+      "could not find uncrossed direction for initializing strand state"
+    );
+  }
+  const targetNode = currentLine.endNode;
+  return { currentLine, direction, targetNode, frame };
+}
+
+function addAllElements(this: IStrand, frame: Frame) {
+  strandState = initialStrandState(frame);
+
   addElement.call(this, frame);
 
   while (true) {
@@ -40,7 +67,7 @@ function addAllElements(frame) {
     if (endOfStrand()) break;
   }
 }
-function addElement() {
+function addElement(this: IStrand) {
   add.call(
     this,
     new StrandElement({
@@ -141,7 +168,7 @@ function nextLine() {
   }
 }
 function nextBearing() {
-  return angleOutCP(nextLine(strandState.frame), {
+  return angleOutCP(nextLine(), {
     direction: oppositeDirection(),
     reverse: traverseNextBackwards(strandState.frame),
   });
@@ -150,18 +177,10 @@ function goingBackwards() {
   return sameNode(strandState.currentLine.startNode, strandState.targetNode);
 }
 function pointedReturn() {
-  const angleDelta = Math.abs(
-    currentBearing() - nextBearing(strandState.frame)
-  );
+  const angleDelta = Math.abs(currentBearing() - nextBearing());
   const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
 }
-function initialDirection() {
-  return uncrossedDirection(strandState.currentLine.crossingPoint);
-}
-function initialTargetNode() {
-  return strandState.currentLine.endNode;
-}
-function add(point) {
+function add(this: IStrand, point: StrandElementType) {
   this.push(point);
 }
