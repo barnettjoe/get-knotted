@@ -6,7 +6,7 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import { GridSystem, Frame, INode, Matrix } from "./types";
+import { Coords, GridSystem, Frame, INode, Matrix } from "./types";
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
   return arr1.reduce(
@@ -48,24 +48,27 @@ function coordinateSet({
 }
 
 // for drawing as a grid rather than individual nodes and lines...
-function allNeighborsAdjacent(nodes) {
-  return nodes.reduce((adjacencies, firstNode) => {
-    return [
-      ...adjacencies,
-      nodes
-        .map((secondNode, j) => [secondNode, j])
-        .filter(([secondNode, j]) => isAdjacentTo(firstNode, secondNode))
-        .map(([secondNode, j]) => j),
-    ];
-  }, []);
+function allNeighborsAdjacent(nodes: INode[]) {
+  return nodes.reduce(
+    (adjacencies, firstNode) => {
+      return [
+        ...adjacencies,
+        nodes
+          .map((secondNode, j) => [secondNode, j] as [INode, number])
+          .filter(([secondNode]) => isAdjacentTo(firstNode, secondNode))
+          .map(([_secondNode, j]) => j),
+      ];
+    },
+    [] as Matrix
+  );
 }
-function nodeIndex(node, nodes) {
+function nodeIndex(node: INode, nodes: INode[]): number {
   return nodes.findIndex(function(someNode) {
     return sameNode(someNode, node);
   });
 }
 
-function closestNodeToPoint(coords, nodes) {
+function closestNodeToPoint(coords: Coords, nodes: INode[]): INode {
   return nodes.reduce(function(acc, node) {
     if (distanceFromPoint(node, coords) < distanceFromPoint(acc, coords)) {
       return node;
@@ -75,13 +78,18 @@ function closestNodeToPoint(coords, nodes) {
   });
 }
 
-function joinNodesAtIndex(idxA, idxB, adjacencyList) {
+function joinNodesAtIndex(
+  idxA: number,
+  idxB: number,
+  adjacencyList: Matrix
+): Matrix {
   const newAdjacencyList = [...adjacencyList];
   newAdjacencyList[idxA] = [...newAdjacencyList[idxA], idxB];
   newAdjacencyList[idxB] = [...newAdjacencyList[idxB], idxA];
   return newAdjacencyList;
 }
-export function fromExtrema(initialBox, finalBox) {
+
+export function fromExtrema(initialBox: Coords, finalBox: Coords) {
   const nodeCoords = coordinateSet({
     leftmost: Math.min(initialBox[0], finalBox[0]),
     rightmost: Math.max(initialBox[0], finalBox[0]),
@@ -105,14 +113,13 @@ export function fromExtrema(initialBox, finalBox) {
   };
 }
 
-export function findProximalNode(coords, nodes) {
+export function findProximalNode(coords: Coords, nodes: INode[]): INode | null {
   const closestNode = closestNodeToPoint(coords, nodes);
   const proximityThreshold = config.nodeSelectionMinProximity;
   if (distanceFromPoint(closestNode, coords) < proximityThreshold) {
     return closestNode;
   }
-  // explicit return to appease eslint
-  return undefined;
+  return null;
 }
 
 export function lineExistsBetween(nodeA, nodeB, lines) {

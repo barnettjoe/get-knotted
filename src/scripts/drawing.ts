@@ -25,7 +25,7 @@ import * as webgl from "./webgl/draw-webgl";
 import {
   Coords,
   Drawing,
-  GridPosition,
+  INode,
   GridSystem,
   isOnscreenWebglContext,
   OnscreenWebglContext,
@@ -194,7 +194,7 @@ const drawing: Drawing = {
       );
     }
   },
-  drawUserLine(lineStart: GridPosition, toCoords) {
+  drawUserLine(lineStart: INode, toCoords) {
     model.userLine = {
       startNode: lineStart,
       toCoords,

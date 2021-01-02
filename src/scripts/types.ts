@@ -110,7 +110,7 @@ export interface Drawing {
   dragFrame(e: MouseEvent): void;
   createKnot(): void;
   updateFrame(): void;
-  drawUserLine(startNode: GridPosition, coords: Coords): void;
+  drawUserLine(startNode: INode, coords: Coords): void;
   findKnotWith(node: INode): Knot | null;
   finishDrawingLine(e: MouseEvent): void;
   handleMouseDown(this: Drawing, e: MouseEvent): void;
@@ -175,7 +175,7 @@ export interface Knot {
 }
 
 export interface UserLine {
-  startNode: GridPosition;
+  startNode: INode;
   toCoords: Coords;
 }
 
@@ -196,11 +196,4 @@ export interface Model {
   columns: number;
   rows: number;
   squareSize: number;
-}
-
-export interface GridPosition {
-  gridX: number;
-  gridY: number;
-  x: number;
-  y: number;
 }
