@@ -20,6 +20,7 @@ import {
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
+  debugger;
   const contours = makeStrands(frame).map(Contour);
   const overUnders = makeOverUnders(contours);
   if (overUnders === null) {
