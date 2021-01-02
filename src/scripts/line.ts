@@ -1,9 +1,13 @@
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
-import { INode, Vector, Direction } from "./types";
+import { INode, Vector, Direction, FrameLineOptions } from "./types";
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
 
-export default function frameLine({ startNode, endNode, style }) {
+export default function frameLine({
+  startNode,
+  endNode,
+  style,
+}: FrameLineOptions) {
   return {
     startNode: startNode,
     endNode: endNode,

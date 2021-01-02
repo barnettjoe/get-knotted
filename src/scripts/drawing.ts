@@ -10,7 +10,7 @@ import {
   lineExistsBetween,
   overlapsExistingNode,
 } from "./frame";
-import Node from "./node";
+import node from "./node";
 import {
   rowAndCol,
   doIfInGraph,
@@ -19,13 +19,13 @@ import {
   pixelCoords,
 } from "./mouse";
 import { identicalObjects } from "./general-utils";
-import config from "./config";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
 import {
   Coords,
   Drawing,
+  GridPosition,
   GridSystem,
   isOnscreenWebglContext,
   OnscreenWebglContext,
@@ -73,9 +73,7 @@ const drawing: Drawing = {
         this.startDrawingGrid(e);
         break;
       case "add-line":
-        // TODO - should be able to remove type assertion after converting mouse.js
-        // into typescript
-        this.startDrawingLine(relativeCoords(e) as Coords);
+        this.startDrawingLine(relativeCoords(e));
         break;
       case "add-node":
         this.placeNode(e);
@@ -105,9 +103,7 @@ const drawing: Drawing = {
           break;
         case "add-line":
           if (model.userLine?.startNode) {
-            // TODO - should be able to remove type assertion after converting mouse.js
-            // into typescript
-            this.drawUserLine(model.userLine.startNode, relativeCoords(e) as Coords);
+            this.drawUserLine(model.userLine.startNode, relativeCoords(e));
           }
           break;
       }
@@ -136,6 +132,9 @@ const drawing: Drawing = {
     requestAnimationFrame(drawLoop);
   },
   createKnot() {
+    if (model.frame === null) {
+      throw new Error('tried to create a knot with null frame');
+    }
     const knot = makeKnot(model.frame);
     model.knot = knot;
     this.knots.push(knot);
@@ -150,21 +149,19 @@ const drawing: Drawing = {
   },
   singleNodeFrame(coords) {
     const nodes = [
-      new Node({
+      node({
         x: coords[0],
         y: coords[1],
         gridSystem: GridSystem.square,
       }),
     ];
-    return { nodes, adjacencyList: [[]] };
+    return { nodes, adjacencyList: [[]], lines: [] };
   },
   placeNode(e) {
     const coords = closestGraphCoords(e);
     const pxCoords = pixelCoords(coords);
     if (!this.isNodeOverlapping(pxCoords)) {
-      // TODO - should be able to remove type assertion after converting mouse.js
-      // into typescript
-      this.addNode(coords as Coords);
+      this.addNode(coords);
     }
   },
   isNodeOverlapping(coords) {
@@ -177,17 +174,13 @@ const drawing: Drawing = {
     dirty = true;
   },
   startDrawingGrid(e) {
-    // TODO - should be able to remove type assertion after converting mouse.js
-    // into typescript
-    dragStart = rowAndCol(e) as Coords;
+    dragStart = rowAndCol(e);
     dragEnd = dragStart;
     doIfInGraph(dragStart, this.updateFrame.bind(this));
   },
   dragFrame(e: MouseEvent) {
     const previousBox = dragEnd;
-    // TODO - should be able to remove type assertion after converting mouse.js
-    // into typescript
-    dragEnd = rowAndCol(e) as Coords;
+    dragEnd = rowAndCol(e);
     if (!identicalObjects(previousBox, dragEnd)) {
       doIfInGraph(
         dragEnd,
@@ -201,7 +194,7 @@ const drawing: Drawing = {
       );
     }
   },
-  drawUserLine(lineStart, toCoords) {
+  drawUserLine(lineStart: GridPosition, toCoords) {
     model.userLine = {
       startNode: lineStart,
       toCoords,
@@ -209,6 +202,9 @@ const drawing: Drawing = {
   },
   newLineIsValid(lineStart, lineEnd) {
     const currentFrame = model.frame;
+    if (currentFrame === null) {
+      throw new Error('current frame is null');
+    }
     return (
       lineEnd &&
       lineEnd !== lineStart &&
@@ -216,18 +212,22 @@ const drawing: Drawing = {
     );
   },
   finishDrawingLine(e) {
+    if (model.userLine === null) {
+      throw new Error('userLine is null');
+    }
     const lineStart = model.userLine.startNode;
     model.userLine = null;
     const coords = relativeCoords(e);
-    // TODO - should be able to remove type assertion after converting mouse.js
-    // into typescript
-    const lineEnd = this.nodeAt(coords as Coords);
+    const lineEnd = this.nodeAt(coords);
     if (lineStart && lineEnd && this.newLineIsValid(lineStart, lineEnd)) {
       this.makeNewLine(lineStart, lineEnd);
     }
   },
   makeNewLine(lineStart, lineEnd) {
     const currentKnot = model.knot;
+    if (currentKnot === null) {
+      throw new Error('currentKnot is null');
+    }
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
     if (knotA && knotB && knotA !== knotB) {
@@ -261,7 +261,7 @@ const drawing: Drawing = {
       }) || null
     );
   },
-  startDrawingLine(coords) {
+  startDrawingLine(coords: Coords) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
       const foundKnot = this.findKnotWith(lineStart);

@@ -6,12 +6,15 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import { GridSystem, Frame } from "./types";
+import { GridSystem, Frame, INode, Matrix } from "./types";
 
-function cartesianProduct(arr1, arr2) {
-  return arr1.reduce((acc, x) => {
-    return acc.concat(arr2.map((y) => [x, y]));
-  }, []);
+function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
+  return arr1.reduce(
+    (acc, x) => {
+      return acc.concat(arr2.map((y) => [x, y]));
+    },
+    [] as Matrix
+  );
 }
 
 function integerRange(first: number, last: number) {
@@ -20,9 +23,8 @@ function integerRange(first: number, last: number) {
     .map((_, i) => first + i);
 }
 
-function lineBetween(startNode, endNode) {
+function lineBetween(startNode: INode, endNode: INode) {
   return frameLine({
-    method: "node",
     startNode,
     endNode,
     style: config.frame,

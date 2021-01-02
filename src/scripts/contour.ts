@@ -2,7 +2,7 @@ import numeric from "numeric";
 
 import Bezier from "./bezier/bezier.js";
 import { pointFollowing } from "./strand";
-import { Contour, Strand, Matrix, Polygon } from "./types";
+import { Coords, Contour, Strand, Matrix, Polygon } from "./types";
 
 const theta = 1.5;
 
@@ -38,12 +38,14 @@ function getBezier(
   xControlPoints: number[],
   yControlPoints: number[],
   strand: Strand
-) {
+): Coords[] {
   const nextPoint = pointFollowing(index, strand);
+  const control1 = [xControlPoints.shift(), yControlPoints.shift()] as Coords;
+  const control2 = [xControlPoints.shift(), yControlPoints.shift()] as Coords;
   return [
     [strand[index].x, strand[index].y],
-    [xControlPoints.shift(), yControlPoints.shift()],
-    [xControlPoints.shift(), yControlPoints.shift()],
+    control1,
+    control2,
     [nextPoint.x, nextPoint.y],
   ];
 }

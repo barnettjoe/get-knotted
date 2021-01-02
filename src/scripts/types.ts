@@ -5,10 +5,10 @@ export type Matrix = number[][];
 
 // TODO - give this a better name
 export interface INode {
-  snapObject: Snap.Element;
-  sameNode(otherNode: INode): boolean;
   x: number;
   y: number;
+  gridX: number;
+  gridY: number;
 }
 
 export enum GridSystem {
@@ -55,13 +55,6 @@ export interface Frame {
   nodes: INode[];
   adjacencyList: Matrix;
   lines: Line[];
-  draw(): void;
-  drawLines(): void;
-  findProximalNode(coords: Coords): INode;
-  remove(): void;
-  merge(otherFrame: Frame): Frame;
-  markAsAdjacent(lineStart: INode, lineEnd: INode): void;
-  overlapsExistingNode(x: number, y: number): boolean;
 }
 
 export type IStrand = StrandElement[];
@@ -90,7 +83,7 @@ export interface OverUnderPoint {
   overInRight: PolyLine;
 }
 
-export type OverUnders = Record<CrossingPoint, OverUnderPoint>;
+export type OverUnders = Map<CrossingPoint, OverUnderPoint>;
 export interface CollectionIntersect {
   intersection: Coords;
   idxA: number;
@@ -108,10 +101,6 @@ export interface OffsetSketch {
   foo: string;
 }
 
-export interface KnotElement {
-  remove(): void;
-}
-
 export const MODES = ["add-grid", "add-node", "add-line"] as const;
 export type Mode = typeof MODES[number];
 
@@ -121,7 +110,7 @@ export interface Drawing {
   dragFrame(e: MouseEvent): void;
   createKnot(): void;
   updateFrame(): void;
-  drawUserLine(startNode: INode, coords: Coords): void;
+  drawUserLine(startNode: GridPosition, coords: Coords): void;
   findKnotWith(node: INode): Knot | null;
   finishDrawingLine(e: MouseEvent): void;
   handleMouseDown(this: Drawing, e: MouseEvent): void;
@@ -133,13 +122,12 @@ export interface Drawing {
   newLineIsValid(lineStart: INode, lineEnd: INode): boolean;
   nodeAt(coords: Coords): INode | null;
   placeNode(e: MouseEvent): void;
-  remove(knot: Knot): void;
-  removeUserLine(): void;
   setupWebglContext(): void;
   singleNodeFrame(coords: Coords): Frame;
+  startDrawLoop(): void;
   startDrawingGrid(e: MouseEvent): void;
   startDrawingLine(coords: Coords): void;
-  graph?: Graph; // TODO -- ??
+  startDrawingLine(coords: Coords): void;
   frame?: Frame;
   knots: Knot[]; // TODO -- array of what??
   mode: Mode;
@@ -187,7 +175,7 @@ export interface Knot {
 }
 
 export interface UserLine {
-  startNode: Node;
+  startNode: GridPosition;
   toCoords: Coords;
 }
 
@@ -208,4 +196,11 @@ export interface Model {
   columns: number;
   rows: number;
   squareSize: number;
+}
+
+export interface GridPosition {
+  gridX: number;
+  gridY: number;
+  x: number;
+  y: number;
 }
