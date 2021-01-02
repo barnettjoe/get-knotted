@@ -57,7 +57,7 @@ export interface Frame {
   lines: FrameLine[];
 }
 
-export type IStrand = StrandElement[];
+export type IStrand = Partial<StrandElement>[];
 
 export type Direction = "L" | "R";
 

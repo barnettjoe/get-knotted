@@ -30,13 +30,13 @@ export function Strand(frame: Frame): IStrand {
 export function pointFollowing(
   index: number,
   strand: IStrand
-): StrandElementType {
+): Partial<StrandElementType> {
   return strand[(index + 1) % strand.length];
 }
 export function pointPreceding(
   index: number,
   strand: IStrand
-): StrandElementType {
+): Partial<StrandElementType> {
   return strand[index - 1] || strand[strand.length - 1];
 }
 
@@ -58,22 +58,20 @@ function initialStrandState(frame: Frame) {
 function addAllElements(this: IStrand, frame: Frame) {
   strandState = initialStrandState(frame);
 
-  addElement.call(this, frame);
+  addElement.call(this);
 
-  while (true) {
+  while (!endOfStrand()) {
     strandState.currentLine = nextLine();
     strandState.direction = oppositeDirection();
     strandState.targetNode = nextTargetNode();
-    addNextPoint.call(this);
-    if (endOfStrand()) break;
+    addElement.call(this);
   }
 }
 function addElement(this: IStrand) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
-  add.call(
-    this,
+  this.push(
     new StrandElement({
       direction: strandState.direction,
       point: strandState.currentLine.crossingPoint,
@@ -85,8 +83,11 @@ function addElement(this: IStrand) {
     const startCoords = strandState.currentLine.crossingPoint.coords;
     const endCoords = nextLine().crossingPoint.coords;
     const prCoords = getApexCoords(startCoords, endCoords);
-    add.call(this, {
-      point: {},
+    this.push({
+      // horrible hack to make unique (hopefully) id for the Map...
+      // ...we could equally well just use an empty object, but I'll
+      // use a random number to highlight the horribleness...
+      point: Math.random(),
       x: prCoords[0],
       y: prCoords[1],
       pr: oppositeDirection(),
@@ -108,9 +109,6 @@ function oppositeDirection() {
     throw new Error("strand state is uninitialized");
   }
   return strandState.direction === "R" ? "L" : "R";
-}
-function addNextPoint(this: IStrand, frame: Frame) {
-  addElement.call(this, frame);
 }
 function logCrossing() {
   if (strandState === null) {
@@ -211,7 +209,4 @@ function pointedReturn() {
   const angleDelta = Math.abs(currentBearing() - nextBearing());
   const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
-}
-function add(this: IStrand, point: StrandElementType) {
-  this.push(point);
 }

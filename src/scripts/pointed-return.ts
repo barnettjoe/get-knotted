@@ -15,8 +15,8 @@ export default class PointedReturn {
     this.pr = options.pr;
   }
 
-  draw(offsets) {
-    return [this.drawInners(offsets), this.drawOuters(offsets)];
+  offsets(offsets) {
+    return [this.innerOffsets(offsets), this.outerOffsets(offsets)];
   }
   clippedOutboundPath(intersection, polyline) {
     const points = polyline.slice(0, intersection.idxA + 1);
@@ -28,7 +28,7 @@ export default class PointedReturn {
     points.unshift(intersection.intersection);
     return points;
   }
-  drawInners(offsets: OverUnderPoint) {
+  innerOffsets(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
     // get intersection of inner outbound with inner inbound
     let innerOutboundPolyline;
@@ -62,7 +62,7 @@ export default class PointedReturn {
     );
     return this.outClipped.concat(this.inClipped).reduce(reducer, []);
   }
-  drawOuters(offsets: OverUnderPoint) {
+  outerOffsets(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
 
     let outerOutboundPolyline;

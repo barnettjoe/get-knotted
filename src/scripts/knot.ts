@@ -154,9 +154,7 @@ export function knotPolylines(knot: Knot): PolyLines | null {
             middleOutbound: pointPreceding(i, strand).outboundBezier,
             middleInbound: strandElement.outboundBezier,
           });
-          const prPolylines = pr.draw(offsets);
-          morePolylines.push(...prPolylines);
-          // // here we draw the PRs
+          morePolylines.push(...pr.offsets(offsets));
         }
       }
       return [...result, ...morePolylines];

@@ -1,5 +1,5 @@
 import model from "./model";
-import { Primitives, PolyLines } from "./types";
+import { Primitives } from "./types";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
 import { knotPolylines } from "./knot";
 import config from "./config";
@@ -56,7 +56,6 @@ export default function getPrimitives(): Primitives {
 
   if (model.knot) {
     const polylines = knotPolylines(model.knot);
-    debugger;
     if (polylines) {
       polylines.forEach((polyline) => {
         for (let i = 0; i < polyline.length - 4; i += 2) {
@@ -67,7 +66,7 @@ export default function getPrimitives(): Primitives {
   }
 
   if (model.gridLines) {
-    model.gridLines.forEach(({ startX, startY, endX, endY, style }) => {
+    model.gridLines.forEach(({ startX, startY, endX, endY }) => {
       singlePixelLines.push([startX, startY, endX, endY]);
     });
   }
