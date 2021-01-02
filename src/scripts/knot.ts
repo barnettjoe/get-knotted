@@ -12,6 +12,7 @@ import {
   Knot,
   OverUnderPoint,
   PolyLine,
+  PolyLines,
   CollectionIntersect,
   StrandElement,
   OverUnders,
@@ -135,30 +136,33 @@ function makeOverUnders(strands: ContourType[]): OverUnders | null {
   return crossingPointOffsets;
 }
 
-export function knotPolylines(knot: Knot): Polylines | null {
+export function knotPolylines(knot: Knot): PolyLines | null {
   if (!knot.contours) return null;
   knot.frame.lines = lines(knot.frame.nodes, knot.frame.adjacencyList);
-  return knot.contours.reduce(function(result, strand) {
-    const morePolylines = [];
-    for (let i = 0; i < strand.length; i++) {
-      const strandElement = strand[i];
-      const offsets = knot.overUnders.get(strandElement.point);
-      // now draw everything except PRs
-      if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
-        morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
-      } else if (strandElement.pr) {
-        const pr = new PointedReturn({
-          pr: strandElement,
-          middleOutbound: pointPreceding(i, strand).outboundBezier,
-          middleInbound: strandElement.outboundBezier,
-        });
-        const prPolylines = pr.draw(offsets);
-        morePolylines.push(...prPolylines);
-        // // here we draw the PRs
+  return knot.contours.reduce(
+    function(result, strand) {
+      const morePolylines = [];
+      for (let i = 0; i < strand.length; i++) {
+        const strandElement = strand[i];
+        const offsets = knot.overUnders.get(strandElement.point);
+        // now draw everything except PRs
+        if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
+          morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
+        } else if (strandElement.pr) {
+          const pr = new PointedReturn({
+            pr: strandElement,
+            middleOutbound: pointPreceding(i, strand).outboundBezier,
+            middleInbound: strandElement.outboundBezier,
+          });
+          const prPolylines = pr.draw(offsets);
+          morePolylines.push(...prPolylines);
+          // // here we draw the PRs
+        }
       }
-    }
-    return [...result, ...morePolylines];
-  }, []);
+      return [...result, ...morePolylines];
+    },
+    [] as PolyLines
+  );
 }
 
 function offsetPolyLines(knot, strandElement: StrandElement, offsets) {

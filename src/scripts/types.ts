@@ -66,7 +66,7 @@ export interface StrandElement {
   y: number;
   direction: Direction;
   point: CrossingPoint;
-  pr: string;
+  pr: Direction | null;
   outboundBezier?: Bezier;
   inboundBezier?: Bezier;
 }
@@ -150,6 +150,7 @@ export function isOnscreenWebglContext(
 export type Polygon = number[][];
 
 export interface CrossingPoint {
+  trimmed?: boolean;
   crossedLeft: boolean;
   crossedRight: boolean;
   coords: [number, number];
@@ -207,3 +208,5 @@ export interface Model {
   rows: number;
   squareSize: number;
 }
+
+export type PolyLines = number[][];

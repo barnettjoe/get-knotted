@@ -1,5 +1,13 @@
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
-import { INode, Vector, FrameLine, Direction, FrameLineOptions } from "./types";
+import {
+  Coords,
+  Line,
+  INode,
+  Vector,
+  FrameLine,
+  Direction,
+  FrameLineOptions,
+} from "./types";
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
 
@@ -25,11 +33,11 @@ export default function frameLine({
   };
 }
 
-export function uncrossed(line) {
+export function uncrossed(line: FrameLine): boolean {
   return !fullyCrossed(line.crossingPoint);
 }
 
-function vector(line) {
+function vector(line: FrameLine): Coords {
   return [line.endX - line.startX, line.endY - line.startY];
 }
 
@@ -41,27 +49,27 @@ export function isBetween(line: FrameLine, nodeA: INode, nodeB: INode) {
   return isForwards || isReversed;
 }
 
-function angle(line, options: { reverse?: boolean }) {
+function angle(line: FrameLine, options: { reverse?: boolean }) {
   let v = vector(line);
   if (options.reverse) {
-    v = v.map((coord) => coord * -1);
+    v = v.map((coord) => coord * -1) as Coords;
   }
   return Math.atan2(v[1], v[0]);
 }
 
-export function angleOutFrom(line, node: INode) {
+export function angleOutFrom(line: FrameLine, node: INode) {
   if (line.startX === node.x && line.startY === node.y) {
     return angle(line, { reverse: false });
   }
   return angle(line, { reverse: true });
 }
 
-export function visits(line, node: INode) {
+export function visits(line: FrameLine, node: INode) {
   return !!(sameNode(line.startNode, node) || sameNode(line.endNode, node));
 }
 
 export function angleOutCP(
-  line,
+  line: FrameLine,
   options: { direction: Direction; reverse?: boolean }
 ) {
   let vect = vector(line);

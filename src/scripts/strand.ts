@@ -4,6 +4,7 @@ import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";
 import { sameNode } from "./node";
 import {
+  Coords,
   Direction,
   INode,
   Frame,
@@ -68,18 +69,21 @@ function addAllElements(this: IStrand, frame: Frame) {
   }
 }
 function addElement(this: IStrand) {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   add.call(
     this,
     new StrandElement({
       direction: strandState.direction,
       point: strandState.currentLine.crossingPoint,
-      pr: false,
+      pr: null,
     })
   );
 
-  if (pointedReturn(strandState.frame)) {
+  if (pointedReturn()) {
     const startCoords = strandState.currentLine.crossingPoint.coords;
-    const endCoords = nextLine(strandState.frame).crossingPoint.coords;
+    const endCoords = nextLine().crossingPoint.coords;
     const prCoords = getApexCoords(startCoords, endCoords);
     add.call(this, {
       point: {},
@@ -91,28 +95,43 @@ function addElement(this: IStrand) {
   logCrossing();
 }
 function currentBearing() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   return angleOutCP(strandState.currentLine, {
     direction: strandState.direction,
     reverse: goingBackwards(),
   });
 }
 function oppositeDirection() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   return strandState.direction === "R" ? "L" : "R";
 }
-function addNextPoint(frame) {
+function addNextPoint(this: IStrand, frame: Frame) {
   addElement.call(this, frame);
 }
 function logCrossing() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   if (strandState.direction === "R") {
     strandState.currentLine.crossingPoint.crossedRight = true;
   } else {
     strandState.currentLine.crossingPoint.crossedLeft = true;
   }
 }
-function traverseNextBackwards(frame) {
-  return sameNode(nextLine(frame).endNode, strandState.targetNode);
+function traverseNextBackwards(): boolean {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
+  return sameNode(nextLine().endNode, strandState.targetNode);
 }
-function compareByAngle(lineA, lineB) {
+function compareByAngle(lineA: FrameLine, lineB: FrameLine) {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   if (
     angleOutFrom(lineA, strandState.targetNode) <
     angleOutFrom(lineB, strandState.targetNode)
@@ -123,6 +142,9 @@ function compareByAngle(lineA, lineB) {
   }
 }
 function nextTargetNode() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   if (goingBackwards()) {
     return strandState.currentLine.endNode;
   } else {
@@ -130,17 +152,20 @@ function nextTargetNode() {
   }
 }
 function endOfStrand() {
-  return isCrossed(
-    nextLine(strandState.frame).crossingPoint,
-    oppositeDirection()
-  );
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
+  return isCrossed(nextLine().crossingPoint, oppositeDirection());
 }
-function getApexCoords(startPoint, endPoint) {
+function getApexCoords(startPoint: Coords, endPoint: Coords) {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   const startToEnd = [endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]];
   let normal;
   if (strandState.direction === "R") {
     normal = [-startToEnd[1], startToEnd[0]];
-  } else if (strandState.direction === "L") {
+  } else {
     normal = [startToEnd[1], -startToEnd[0]];
   }
   return [
@@ -149,6 +174,9 @@ function getApexCoords(startPoint, endPoint) {
   ];
 }
 function nextLine() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   const roundabout = linesOutFrom(
     strandState.targetNode,
     strandState.frame.lines
@@ -170,10 +198,13 @@ function nextLine() {
 function nextBearing() {
   return angleOutCP(nextLine(), {
     direction: oppositeDirection(),
-    reverse: traverseNextBackwards(strandState.frame),
+    reverse: traverseNextBackwards(),
   });
 }
 function goingBackwards() {
+  if (strandState === null) {
+    throw new Error("strand state is uninitialized");
+  }
   return sameNode(strandState.currentLine.startNode, strandState.targetNode);
 }
 function pointedReturn() {

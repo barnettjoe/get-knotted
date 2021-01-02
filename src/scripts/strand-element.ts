@@ -6,11 +6,11 @@ import {
 
 export default class StrandElement implements StrandElementType {
   point: CrossingPoint;
-  pr: string;
+  pr: Direction | null;
   direction: Direction;
   constructor(options: {
     point: CrossingPoint;
-    pr: string;
+    pr: Direction | null;
     direction: Direction;
   }) {
     this.point = options.point;

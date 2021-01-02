@@ -1,26 +1,34 @@
-import { reducer, collectionIntersect, format } from "./knot-utils";
-import surface from "./main";
-import * as webgl from "./webgl/draw-webgl";
-export default function PointedReturn(options) {
-  this.options = options;
-  this.pr = options.pr;
-}
+import Bezier from "./bezier/bezier";
+import { reducer, collectionIntersect } from "./knot-utils";
+import { StrandElement, OverUnderPoint } from "./types";
 
-PointedReturn.prototype = {
+interface PointedReturnOptions {
+  pr: StrandElement;
+  middleInbound: Bezier;
+  middleOutbound: Bezier;
+}
+export default class PointedReturn {
+  options: PointedReturnOptions;
+  pr: StrandElement;
+  constructor(options: PointedReturnOptions) {
+    this.options = options;
+    this.pr = options.pr;
+  }
+
   draw(offsets) {
     return [this.drawInners(offsets), this.drawOuters(offsets)];
-  },
+  }
   clippedOutboundPath(intersection, polyline) {
     const points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
     return points;
-  },
+  }
   clippedInboundPath(intersection, polyline) {
     const points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);
     return points;
-  },
-  drawInners(offsets) {
+  }
+  drawInners(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
     // get intersection of inner outbound with inner inbound
     let innerOutboundPolyline;
@@ -53,8 +61,8 @@ PointedReturn.prototype = {
       innerInboundPolyline
     );
     return this.outClipped.concat(this.inClipped).reduce(reducer, []);
-  },
-  drawOuters(offsets) {
+  }
+  drawOuters(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
 
     let outerOutboundPolyline;
@@ -82,5 +90,5 @@ PointedReturn.prototype = {
       [outerTip].concat(outerInboundPolyline)
     );
     return points.reduce(reducer, []);
-  },
-};
+  }
+}
