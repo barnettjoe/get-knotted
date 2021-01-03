@@ -4,7 +4,7 @@ import { pointFollowing } from "./strand";
 
 const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 
-export default function offsetSketch(contour) {
+export default function addOffsetInfoToCrossingPoints(contour, polylines) {
   function polyLineOffset(bezier, offset) {
     return polyline(bezier.reduce().map((segment) => segment.scale(offset)));
   }
@@ -19,6 +19,8 @@ export default function offsetSketch(contour) {
       strandElement.outboundBezier,
       offset
     );
+    polylines.add(leftOutboundOffset);
+    polylines.add(rightOutboundOffset);
     if (strandElement.direction === "R" || strandElement.pr === "L") {
       Object.assign(strandElement.point, {
         overOutLeft: leftOutboundOffset,

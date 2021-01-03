@@ -86,6 +86,7 @@ function alignBez(p0, p1, p2, p3) {
   return translated.map((coord) => rotate(coord, translated[0], angle));
 }
 
+// TODO - this seems like it could be very inefficient...
 export function mutate(arr, newArr) {
   // sets arr to newArr in mutating fashion
   while (arr.length > 0) {

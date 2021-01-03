@@ -1,5 +1,5 @@
 import Bezier from "./bezier/bezier";
-import { reducer, collectionIntersect } from "./knot-utils";
+import { reducer, collectionIntersect, mutate } from "./knot-utils";
 import { StrandElement, OverUnderPoint } from "./types";
 
 interface PointedReturnOptions {
@@ -15,20 +15,21 @@ export default class PointedReturn {
     this.pr = options.pr;
   }
 
-  offsets(offsets) {
-    return [this.innerOffsets(offsets), this.outerOffsets(offsets)];
+  fixOffsets(offsets) {
+    this.fixInnerOffsets(offsets);
+    // this.fixOuterOffsets();
   }
-  clippedOutboundPath(intersection, polyline) {
+  clipOutboundPath(intersection, polyline) {
     const points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
-    return points;
+    mutate(polyline, points);
   }
-  clippedInboundPath(intersection, polyline) {
+  clipInboundPath(intersection, polyline) {
     const points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);
-    return points;
+    mutate(polyline, points);
   }
-  innerOffsets(offsets: OverUnderPoint) {
+  fixInnerOffsets(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
     // get intersection of inner outbound with inner inbound
     let innerOutboundPolyline;
@@ -52,17 +53,10 @@ export default class PointedReturn {
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
-    this.outClipped = this.clippedOutboundPath(
-      intersection,
-      innerOutboundPolyline
-    );
-    this.inClipped = this.clippedInboundPath(
-      intersection,
-      innerInboundPolyline
-    );
-    return this.outClipped.concat(this.inClipped).reduce(reducer, []);
+    this.clipOutboundPath(intersection, innerOutboundPolyline);
+    this.clipInboundPath(intersection, innerInboundPolyline);
   }
-  outerOffsets(offsets: OverUnderPoint) {
+  fixOuterOffsets(offsets: OverUnderPoint) {
     const direction = this.pr.pr;
 
     let outerOutboundPolyline;
