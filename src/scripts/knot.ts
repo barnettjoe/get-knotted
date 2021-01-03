@@ -132,7 +132,7 @@ export function knotPolylines(knot: Knot): PolyLines | null {
       const strandElement = strand[i];
       if (strandElement.pr) {
         const pr = new PointedReturn({
-          pr: strandElement,
+          direction: strandElement.pr,
           middleOutbound: pointPreceding(i, strand).outboundBezier,
           middleInbound: strandElement.outboundBezier,
         });
@@ -149,16 +149,4 @@ export function knotPolylines(knot: Knot): PolyLines | null {
 
 function polylinePoints(outline) {
   return outline.reduce(reducer, []);
-}
-function offsetPolyLines(strandElement: StrandElement) {
-  const {
-    overOutLeft,
-    overOutRight,
-    underOutLeft,
-    underOutRight,
-  } = strandElement.point;
-  return (strandElement.direction === "R"
-    ? [overOutLeft, overOutRight]
-    : [underOutLeft, underOutRight]
-  ).map(polylinePoints);
 }

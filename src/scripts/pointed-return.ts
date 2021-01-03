@@ -1,18 +1,18 @@
 import Bezier from "./bezier/bezier";
-import { reducer, collectionIntersect, mutate } from "./knot-utils";
-import { StrandElement, OverUnderPoint } from "./types";
+import { collectionIntersect, mutate } from "./knot-utils";
+import { Direction, OverUnderPoint } from "./types";
 
 interface PointedReturnOptions {
-  pr: StrandElement;
+  direction: Direction;
   middleInbound: Bezier;
   middleOutbound: Bezier;
 }
 export default class PointedReturn {
   options: PointedReturnOptions;
-  pr: StrandElement;
+  direction: Direction;
   constructor(options: PointedReturnOptions) {
     this.options = options;
-    this.pr = options.pr;
+    this.direction = options.direction;
   }
 
   fixOffsets(offsets) {
@@ -30,15 +30,15 @@ export default class PointedReturn {
     mutate(polyline, points);
   }
   fixInnerOffsets(offsets: OverUnderPoint) {
-    const direction = this.pr.pr;
+    console.log(this.direction);
     // get intersection of inner outbound with inner inbound
-    if (direction === "L") {
+    if (this.direction === "L") {
       this.innerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
     } else {
       this.innerOutboundPolyline = offsets.underInRight || offsets.overInRight;
     }
 
-    if (direction === "L") {
+    if (this.direction === "L") {
       this.innerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
     } else {
       this.innerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
@@ -55,15 +55,13 @@ export default class PointedReturn {
     this.clipInboundPath(intersection, this.innerInboundPolyline);
   }
   fixOuterOffsets(offsets: OverUnderPoint) {
-    const direction = this.pr.pr;
-
-    if (direction === "L") {
+    if (this.direction === "L") {
       this.outerOutboundPolyline = offsets.underInRight || offsets.overInRight;
     } else {
       this.outerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
     }
 
-    if (direction === "L") {
+    if (this.direction === "L") {
       this.outerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
     } else {
       this.outerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
