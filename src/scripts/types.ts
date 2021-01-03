@@ -72,7 +72,6 @@ export interface StrandElement {
 }
 
 export interface OverUnderPoint {
-  trimmed: boolean;
   underOutLeft: PolyLine;
   underOutRight: PolyLine;
   underInLeft: PolyLine;
@@ -150,7 +149,6 @@ export function isOnscreenWebglContext(
 export type Polygon = number[][];
 
 export interface CrossingPoint {
-  trimmed?: boolean;
   crossedLeft: boolean;
   crossedRight: boolean;
   coords: [number, number];

@@ -20,9 +20,8 @@ import {
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
-  debugger;
   const contours = makeStrands(frame).map(Contour);
-  const overUnders = makeOverUnders(contours);
+  const overUnders = makeOverUnders(contours, frame);
   if (overUnders === null) {
     throw new Error("failed to create overUnders");
   }
@@ -116,23 +115,19 @@ function trimUnder(
   }
 }
 
-function makeOverUnders(strands: ContourType[]): OverUnders | null {
+function makeOverUnders(
+  strands: ContourType[],
+  frame: Frame
+): OverUnders | null {
   if (!strands) return null;
   const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
-  strands.forEach((strand) => {
-    strand.forEach((strandElement) => {
-      const point = strandElement.point;
-      const sketchPoint = crossingPointOffsets.get(point);
-      if (!strandElement.pr) {
-        if (!point.trimmed) {
-          trimUnder(sketchPoint, "R", "out");
-          trimUnder(sketchPoint, "R", "in");
-          trimUnder(sketchPoint, "L", "out");
-          trimUnder(sketchPoint, "L", "in");
-        }
-        point.trimmed = true;
-      }
-    });
+  const crossingPoints = frame.lines.map((line) => line.crossingPoint);
+  crossingPoints.forEach((crossingPoint) => {
+    const sketchPoint = crossingPointOffsets.get(crossingPoint);
+    trimUnder(sketchPoint, "R", "out");
+    trimUnder(sketchPoint, "R", "in");
+    trimUnder(sketchPoint, "L", "out");
+    trimUnder(sketchPoint, "L", "in");
   });
   return crossingPointOffsets;
 }
