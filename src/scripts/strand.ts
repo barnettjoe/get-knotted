@@ -85,9 +85,7 @@ function addElement(this: IStrand) {
     const prCoords = getApexCoords(startCoords, endCoords);
     this.push({
       // horrible hack to make unique (hopefully) id for the Map...
-      // ...we could equally well just use an empty object, but I'll
-      // use a random number to highlight the horribleness...
-      point: Math.random(),
+      point: {},
       x: prCoords[0],
       y: prCoords[1],
       pr: oppositeDirection(),

@@ -21,14 +21,10 @@ import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
   const contours = makeStrands(frame).map(Contour);
-  const overUnders = makeOverUnders(contours, frame);
-  if (overUnders === null) {
-    throw new Error("failed to create overUnders");
-  }
+  makeOverUnders(contours, frame);
   return {
     frame,
     contours,
-    overUnders,
   };
 }
 
@@ -115,21 +111,19 @@ function trimUnder(
   }
 }
 
-function makeOverUnders(
-  strands: ContourType[],
-  frame: Frame
-): OverUnders | null {
+function makeOverUnders(strands: ContourType[], frame: Frame): void {
   if (!strands) return null;
-  const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
+  strands.forEach(offsetSketch);
+  // const crossingPointOffsets = strands.reduce(offsetSketch, new Map());
   const crossingPoints = frame.lines.map((line) => line.crossingPoint);
   crossingPoints.forEach((crossingPoint) => {
-    const sketchPoint = crossingPointOffsets.get(crossingPoint);
-    trimUnder(sketchPoint, "R", "out");
-    trimUnder(sketchPoint, "R", "in");
-    trimUnder(sketchPoint, "L", "out");
-    trimUnder(sketchPoint, "L", "in");
+    // const sketchPoint = crossingPointOffsets.get(crossingPoint);
+    trimUnder(crossingPoint, "R", "out");
+    trimUnder(crossingPoint, "R", "in");
+    trimUnder(crossingPoint, "L", "out");
+    trimUnder(crossingPoint, "L", "in");
   });
-  return crossingPointOffsets;
+  // return crossingPointOffsets;
 }
 
 export function knotPolylines(knot: Knot): PolyLines | null {
@@ -140,7 +134,7 @@ export function knotPolylines(knot: Knot): PolyLines | null {
       const morePolylines = [];
       for (let i = 0; i < strand.length; i++) {
         const strandElement = strand[i];
-        const offsets = knot.overUnders.get(strandElement.point);
+        const offsets = strandElement.point;
         // now draw everything except PRs
         if (!(strandElement.pr || pointFollowing(i, strand).pr)) {
           morePolylines.push(...offsetPolyLines(knot, strandElement, offsets));
