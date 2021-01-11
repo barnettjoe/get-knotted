@@ -11,10 +11,10 @@ const theta = 1.5;
  */
 export default function contour(strand: Strand): Contour {
   const { xControlPoints, yControlPoints } = matrixSolution(strand);
-  return strand.map((point, index) => {
+  return strand.map((strandElement, index) => {
     const polygon = getBezier(index, xControlPoints, yControlPoints, strand);
     return {
-      ...point,
+      ...strandElement,
       outboundBezier: bezier(polygon),
     };
   });
@@ -39,26 +39,26 @@ function getBezier(
   yControlPoints: number[],
   strand: Strand
 ): Coords[] {
-  const nextPoint = pointFollowing(index, strand);
+  const nextStrandElement = pointFollowing(index, strand);
   const control1 = [xControlPoints.shift(), yControlPoints.shift()] as Coords;
   const control2 = [xControlPoints.shift(), yControlPoints.shift()] as Coords;
   return [
-    [strand[index].x, strand[index].y],
+    strand[index].point.coords,
     control1,
     control2,
-    [nextPoint.x, nextPoint.y],
+    nextStrandElement.point.coords,
   ];
 }
 
 function constructMatrix(strand: Strand): [Matrix, number[]] {
   let matrix: Matrix = [];
   let equals: number[] = [];
-  strand.forEach((_point, index) => {
-    [matrix, equals] = setC2continuity(index, strand, matrix, equals);
-    [matrix, equals] = strand[index].pr
-      ? setPointedReturnAngle(index, strand, matrix, equals)
-      : setC1continuity(index, strand, matrix, equals);
-  });
+  for (let strandIdx = 0; strandIdx < strand.length; strandIdx++) {
+    [matrix, equals] = setC2continuity(strandIdx, strand, matrix, equals);
+    [matrix, equals] = strand[strandIdx].pr
+      ? setPointedReturnAngle(strandIdx, strand, matrix, equals)
+      : setC1continuity(strandIdx, strand, matrix, equals);
+  }
   return [matrix, equals];
 }
 
@@ -119,13 +119,14 @@ function setPointedReturnAngle(
 ): [Matrix, number[]] {
   const newMatrix = matrix.slice();
   const newEquals = equals.slice();
-  const point = strand[i];
-  const angle = point.pr === "R" ? theta : 2 * Math.PI - theta;
+  const strandElement = strand[i];
+  const [x, y] = strandElement.point.coords;
+  const angle = strandElement.pr === "R" ? theta : 2 * Math.PI - theta;
   const row1 = condition(2 * i - 1, [1, -Math.cos(angle)], strand);
   const row2 = condition(2 * i, [Math.sin(angle)], strand);
   const row3 = condition(2 * i, [-Math.sin(angle)], strand);
   newMatrix.push(row1.concat(row2), row3.concat(row1));
-  newEquals.push((1 - Math.cos(angle)) * point.x + Math.sin(angle) * point.y);
-  newEquals.push((1 - Math.cos(angle)) * point.y - Math.sin(angle) * point.x);
+  newEquals.push((1 - Math.cos(angle)) * x + Math.sin(angle) * y);
+  newEquals.push((1 - Math.cos(angle)) * y - Math.sin(angle) * x);
   return [newMatrix, newEquals];
 }

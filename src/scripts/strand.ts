@@ -84,10 +84,10 @@ function addElement(this: IStrand) {
     const endCoords = nextLine().crossingPoint.coords;
     const prCoords = getApexCoords(startCoords, endCoords);
     this.push({
-      // horrible hack to make unique (hopefully) id for the Map...
-      point: {},
-      x: prCoords[0],
-      y: prCoords[1],
+      // horrible hack to make unique id for the Map...
+      point: {
+        coords: prCoords,
+      },
       pr: oppositeDirection(),
     });
   }

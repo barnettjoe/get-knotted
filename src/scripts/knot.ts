@@ -1,8 +1,8 @@
 import { collectionIntersect, mutate, reducer } from "./knot-utils";
 import { uncrossed } from "./line";
-import { Strand, pointFollowing, pointPreceding } from "./strand";
+import { Strand as makeStrand, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
-import Contour from "./contour";
+import makeContour from "./contour";
 import addOffsetInfoToCrossingPoints from "./offset-sketch";
 import {
   Contour as ContourType,
@@ -14,13 +14,11 @@ import {
   PolyLine,
   PolyLines,
   CollectionIntersect,
-  StrandElement,
-  OverUnders,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
-  const contours = makeStrands(frame).map(Contour);
+  const contours = makeStrands(frame).map(makeContour);
   const polylines = new Set();
   contours.forEach((contour) => {
     addOffsetInfoToCrossingPoints(contour, polylines);
@@ -55,7 +53,7 @@ export function merge(
 function makeStrands(frame: Frame): IStrand[] {
   const strands = [];
   while (frame.lines.some(uncrossed)) {
-    strands.push(Strand(frame));
+    strands.push(makeStrand(frame));
   }
   return strands;
 }

@@ -61,11 +61,15 @@ export type IStrand = Partial<StrandElement>[];
 
 export type Direction = "L" | "R";
 
+interface PointedReturnPoint {
+  coords: [number, number];
+}
+
+type StrandPoint = CrossingPoint | PointedReturnPoint;
+
 export interface StrandElement {
-  x: number;
-  y: number;
   direction: Direction;
-  point: CrossingPoint;
+  point: StrandPoint;
   pr: Direction | null;
   outboundBezier?: Bezier;
   inboundBezier?: Bezier;

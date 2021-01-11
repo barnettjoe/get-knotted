@@ -16,7 +16,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "yarn tsc --noEmit",
     "lint": "eslint .",
     "build": "webpack --config webpack.prod.js",
     "start": "webpack-dev-server --open --config webpack.dev.js",
@@ -50,7 +50,6 @@
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "ts-loader": "^6.0.4",
-    "typescript": "^3.5.2",
     "webpack": "^4.28.4",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14",
@@ -60,6 +59,7 @@
     "core-js": "3",
     "kld-intersections": "^0.4.3",
     "numeric": "^1.2.6",
-    "raw-loader": "^4.0.2"
+    "raw-loader": "^4.0.2",
+    "typescript": "^4.1.3"
   }
 }

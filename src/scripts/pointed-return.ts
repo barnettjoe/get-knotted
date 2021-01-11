@@ -30,7 +30,6 @@ export default class PointedReturn {
     mutate(polyline, points);
   }
   fixInnerOffsets(offsets: OverUnderPoint) {
-    console.log(this.direction);
     // get intersection of inner outbound with inner inbound
     if (this.direction === "L") {
       this.innerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
