@@ -1,21 +1,79 @@
 import Bezier from "./bezier/bezier";
 import { collectionIntersect, mutate } from "./knot-utils";
-import { Direction, OverUnderPoint } from "./types";
+import {
+  CrossingPoint,
+  PointedReturnPoint,
+  Direction,
+  OffsetInfo,
+  PolyLine,
+  PointedReturnPointWithOffsetInfo,
+} from "./types";
 
 interface PointedReturnOptions {
   direction: Direction;
   middleInbound: Bezier;
   middleOutbound: Bezier;
+  point: CrossingPoint | PointedReturnPoint;
 }
 export default class PointedReturn {
   options: PointedReturnOptions;
   direction: Direction;
+  private innerInboundPolyline: PolyLine;
+  private innerOutboundPolyline: PolyLine;
+  private outerInboundPolyline: PolyLine;
+  private outerOutboundPolyline: PolyLine;
   constructor(options: PointedReturnOptions) {
     this.options = options;
     this.direction = options.direction;
+    const {
+      innerInboundPolyline,
+      innerOutboundPolyline,
+      outerInboundPolyline,
+      outerOutboundPolyline,
+    } = this.organizeOffsets(options.point);
+    this.innerInboundPolyline = innerInboundPolyline;
+    this.innerOutboundPolyline = innerOutboundPolyline;
+    this.outerInboundPolyline = outerInboundPolyline;
+    this.outerOutboundPolyline = outerOutboundPolyline;
+    this.fixOffsets(options.point);
   }
+  organizeOffsets(offsets: PointedReturnPointWithOffsetInfo) {
+    let innerInboundPolyline;
+    let innerOutboundPolyline;
+    let outerInboundPolyline;
+    let outerOutboundPolyline;
+    if (this.direction === "L") {
+      innerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
+    } else {
+      innerOutboundPolyline = offsets.underInRight || offsets.overInRight;
+    }
 
-  fixOffsets(offsets) {
+    if (this.direction === "L") {
+      innerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
+    } else {
+      innerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
+    }
+
+    if (this.direction === "L") {
+      outerOutboundPolyline = offsets.underInRight || offsets.overInRight;
+    } else {
+      outerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
+    }
+
+    if (this.direction === "L") {
+      outerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
+    } else {
+      outerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
+    }
+
+    return {
+      innerInboundPolyline,
+      innerOutboundPolyline,
+      outerInboundPolyline,
+      outerOutboundPolyline,
+    };
+  }
+  fixOffsets(offsets: CrossingPoint | PointedReturnPoint) {
     this.fixInnerOffsets(offsets);
     this.fixOuterOffsets(offsets);
   }
@@ -29,19 +87,8 @@ export default class PointedReturn {
     points.unshift(intersection.intersection);
     mutate(polyline, points);
   }
-  fixInnerOffsets(offsets: OverUnderPoint) {
+  fixInnerOffsets(offsets: OffsetInfo) {
     // get intersection of inner outbound with inner inbound
-    if (this.direction === "L") {
-      this.innerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
-    } else {
-      this.innerOutboundPolyline = offsets.underInRight || offsets.overInRight;
-    }
-
-    if (this.direction === "L") {
-      this.innerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
-    } else {
-      this.innerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
-    }
 
     const intersection = collectionIntersect(
       this.innerOutboundPolyline,
@@ -53,19 +100,7 @@ export default class PointedReturn {
     this.clipOutboundPath(intersection, this.innerOutboundPolyline);
     this.clipInboundPath(intersection, this.innerInboundPolyline);
   }
-  fixOuterOffsets(offsets: OverUnderPoint) {
-    if (this.direction === "L") {
-      this.outerOutboundPolyline = offsets.underInRight || offsets.overInRight;
-    } else {
-      this.outerOutboundPolyline = offsets.underInLeft || offsets.overInLeft;
-    }
-
-    if (this.direction === "L") {
-      this.outerInboundPolyline = offsets.underOutRight || offsets.overOutRight;
-    } else {
-      this.outerInboundPolyline = offsets.underOutLeft || offsets.overOutLeft;
-    }
-
+  fixOuterOffsets(offsets: OffsetInfo) {
     const innerTip = this.innerInboundPolyline[0];
     const midTip = this.options.middleInbound.points[0];
     const outerTip = {

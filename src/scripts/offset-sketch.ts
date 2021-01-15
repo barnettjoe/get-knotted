@@ -1,11 +1,16 @@
 import config from "./config";
 import { polyline } from "./knot-utils";
 import { pointFollowing } from "./strand";
+import { Contour, PolyLine } from "./types";
+import Bezier from "./bezier/bezier";
 
 const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 
-export default function addOffsetInfoToCrossingPoints(contour, polylines) {
-  function polyLineOffset(bezier, offset) {
+export default function addOffsetInfoToCrossingPoints(
+  contour: Contour,
+  polylines: Set<PolyLine>
+) {
+  function polyLineOffset(bezier: Bezier, offset: number): PolyLine {
     return polyline(bezier.reduce().map((segment) => segment.scale(offset)));
   }
   contour.forEach((strandElement, index) => {

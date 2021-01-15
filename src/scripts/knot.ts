@@ -5,12 +5,11 @@ import PointedReturn from "./pointed-return";
 import makeContour from "./contour";
 import addOffsetInfoToCrossingPoints from "./offset-sketch";
 import {
-  Contour as ContourType,
   Frame,
   INode,
   IStrand,
   Knot,
-  OverUnderPoint,
+  OffsetInfo,
   PolyLine,
   PolyLines,
   CollectionIntersect,
@@ -45,9 +44,7 @@ export function merge(
     mergedFrame.adjacencyList
   );
   mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
-  const mergedKnot = makeKnot(mergedFrame);
-  knotPolylines(mergedKnot);
-  return mergedKnot;
+  return makeKnot(mergedFrame);
 }
 
 function makeStrands(frame: Frame): IStrand[] {
@@ -68,15 +65,9 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   );
   frame.lines = lines(frame.nodes, frame.adjacencyList);
   Object.assign(knot, makeKnot(frame));
-  // knot.contours = makeStrands(frame).map(Contour);
-  // TODO - was init call here - is it necessary?
-  // TODO - move this draw call...
-  // should return a new knot based on that frame...
-  // this new know should be what's drawn...
-  knotPolylines(knot);
 }
 function getUnder(
-  point: OverUnderPoint,
+  point: OffsetInfo,
   direction: "L" | "R",
   bound: "in" | "out"
 ) {
@@ -99,7 +90,7 @@ function trim(
   }
 }
 function trimUnder(
-  point: OverUnderPoint,
+  point: OffsetInfo,
   direction: "L" | "R",
   bound: "in" | "out"
 ) {
@@ -124,19 +115,20 @@ function trimUnders(frame: Frame): void {
   });
 }
 
+// TODO - from its name it feels like this should be a pure function...
 export function knotPolylines(knot: Knot): PolyLines | null {
-  knot.contours.forEach((strand) => {
-    for (let i = 0; i < strand.length; i++) {
-      const strandElement = strand[i];
-      if (strandElement.pr) {
-        const pr = new PointedReturn({
-          direction: strandElement.pr,
-          middleOutbound: pointPreceding(i, strand).outboundBezier,
-          middleInbound: strandElement.outboundBezier,
+  knot.contours.forEach((contour) => {
+    contour.forEach((contourElement, contourElementIdx) => {
+      if (contourElement.pr) {
+        new PointedReturn({
+          direction: contourElement.pr,
+          middleOutbound: pointPreceding(contourElementIdx, contour)
+            .outboundBezier,
+          middleInbound: contourElement.outboundBezier,
+          point: contourElement.point,
         });
-        pr.fixOffsets(strandElement.point);
       }
-    }
+    });
   });
   const result = [];
   knot.polylines.forEach((polyline) => {

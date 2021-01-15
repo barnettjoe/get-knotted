@@ -33,11 +33,9 @@ export function pointFollowing(
 ): Partial<StrandElementType> {
   return strand[(index + 1) % strand.length];
 }
-export function pointPreceding(
-  index: number,
-  strand: IStrand
-): Partial<StrandElementType> {
-  return strand[index - 1] || strand[strand.length - 1];
+
+export function pointPreceding<T>(index: number, elementList: T[]): T {
+  return elementList[index - 1] || elementList[elementList.length - 1];
 }
 
 function initialStrandState(frame: Frame) {
@@ -153,7 +151,7 @@ function endOfStrand() {
   }
   return isCrossed(nextLine().crossingPoint, oppositeDirection());
 }
-function getApexCoords(startPoint: Coords, endPoint: Coords) {
+function getApexCoords(startPoint: Coords, endPoint: Coords): Coords {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }

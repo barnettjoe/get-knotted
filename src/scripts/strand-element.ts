@@ -1,10 +1,6 @@
-import {
-  StrandElement as StrandElementType,
-  CrossingPoint,
-  Direction,
-} from "./types";
+import { CrossingPoint, Direction } from "./types";
 
-export default class StrandElement implements StrandElementType {
+export default class StrandElement {
   point: CrossingPoint;
   pr: Direction | null;
   direction: Direction;

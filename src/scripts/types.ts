@@ -61,21 +61,7 @@ export type IStrand = Partial<StrandElement>[];
 
 export type Direction = "L" | "R";
 
-interface PointedReturnPoint {
-  coords: [number, number];
-}
-
-type StrandPoint = CrossingPoint | PointedReturnPoint;
-
-export interface StrandElement {
-  direction: Direction;
-  point: StrandPoint;
-  pr: Direction | null;
-  outboundBezier?: Bezier;
-  inboundBezier?: Bezier;
-}
-
-export interface OverUnderPoint {
+export interface OffsetInfo {
   underOutLeft: PolyLine;
   underOutRight: PolyLine;
   underInLeft: PolyLine;
@@ -86,7 +72,7 @@ export interface OverUnderPoint {
   overInRight: PolyLine;
 }
 
-export type OverUnders = Map<CrossingPoint, OverUnderPoint>;
+export type OverUnders = Map<CrossingPoint, OffsetInfo>;
 export interface CollectionIntersect {
   intersection: Coords;
   idxA: number;
@@ -94,9 +80,9 @@ export interface CollectionIntersect {
 }
 
 export type PolyLine = Coords[];
-interface ContourElement extends StrandElement {
+export type ContourElement = StrandElement & {
   outboundBezier: Bezier;
-}
+};
 export type Contour = ContourElement[];
 export type Strand = StrandElement[];
 
@@ -157,6 +143,33 @@ export interface CrossingPoint {
   crossedRight: boolean;
   coords: [number, number];
 }
+
+export type CrossingPointWithOffsetInfo = CrossingPoint & OffsetInfo;
+
+export interface PointedReturnPoint {
+  coords: [number, number];
+}
+
+export type PointedReturnPointWithOffsetInfo = PointedReturnPoint & OffsetInfo;
+
+interface CrossingPointStrandElement {
+  direction: Direction;
+  point: CrossingPoint;
+  pr: Direction;
+  outboundBezier?: Bezier;
+  inboundBezier?: Bezier;
+}
+interface PointedReturnStrandElement {
+  direction: Direction;
+  point: PointedReturnPoint;
+  pr: Direction | null;
+  outboundBezier?: Bezier;
+  inboundBezier?: Bezier;
+}
+
+export type StrandElement =
+  | CrossingPointStrandElement
+  | PointedReturnStrandElement;
 
 export interface Point {
   x: number;

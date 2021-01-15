@@ -6,3 +6,4 @@
 - [ ] tidy up webgl code
 - [ ] identify hot code for performance improvements
 - [ ] fix debug tools
+- [ ] why are there 2 eslint config files?
