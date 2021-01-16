@@ -33,7 +33,6 @@ export default class PointedReturn {
     this.innerOutboundPolyline = innerOutboundPolyline;
     this.outerInboundPolyline = outerInboundPolyline;
     this.outerOutboundPolyline = outerOutboundPolyline;
-    debugger;
     this.fixOffsets();
   }
   organizeOffsets(offsets: PointedReturnPointWithOffsetInfo) {

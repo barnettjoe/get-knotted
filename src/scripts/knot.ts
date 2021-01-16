@@ -5,15 +5,17 @@ import PointedReturn from "./pointed-return";
 import makeContour from "./contour";
 import addOffsetInfoToCrossingPoints from "./offset-sketch";
 import {
+  ContourWithOffsetInfo,
   Frame,
   INode,
   IStrand,
   Knot,
   OffsetInfo,
-  PolyLine,
   PolyLines,
-  CollectionIntersect,
+  CollectionIntersectionResult,
   XYPolyLine,
+  FrameWithOffsetInfo,
+  CrossingPointWithOffsetInfo,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
@@ -23,10 +25,12 @@ export default function makeKnot(frame: Frame): Knot {
   contours.forEach((contour) => {
     addOffsetInfoToCrossingPoints(contour, polylines);
   });
-  trimUnders(frame);
+  const contoursWithOffsetInfo = contours as ContourWithOffsetInfo[];
+  const frameWithOffsetInfo = frame as FrameWithOffsetInfo;
+  trimUnders(frameWithOffsetInfo);
   return {
-    frame,
-    contours,
+    frame: frameWithOffsetInfo,
+    contours: contoursWithOffsetInfo,
     polylines,
   };
 }
@@ -71,15 +75,15 @@ function getUnder(
   point: OffsetInfo,
   direction: "L" | "R",
   bound: "in" | "out"
-) {
+): XYPolyLine {
   if (bound === "out") {
     return direction === "R" ? point.underOutRight : point.underOutLeft;
   }
   return direction === "R" ? point.underInRight : point.underInLeft;
 }
 function trim(
-  under: PolyLine,
-  intersect: CollectionIntersect,
+  under: XYPolyLine,
+  intersect: CollectionIntersectionResult,
   bound: "in" | "out"
 ) {
   if (bound === "out") {
@@ -91,10 +95,11 @@ function trim(
   }
 }
 function trimUnder(
-  point: OffsetInfo,
+  point: CrossingPointWithOffsetInfo,
   direction: "L" | "R",
   bound: "in" | "out"
 ) {
+  debugger;
   const overLeft = point.overInLeft.concat(point.overOutLeft);
   const overRight = point.overInRight.concat(point.overOutRight);
   const under = getUnder(point, direction, bound);
@@ -106,7 +111,7 @@ function trimUnder(
   }
 }
 
-function trimUnders(frame: Frame): void {
+function trimUnders(frame: FrameWithOffsetInfo): void {
   const crossingPoints = frame.lines.map((line) => line.crossingPoint);
   crossingPoints.forEach((crossingPoint) => {
     trimUnder(crossingPoint, "R", "out");

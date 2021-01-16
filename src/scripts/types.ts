@@ -59,6 +59,10 @@ export interface Frame {
   lines: FrameLine[];
 }
 
+export interface FrameWithOffsetInfo extends Frame {
+  lines: FrameLineWithOffsetInfo[];
+}
+
 export type IStrand = Partial<StrandElement>[];
 
 export type Direction = "L" | "R";
@@ -75,17 +79,16 @@ export interface OffsetInfo {
 }
 
 export type OverUnders = Map<CrossingPoint, OffsetInfo>;
-export interface CollectionIntersect {
-  intersection: Coords;
-  idxA: number;
-  idxB: number;
-}
-
 export type PolyLine = Coords[];
 export type ContourElement = StrandElement & {
   outboundBezier: Bezier;
 };
+export type ContourElementWithOffsetInfo = StrandElementWithOffsetInfo & {
+  outboundBezier: Bezier;
+};
+
 export type Contour = ContourElement[];
+export type ContourWithOffsetInfo = ContourElementWithOffsetInfo[];
 export type Strand = StrandElement[];
 
 export interface OffsetSketch {
@@ -161,6 +164,12 @@ interface CrossingPointStrandElement {
   outboundBezier?: Bezier;
   inboundBezier?: Bezier;
 }
+
+interface CrossingPointWithOffsetInfoStrandElement
+  extends CrossingPointStrandElement {
+  point: CrossingPointWithOffsetInfo;
+}
+
 interface PointedReturnStrandElement {
   direction: Direction;
   point: PointedReturnPoint;
@@ -169,10 +178,18 @@ interface PointedReturnStrandElement {
   inboundBezier?: Bezier;
 }
 
+interface PointedReturnPointWithOffsetInfoStrandElement
+  extends PointedReturnStrandElement {
+  point: PointedReturnPointWithOffsetInfo;
+}
+
 export type StrandElement =
   | CrossingPointStrandElement
   | PointedReturnStrandElement;
 
+export type StrandElementWithOffsetInfo =
+  | CrossingPointWithOffsetInfoStrandElement
+  | PointedReturnPointWithOffsetInfoStrandElement;
 export interface Point {
   x: number;
   y: number;
@@ -188,7 +205,7 @@ export interface Primitives {
 
 export interface Knot {
   frame: Frame;
-  contours: Contour[];
+  contours: ContourWithOffsetInfo[];
   polylines: Set<XYPolyLine>;
 }
 
@@ -213,6 +230,11 @@ export interface FrameLine {
   endY: number;
   crossingPoint: CrossingPoint;
 }
+
+export interface FrameLineWithOffsetInfo extends FrameLine {
+  crossingPoint: CrossingPointWithOffsetInfo;
+}
+
 export interface Model {
   frame: Frame | null;
   knot: Knot | null;
