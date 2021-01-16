@@ -1,15 +1,14 @@
-import StrandElement from "./strand-element";
 import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
 import { angleOutFrom, angleOutCP } from "./line";
 import { sameNode } from "./node";
 import {
-  Coords,
+  Vector,
   Direction,
-  INode,
+  FrameNode,
   Frame,
   FrameLine,
-  IStrand,
+  Strand,
   StrandElement as StrandElementType,
 } from "./types";
 
@@ -17,19 +16,19 @@ interface StrandState {
   frame: Frame;
   currentLine: FrameLine;
   direction: Direction;
-  targetNode: INode;
+  targetNode: FrameNode;
 }
 
 let strandState: StrandState | null = null;
 
-export function Strand(frame: Frame): IStrand {
-  const result: IStrand = [];
+export function Strand(frame: Frame): Strand {
+  const result: Strand = [];
   addAllElements.call(result, frame);
   return result;
 }
 export function pointFollowing(
   index: number,
-  strand: IStrand
+  strand: Strand
 ): StrandElementType {
   return strand[(index + 1) % strand.length];
 }
@@ -53,7 +52,7 @@ function initialStrandState(frame: Frame) {
   return { currentLine, direction, targetNode, frame };
 }
 
-function addAllElements(this: IStrand, frame: Frame) {
+function addAllElements(this: Strand, frame: Frame) {
   strandState = initialStrandState(frame);
 
   addElement.call(this);
@@ -65,15 +64,15 @@ function addAllElements(this: IStrand, frame: Frame) {
     addElement.call(this);
   }
 }
-function addElement(this: IStrand) {
+function addElement(this: Strand) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
-  const element = StrandElement({
-    direction: strandState.direction,
+  this.push({
     point: strandState.currentLine.crossingPoint,
+    pr: null,
+    direction: strandState.direction,
   });
-  this.push(element);
 
   if (pointedReturn()) {
     const startCoords = strandState.currentLine.crossingPoint.coords;
@@ -150,7 +149,7 @@ function endOfStrand() {
   }
   return isCrossed(nextLine().crossingPoint, oppositeDirection());
 }
-function getApexCoords(startPoint: Coords, endPoint: Coords): Coords {
+function getApexCoords(startPoint: Vector, endPoint: Vector): Vector {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }

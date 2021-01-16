@@ -2,7 +2,7 @@ import Bezier from "./bezier/bezier";
 import { collectionIntersect, mutate } from "./knot-utils";
 import {
   Direction,
-  XYPolyLine,
+  PolyLine,
   PointedReturnPointWithOffsetInfo,
   CollectionIntersectionResult,
 } from "./types";
@@ -16,10 +16,10 @@ interface PointedReturnOptions {
 export default class PointedReturn {
   options: PointedReturnOptions;
   direction: Direction;
-  private innerInboundPolyline: XYPolyLine;
-  private innerOutboundPolyline: XYPolyLine;
-  private outerInboundPolyline: XYPolyLine;
-  private outerOutboundPolyline: XYPolyLine;
+  private innerInboundPolyline: PolyLine;
+  private innerOutboundPolyline: PolyLine;
+  private outerInboundPolyline: PolyLine;
+  private outerOutboundPolyline: PolyLine;
   constructor(options: PointedReturnOptions) {
     this.options = options;
     this.direction = options.direction;
@@ -77,7 +77,7 @@ export default class PointedReturn {
   }
   clipOutboundPath(
     intersection: CollectionIntersectionResult,
-    polyline: XYPolyLine
+    polyline: PolyLine
   ): void {
     const points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
@@ -85,7 +85,7 @@ export default class PointedReturn {
   }
   clipInboundPath(
     intersection: CollectionIntersectionResult,
-    polyline: XYPolyLine
+    polyline: PolyLine
   ): void {
     const points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);

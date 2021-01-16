@@ -1,7 +1,6 @@
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
 import {
-  Coords,
-  INode,
+  FrameNode,
   Vector,
   FrameLine,
   Direction,
@@ -36,11 +35,11 @@ export function uncrossed(line: FrameLine): boolean {
   return !fullyCrossed(line.crossingPoint);
 }
 
-function vector(line: FrameLine): Coords {
+function vector(line: FrameLine): Vector {
   return [line.endX - line.startX, line.endY - line.startY];
 }
 
-export function isBetween(line: FrameLine, nodeA: INode, nodeB: INode) {
+export function isBetween(line: FrameLine, nodeA: FrameNode, nodeB: FrameNode) {
   const isForwards =
     sameNode(line.startNode, nodeA) && sameNode(line.endNode, nodeB);
   const isReversed =
@@ -51,19 +50,19 @@ export function isBetween(line: FrameLine, nodeA: INode, nodeB: INode) {
 function angle(line: FrameLine, options: { reverse?: boolean }) {
   let v = vector(line);
   if (options.reverse) {
-    v = v.map((coord) => coord * -1) as Coords;
+    v = v.map((coord) => coord * -1) as Vector;
   }
   return Math.atan2(v[1], v[0]);
 }
 
-export function angleOutFrom(line: FrameLine, node: INode) {
+export function angleOutFrom(line: FrameLine, node: FrameNode) {
   if (line.startX === node.x && line.startY === node.y) {
     return angle(line, { reverse: false });
   }
   return angle(line, { reverse: true });
 }
 
-export function visits(line: FrameLine, node: INode) {
+export function visits(line: FrameLine, node: FrameNode) {
   return !!(sameNode(line.startNode, node) || sameNode(line.endNode, node));
 }
 

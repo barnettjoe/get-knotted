@@ -1,4 +1,4 @@
-import { collectionIntersect, mutate, reducer } from "./knot-utils";
+import { collectionIntersect, mutate, flatten } from "./knot-utils";
 import { uncrossed } from "./line";
 import { Strand as makeStrand, pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
@@ -7,13 +7,12 @@ import addOffsetInfoToCrossingPoints from "./offset-sketch";
 import {
   ContourWithOffsetInfo,
   Frame,
-  INode,
-  IStrand,
+  FrameNode,
+  Strand,
   Knot,
-  OffsetInfo,
   PolyLines,
   CollectionIntersectionResult,
-  XYPolyLine,
+  PolyLine,
   FrameWithOffsetInfo,
   CrossingPointWithOffsetInfo,
 } from "./types";
@@ -22,7 +21,7 @@ import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 export default function makeKnot(frame: Frame): Knot {
   const strands = makeStrands(frame);
   const contours = strands.map(makeContour);
-  const polylines = new Set<XYPolyLine>();
+  const polylines = new Set<PolyLine>();
   contours.forEach((contour) => {
     addOffsetInfoToCrossingPoints(contour, polylines);
   });
@@ -39,8 +38,8 @@ export default function makeKnot(frame: Frame): Knot {
 export function merge(
   knot: Knot,
   otherKnot: Knot,
-  lineStart: INode,
-  lineEnd: INode
+  lineStart: FrameNode,
+  lineEnd: FrameNode
 ) {
   const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
   mergedFrame.adjacencyList = markAsAdjacent(
@@ -53,7 +52,7 @@ export function merge(
   return makeKnot(mergedFrame);
 }
 
-function makeStrands(frame: Frame): IStrand[] {
+function makeStrands(frame: Frame): Strand[] {
   const strands = [];
   while (frame.lines.some(uncrossed)) {
     strands.push(makeStrand(frame));
@@ -61,7 +60,7 @@ function makeStrands(frame: Frame): IStrand[] {
   return strands;
 }
 
-export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
+export function addLineBetween(knot: Knot, nodeA: FrameNode, nodeB: FrameNode) {
   const { frame } = knot;
   frame.adjacencyList = markAsAdjacent(
     nodeA,
@@ -73,17 +72,17 @@ export function addLineBetween(knot: Knot, nodeA: INode, nodeB: INode) {
   Object.assign(knot, makeKnot(frame));
 }
 function getUnder(
-  point: OffsetInfo,
+  point: CrossingPointWithOffsetInfo,
   direction: "L" | "R",
   bound: "in" | "out"
-): XYPolyLine {
+): PolyLine {
   if (bound === "out") {
     return direction === "R" ? point.underOutRight : point.underOutLeft;
   }
   return direction === "R" ? point.underInRight : point.underInLeft;
 }
 function trim(
-  under: XYPolyLine,
+  under: PolyLine,
   intersect: CollectionIntersectionResult,
   bound: "in" | "out"
 ) {
@@ -122,11 +121,11 @@ function trimUnders(frame: FrameWithOffsetInfo): void {
   });
 }
 
-// TODO - from its name it feels like this should be a pure function...
-export function knotPolylines(knot: Knot): PolyLines | null {
-  knot.contours.forEach((contour) => {
+function trimPointedReturns(contours: ContourWithOffsetInfo[]) {
+  contours.forEach((contour) => {
     contour.forEach((contourElement, contourElementIdx) => {
       if (contourElement.pr) {
+        // in creating the pointed return, we trim the offsets on the underlying points...
         new PointedReturn({
           direction: contourElement.pr,
           middleOutbound: pointPreceding(contourElementIdx, contour)
@@ -137,6 +136,12 @@ export function knotPolylines(knot: Knot): PolyLines | null {
       }
     });
   });
+}
+
+export function knotPolylines(knot: Knot): PolyLines | null {
+  // TODO - from its name it feels like knotPolylines should be a pure function,
+  // but here we're doing some trimming - feels like this should be done in makeKnot instead
+  trimPointedReturns(knot.contours);
   const result = [] as PolyLines;
   knot.polylines.forEach((polyline) => {
     result.push(polylinePoints(polyline));
@@ -144,6 +149,6 @@ export function knotPolylines(knot: Knot): PolyLines | null {
   return result;
 }
 
-function polylinePoints(outline: XYPolyLine) {
-  return outline.reduce(reducer, []);
+function polylinePoints(outline: PolyLine) {
+  return outline.reduce(flatten, []);
 }

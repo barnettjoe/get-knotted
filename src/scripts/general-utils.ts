@@ -1,11 +1,11 @@
-import { Coords, Vector } from "./types";
+import { Vector } from "./types";
 
 export function identicalObjects(arr1: any[], arr2: any[]) {
   // TODO - this is often very inefficient...
   return JSON.stringify(arr1) === JSON.stringify(arr2);
 }
 
-export function distanceBetween(coordsA: Coords, coordsB: Coords) {
+export function distanceBetween(coordsA: Vector, coordsB: Vector) {
   return (
     ((coordsA[0] - coordsB[0]) ** 2 + (coordsA[1] - coordsB[1]) ** 2) ** 0.5
   );
@@ -29,7 +29,7 @@ export function normal(vector: Vector): Vector {
 /**
  * Vector description of a line segment.
  */
-export function lineVector(start: Coords, end: Coords): Vector {
+export function lineVector(start: Vector, end: Vector): Vector {
   return [end[0] - start[0], end[1] - start[1]];
 }
 

@@ -1,10 +1,10 @@
 import config from "./config";
 import model from "./model";
-import { Coords } from "./types";
+import { Vector } from "./types";
 
 // for getting coords relative to graph area from absolute coords...
 // (i.e. relative to whole window)
-export function relativeCoords(e: MouseEvent): Coords {
+export function relativeCoords(e: MouseEvent): Vector {
   const absX = e.clientX;
   const absY = e.clientY;
   const surface = document.getElementById("webgl-surface");
@@ -15,11 +15,11 @@ export function relativeCoords(e: MouseEvent): Coords {
   const leftOffset = canvasPosition.left;
   const topOffset = canvasPosition.top;
   const coords = [absX - leftOffset, absY - topOffset];
-  return coords.map((x) => x * window.devicePixelRatio) as Coords;
+  return coords.map((x) => x * window.devicePixelRatio) as Vector;
 }
 
 // for executing code on condition that mouse is positioned within graphArea
-export function doIfInGraph(box: Coords, fn: Function) {
+export function doIfInGraph(box: Vector, fn: Function) {
   const inHorizontally = box[0] >= 0 && box[0] < config.graphCols;
   const inVertically = box[1] >= 0 && box[1] < config.graphRows;
   if (inHorizontally && inVertically) {
@@ -28,26 +28,26 @@ export function doIfInGraph(box: Coords, fn: Function) {
 }
 
 // for getting [row, col] coords from pixel coords
-export function rowAndCol(event: MouseEvent): Coords {
+export function rowAndCol(event: MouseEvent): Vector {
   function pxToBox(num: number) {
     const shifted = num - 0.5 * config.maxStrokeWidth();
     return Math.floor(shifted / model.squareSize);
   }
-  return relativeCoords(event).map(pxToBox) as Coords;
+  return relativeCoords(event).map(pxToBox) as Vector;
 }
 
-export function closestGraphCoords(event: MouseEvent): Coords {
+export function closestGraphCoords(event: MouseEvent): Vector {
   function pxToBox(num: number) {
     const shifted = num - 0.5 * config.maxStrokeWidth();
     return Math.round(shifted / config.squareHeight);
   }
-  return relativeCoords(event).map(pxToBox) as Coords;
+  return relativeCoords(event).map(pxToBox) as Vector;
 }
 
 // for getting pixel coords from [row, col]
-export function pixelCoords(coords: Coords): Coords {
+export function pixelCoords(coords: Vector): Vector {
   function boxToPX(n: number) {
     return n * model.squareSize + config.maxStrokeWidth() / 2;
   }
-  return coords.map(boxToPX) as Coords;
+  return coords.map(boxToPX) as Vector;
 }

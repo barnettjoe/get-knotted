@@ -1,9 +1,9 @@
 import { pixelCoords } from "./mouse";
 import config from "./config";
 import { identicalObjects, distanceBetween } from "./general-utils";
-import { NodeOptions, GridSystem, Coords, INode } from "./types";
+import { NodeOptions, GridSystem, Vector, FrameNode } from "./types";
 
-export default function node(options: NodeOptions): INode {
+export default function node(options: NodeOptions): FrameNode {
   if (options.gridSystem !== GridSystem.square) {
     throw new Error("only square grid systems are currently supported");
   }
@@ -12,20 +12,20 @@ export default function node(options: NodeOptions): INode {
   return { gridX, gridY, x, y };
 }
 
-export function sameNode(node: INode, otherNode: INode) {
+export function sameNode(node: FrameNode, otherNode: FrameNode) {
   return node.x === otherNode.x && node.y === otherNode.y;
 }
 
-export function hasOverlap(node: INode, pxX: number, pxY: number) {
+export function hasOverlap(node: FrameNode, pxX: number, pxY: number) {
   const deltaX = Math.abs(pxX - node.x);
   const deltaY = Math.abs(pxY - node.y);
   return (deltaX ** 2 + deltaY ** 2) ** 0.5 <= config.nodeStyle.radius;
 }
-export function distanceFromPoint(node: INode, coords: Coords) {
+export function distanceFromPoint(node: FrameNode, coords: Vector) {
   return distanceBetween([node.x, node.y], [coords[0], coords[1]]);
 }
 
-export function isAdjacentTo(node: INode, otherNode: INode) {
+export function isAdjacentTo(node: FrameNode, otherNode: FrameNode) {
   const required = [node.gridX, node.gridY, otherNode.gridX, otherNode.gridY];
   if (required.every((x) => x !== undefined)) {
     const xDiff = Math.abs(otherNode.gridX - node.gridX);

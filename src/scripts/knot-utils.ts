@@ -1,6 +1,6 @@
 import kldIntersections from "kld-intersections";
 import config from "./config";
-import { Coords, Point, CollectionIntersectionResult } from "./types";
+import { Vector, Point, CollectionIntersectionResult } from "./types";
 import Bezier from "./bezier/bezier";
 import StraightLine from "./straight-line";
 
@@ -52,7 +52,7 @@ export function polyline(collection: Shape[]) {
     .map((point) => new kldIntersections.Point2D(point.x, point.y));
 }
 
-export function rotateAboutOrigin(point: Coords, angle: number): Coords {
+export function rotateAboutOrigin(point: Vector, angle: number): Vector {
   const x = point[0];
   const y = point[1];
   const newX = x * Math.cos(angle) - y * Math.sin(angle);
@@ -72,6 +72,6 @@ export function mutate<T>(arr: T[], newArr: T[]): T[] {
   return arr;
 }
 
-export function reducer(acc: number[], point: Point): number[] {
+export function flatten(acc: number[], point: Point): number[] {
   return acc.concat([point.x, point.y]);
 }

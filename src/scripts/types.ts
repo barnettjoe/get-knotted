@@ -3,8 +3,7 @@ import Bezier from "./bezier/bezier";
 
 export type Matrix = number[][];
 
-// TODO - give this a better name
-export interface INode {
+export interface FrameNode {
   x: number;
   y: number;
   gridX: number;
@@ -33,55 +32,45 @@ interface LineOptions {
 }
 
 export interface FrameLineOptions extends LineOptions {
-  endNode: INode;
-  startNode: INode;
-}
-
-export interface GraphLineOptions extends LineOptions {
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
+  endNode: FrameNode;
+  startNode: FrameNode;
 }
 
 export interface LineStyle {
   // TODO - part of config type
 }
 
-export type XYPolyLine = Point[];
+export type PolyLine = Point[];
 
-export type Coords = [number, number];
 export interface Frame {
-  nodes: INode[];
+  nodes: FrameNode[];
   adjacencyList: Matrix;
   lines: FrameLine[];
 }
 
+export type Direction = "L" | "R";
+
+interface OffsetInfo {
+  underOutLeft: PolyLine;
+  underOutRight: PolyLine;
+  underInLeft: PolyLine;
+  underInRight: PolyLine;
+  overOutLeft: PolyLine;
+  overOutRight: PolyLine;
+  overInLeft: PolyLine;
+  overInRight: PolyLine;
+}
 export interface FrameWithOffsetInfo extends Frame {
   lines: FrameLineWithOffsetInfo[];
 }
 
-export type IStrand = StrandElement[];
-
-export type Direction = "L" | "R";
-
-export interface OffsetInfo {
-  underOutLeft: XYPolyLine;
-  underOutRight: XYPolyLine;
-  underInLeft: XYPolyLine;
-  underInRight: XYPolyLine;
-  overOutLeft: XYPolyLine;
-  overOutRight: XYPolyLine;
-  overInLeft: XYPolyLine;
-  overInRight: XYPolyLine;
-}
-
 export type OverUnders = Map<CrossingPoint, OffsetInfo>;
-export type PolyLine = Coords[];
-export type ContourElement = StrandElement & {
+
+type ContourElement = StrandElement & {
   outboundBezier: Bezier;
 };
-export type ContourElementWithOffsetInfo = StrandElementWithOffsetInfo & {
+
+type ContourElementWithOffsetInfo = StrandElementWithOffsetInfo & {
   outboundBezier: Bezier;
 };
 
@@ -89,39 +78,40 @@ export type Contour = ContourElement[];
 export type ContourWithOffsetInfo = ContourElementWithOffsetInfo[];
 export type Strand = StrandElement[];
 
-export interface OffsetSketch {
-  foo: string;
-}
-
 export const MODES = ["add-grid", "add-node", "add-line"] as const;
 export type Mode = typeof MODES[number];
 
 export interface Drawing {
   addMouseListeners(): void;
-  addNode(coords: Coords): void;
+  addNode(coords: Vector): void;
   dragFrame(e: MouseEvent): void;
   createKnot(): void;
   updateFrame(): void;
-  drawUserLine(startNode: INode, coords: Coords): void;
-  findKnotWith(node: INode): Knot | null;
+  drawUserLine(startNode: FrameNode, coords: Vector): void;
+  findKnotWith(node: FrameNode): Knot | null;
   finishDrawingLine(e: MouseEvent): void;
   handleMouseDown(this: Drawing, e: MouseEvent): void;
   handleMouseMove(this: Drawing, e: MouseEvent): void;
   handleMouseUp(this: Drawing, e: MouseEvent): void;
-  isNodeOverlapping(pixelCoords: Coords): boolean;
-  makeNewLine(startNode: INode, endNode: INode): void;
-  mergeKnots(knotA: Knot, knotB: Knot, lineStart: INode, lineEnd: INode): void;
-  newLineIsValid(lineStart: INode, lineEnd: INode): boolean;
-  nodeAt(coords: Coords): INode | null;
+  isNodeOverlapping(pixelCoords: Vector): boolean;
+  makeNewLine(startNode: FrameNode, endNode: FrameNode): void;
+  mergeKnots(
+    knotA: Knot,
+    knotB: Knot,
+    lineStart: FrameNode,
+    lineEnd: FrameNode
+  ): void;
+  newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
+  nodeAt(coords: Vector): FrameNode | null;
   placeNode(e: MouseEvent): void;
   setupWebglContext(): void;
-  singleNodeFrame(coords: Coords): Frame;
+  singleNodeFrame(coords: Vector): Frame;
   startDrawLoop(): void;
   startDrawingGrid(e: MouseEvent): void;
-  startDrawingLine(coords: Coords): void;
-  startDrawingLine(coords: Coords): void;
+  startDrawingLine(coords: Vector): void;
+  startDrawingLine(coords: Vector): void;
   frame?: Frame;
-  knots: Knot[]; // TODO -- array of what??
+  knots: Knot[];
   mode: Mode;
   mouseIsDown: boolean;
 }
@@ -144,13 +134,13 @@ export type Polygon = number[][];
 export interface CrossingPoint {
   crossedLeft: boolean;
   crossedRight: boolean;
-  coords: [number, number];
+  coords: Vector;
 }
 
 export type CrossingPointWithOffsetInfo = CrossingPoint & OffsetInfo;
 
 export interface PointedReturnPoint {
-  coords: [number, number];
+  coords: Vector;
 }
 
 export type PointedReturnPointWithOffsetInfo = PointedReturnPoint & OffsetInfo;
@@ -204,15 +194,15 @@ export interface Primitives {
 export interface Knot {
   frame: Frame;
   contours: ContourWithOffsetInfo[];
-  polylines: Set<XYPolyLine>;
+  polylines: Set<PolyLine>;
 }
 
-export interface UserLine {
-  startNode: INode;
-  toCoords: Coords;
+interface UserLine {
+  startNode: FrameNode;
+  toCoords: Vector;
 }
 
-export interface Line {
+interface Line {
   startX: number;
   startY: number;
   endX: number;
@@ -220,8 +210,8 @@ export interface Line {
 }
 
 export interface FrameLine {
-  startNode: INode;
-  endNode: INode;
+  startNode: FrameNode;
+  endNode: FrameNode;
   startX: number;
   startY: number;
   endX: number;
@@ -229,7 +219,7 @@ export interface FrameLine {
   crossingPoint: CrossingPoint;
 }
 
-export interface FrameLineWithOffsetInfo extends FrameLine {
+interface FrameLineWithOffsetInfo extends FrameLine {
   crossingPoint: CrossingPointWithOffsetInfo;
 }
 
@@ -238,7 +228,7 @@ export interface Model {
   knot: Knot | null;
   userLine: UserLine | null;
   gridLines: Line[] | null;
-  mouseTracker: Coords | null;
+  mouseTracker: Vector | null;
   canvasWidth: number;
   canvasHeight: number;
   columns: number;

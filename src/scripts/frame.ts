@@ -6,7 +6,14 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import { Coords, GridSystem, Frame, FrameLine, INode, Matrix } from "./types";
+import {
+  GridSystem,
+  Frame,
+  FrameLine,
+  FrameNode,
+  Matrix,
+  Vector,
+} from "./types";
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
   return arr1.reduce(
@@ -23,7 +30,7 @@ function integerRange(first: number, last: number) {
     .map((_, i) => first + i);
 }
 
-function lineBetween(startNode: INode, endNode: INode) {
+function lineBetween(startNode: FrameNode, endNode: FrameNode) {
   return frameLine({
     startNode,
     endNode,
@@ -48,13 +55,13 @@ function coordinateSet({
 }
 
 // for drawing as a grid rather than individual nodes and lines...
-function allNeighborsAdjacent(nodes: INode[]) {
+function allNeighborsAdjacent(nodes: FrameNode[]) {
   return nodes.reduce(
     (adjacencies, firstNode) => {
       return [
         ...adjacencies,
         nodes
-          .map((secondNode, j) => [secondNode, j] as [INode, number])
+          .map((secondNode, j) => [secondNode, j] as [FrameNode, number])
           .filter(([secondNode]) => isAdjacentTo(firstNode, secondNode))
           .map(([_secondNode, j]) => j),
       ];
@@ -62,13 +69,13 @@ function allNeighborsAdjacent(nodes: INode[]) {
     [] as Matrix
   );
 }
-function nodeIndex(node: INode, nodes: INode[]): number {
+function nodeIndex(node: FrameNode, nodes: FrameNode[]): number {
   return nodes.findIndex(function(someNode) {
     return sameNode(someNode, node);
   });
 }
 
-function closestNodeToPoint(coords: Coords, nodes: INode[]): INode {
+function closestNodeToPoint(coords: Vector, nodes: FrameNode[]): FrameNode {
   return nodes.reduce(function(acc, node) {
     if (distanceFromPoint(node, coords) < distanceFromPoint(acc, coords)) {
       return node;
@@ -89,7 +96,7 @@ function joinNodesAtIndex(
   return newAdjacencyList;
 }
 
-export function fromExtrema(initialBox: Coords, finalBox: Coords) {
+export function fromExtrema(initialBox: Vector, finalBox: Vector) {
   const nodeCoords = coordinateSet({
     leftmost: Math.min(initialBox[0], finalBox[0]),
     rightmost: Math.max(initialBox[0], finalBox[0]),
@@ -113,7 +120,10 @@ export function fromExtrema(initialBox: Coords, finalBox: Coords) {
   };
 }
 
-export function findProximalNode(coords: Coords, nodes: INode[]): INode | null {
+export function findProximalNode(
+  coords: Vector,
+  nodes: FrameNode[]
+): FrameNode | null {
   const closestNode = closestNodeToPoint(coords, nodes);
   const proximityThreshold = config.nodeSelectionMinProximity;
   if (distanceFromPoint(closestNode, coords) < proximityThreshold) {
@@ -123,8 +133,8 @@ export function findProximalNode(coords: Coords, nodes: INode[]): INode | null {
 }
 
 export function lineExistsBetween(
-  nodeA: INode,
-  nodeB: INode,
+  nodeA: FrameNode,
+  nodeB: FrameNode,
   lines: FrameLine[]
 ) {
   return !!lines.find((line) => {
@@ -133,9 +143,9 @@ export function lineExistsBetween(
 }
 
 export function markAsAdjacent(
-  nodeA: INode,
-  nodeB: INode,
-  nodes: INode[],
+  nodeA: FrameNode,
+  nodeB: FrameNode,
+  nodes: FrameNode[],
   adjacencyList: Matrix
 ) {
   return joinNodesAtIndex(
@@ -145,11 +155,15 @@ export function markAsAdjacent(
   );
 }
 
-export function linesOutFrom(node: INode, lines: FrameLine[]) {
+export function linesOutFrom(node: FrameNode, lines: FrameLine[]) {
   return lines.filter((line) => visits(line, node));
 }
 
-export function overlapsExistingNode(pxX: number, pxY: number, nodes: INode[]) {
+export function overlapsExistingNode(
+  pxX: number,
+  pxY: number,
+  nodes: FrameNode[]
+) {
   return nodes.some((node) => hasOverlap(node, pxX, pxY));
 }
 
@@ -170,7 +184,7 @@ export function firstUncrossedLine(lines: FrameLine[]): FrameLine | null {
   return lines.find(uncrossed) || null;
 }
 
-export function lines(nodes: INode[], adjacencyList: Matrix): FrameLine[] {
+export function lines(nodes: FrameNode[], adjacencyList: Matrix): FrameLine[] {
   return nodes.reduce(
     (lines, startNode, i) => {
       return lines.concat(

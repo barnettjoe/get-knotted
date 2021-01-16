@@ -23,9 +23,9 @@ import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
 import {
-  Coords,
+  Vector,
   Drawing,
-  INode,
+  FrameNode,
   GridSystem,
   isOnscreenWebglContext,
 } from "./types";
@@ -191,7 +191,7 @@ const drawing: Drawing = {
       );
     }
   },
-  drawUserLine(lineStart: INode, toCoords) {
+  drawUserLine(lineStart: FrameNode, toCoords) {
     model.userLine = {
       startNode: lineStart,
       toCoords,
@@ -240,7 +240,7 @@ const drawing: Drawing = {
     model.frame = knot.frame;
     this.knots.push(knot);
   },
-  nodeAt(coords: Coords) {
+  nodeAt(coords: Vector) {
     let result;
     this.knots.some((knot) => {
       result = findProximalNode(coords, knot.frame.nodes);
@@ -258,7 +258,7 @@ const drawing: Drawing = {
       }) || null
     );
   },
-  startDrawingLine(coords: Coords) {
+  startDrawingLine(coords: Vector) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
       const foundKnot = this.findKnotWith(lineStart);

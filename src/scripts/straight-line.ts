@@ -1,9 +1,9 @@
 import numeric from "numeric";
-import { Coords } from "./types";
+import { Vector } from "./types";
 export default class StraightLine {
-  start: Coords;
-  end: Coords;
-  constructor(start: Coords, end: Coords) {
+  start: Vector;
+  end: Vector;
+  constructor(start: Vector, end: Vector) {
     this.start = start;
     this.end = end;
   }
@@ -21,8 +21,8 @@ export default class StraightLine {
     const newStart = [
       this.start[0] + shift[0],
       this.start[1] + shift[1],
-    ] as Coords;
-    const newEnd = [this.end[0] + shift[0], this.end[1] + shift[1]] as Coords;
+    ] as Vector;
+    const newEnd = [this.end[0] + shift[0], this.end[1] + shift[1]] as Vector;
     return [new StraightLine(newStart, newEnd)];
   }
 }
