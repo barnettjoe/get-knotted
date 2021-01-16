@@ -13,7 +13,7 @@ interface PointedReturnOptions {
   direction: Direction;
   middleInbound: Bezier;
   middleOutbound: Bezier;
-  point: CrossingPoint | PointedReturnPoint;
+  point: PointedReturnPointWithOffsetInfo;
 }
 export default class PointedReturn {
   options: PointedReturnOptions;
@@ -73,7 +73,7 @@ export default class PointedReturn {
       outerOutboundPolyline,
     };
   }
-  fixOffsets(offsets: CrossingPoint | PointedReturnPoint) {
+  fixOffsets(offsets: PointedReturnPointWithOffsetInfo) {
     this.fixInnerOffsets(offsets);
     this.fixOuterOffsets(offsets);
   }
