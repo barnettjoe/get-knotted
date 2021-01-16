@@ -30,7 +30,7 @@ export function Strand(frame: Frame): IStrand {
 export function pointFollowing(
   index: number,
   strand: IStrand
-): Partial<StrandElementType> {
+): StrandElementType {
   return strand[(index + 1) % strand.length];
 }
 
@@ -69,19 +69,18 @@ function addElement(this: IStrand) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
-  this.push(
-    new StrandElement({
-      direction: strandState.direction,
-      point: strandState.currentLine.crossingPoint,
-      pr: null,
-    })
-  );
+  const element = StrandElement({
+    direction: strandState.direction,
+    point: strandState.currentLine.crossingPoint,
+  });
+  this.push(element);
 
   if (pointedReturn()) {
     const startCoords = strandState.currentLine.crossingPoint.coords;
     const endCoords = nextLine().crossingPoint.coords;
     const prCoords = getApexCoords(startCoords, endCoords);
     this.push({
+      direction: null,
       // horrible hack to make unique id for the Map...
       point: {
         coords: prCoords,

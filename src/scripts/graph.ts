@@ -1,8 +1,6 @@
 import config from "./config";
 import { pixelCoords } from "./mouse";
 import model from "./model";
-import { GraphLine } from "./line";
-
 import { GridOptions } from "types";
 
 const options: GridOptions = Object.freeze({

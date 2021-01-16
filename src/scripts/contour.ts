@@ -91,8 +91,8 @@ function setC1continuity(
   const row = condition(2 * i - 1, [1, 1], strand);
   newMatrix.push(row.concat(emptyRow(strand)));
   newMatrix.push(emptyRow(strand).concat(row));
-  newEquals.push(2 * strand[i].x);
-  newEquals.push(2 * strand[i].y);
+  newEquals.push(2 * strand[i].point.coords[0]);
+  newEquals.push(2 * strand[i].point.coords[1]);
   return [newMatrix, newEquals];
 }
 function setC2continuity(

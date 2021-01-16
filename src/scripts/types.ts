@@ -23,8 +23,6 @@ export interface NodeOptions {
 }
 
 export interface GridOptions {
-  startRow: number;
-  startCol: number;
   cols: number;
   rows: number;
   style: LineStyle;
@@ -63,7 +61,7 @@ export interface FrameWithOffsetInfo extends Frame {
   lines: FrameLineWithOffsetInfo[];
 }
 
-export type IStrand = Partial<StrandElement>[];
+export type IStrand = StrandElement[];
 
 export type Direction = "L" | "R";
 
@@ -157,10 +155,10 @@ export interface PointedReturnPoint {
 
 export type PointedReturnPointWithOffsetInfo = PointedReturnPoint & OffsetInfo;
 
-interface CrossingPointStrandElement {
+export interface CrossingPointStrandElement {
   direction: Direction;
   point: CrossingPoint;
-  pr: Direction;
+  pr: null;
   outboundBezier?: Bezier;
   inboundBezier?: Bezier;
 }
@@ -171,9 +169,9 @@ interface CrossingPointWithOffsetInfoStrandElement
 }
 
 interface PointedReturnStrandElement {
-  direction: Direction;
+  direction: null;
   point: PointedReturnPoint;
-  pr: Direction | null;
+  pr: Direction;
   outboundBezier?: Bezier;
   inboundBezier?: Bezier;
 }

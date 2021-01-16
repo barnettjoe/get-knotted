@@ -1,22 +1,15 @@
-import { CrossingPoint, Direction } from "./types";
-
-export default class StrandElement {
+import { CrossingPoint, CrossingPointStrandElement, Direction } from "./types";
+interface StrandElementOptions {
   point: CrossingPoint;
-  pr: Direction | null;
   direction: Direction;
-  constructor(options: {
-    point: CrossingPoint;
-    pr: Direction | null;
-    direction: Direction;
-  }) {
-    this.point = options.point;
-    this.pr = options.pr;
-    this.direction = options.direction;
-  }
-  get x() {
-    return this.point.coords[0];
-  }
-  get y() {
-    return this.point.coords[1];
-  }
+}
+export default function StrandElement({
+  point,
+  direction,
+}: StrandElementOptions): CrossingPointStrandElement {
+  return {
+    point,
+    pr: null,
+    direction,
+  };
 }

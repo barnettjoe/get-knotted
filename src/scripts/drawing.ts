@@ -28,14 +28,11 @@ import {
   INode,
   GridSystem,
   isOnscreenWebglContext,
-  OnscreenWebglContext,
 } from "./types";
 
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
 let dragEnd: [number, number];
-
-let webglContext: OnscreenWebglContext;
 
 let dirty = true;
 

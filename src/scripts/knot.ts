@@ -20,7 +20,8 @@ import {
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
-  const contours = makeStrands(frame).map(makeContour);
+  const strands = makeStrands(frame);
+  const contours = strands.map(makeContour);
   const polylines = new Set<XYPolyLine>();
   contours.forEach((contour) => {
     addOffsetInfoToCrossingPoints(contour, polylines);
