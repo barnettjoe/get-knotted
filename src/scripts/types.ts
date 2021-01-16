@@ -50,6 +50,8 @@ export interface LineStyle {
   // TODO - part of config type
 }
 
+export type XYPolyLine = Point[];
+
 export type Coords = [number, number];
 export interface Frame {
   nodes: INode[];
@@ -62,14 +64,14 @@ export type IStrand = Partial<StrandElement>[];
 export type Direction = "L" | "R";
 
 export interface OffsetInfo {
-  underOutLeft: PolyLine;
-  underOutRight: PolyLine;
-  underInLeft: PolyLine;
-  underInRight: PolyLine;
-  overOutLeft: PolyLine;
-  overOutRight: PolyLine;
-  overInLeft: PolyLine;
-  overInRight: PolyLine;
+  underOutLeft: XYPolyLine;
+  underOutRight: XYPolyLine;
+  underInLeft: XYPolyLine;
+  underInRight: XYPolyLine;
+  overOutLeft: XYPolyLine;
+  overOutRight: XYPolyLine;
+  overInLeft: XYPolyLine;
+  overInRight: XYPolyLine;
 }
 
 export type OverUnders = Map<CrossingPoint, OffsetInfo>;
@@ -187,7 +189,7 @@ export interface Primitives {
 export interface Knot {
   frame: Frame;
   contours: Contour[];
-  overUnders: OverUnders;
+  polylines: Set<XYPolyLine>;
 }
 
 export interface UserLine {
@@ -225,3 +227,8 @@ export interface Model {
 }
 
 export type PolyLines = number[][];
+export interface CollectionIntersectionResult {
+  idxA: number;
+  idxB: number;
+  intersection: Point;
+}

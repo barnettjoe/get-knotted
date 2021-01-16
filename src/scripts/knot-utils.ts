@@ -1,19 +1,25 @@
 import kldIntersections from "kld-intersections";
 import config from "./config";
+import { Coords, Point, CollectionIntersectionResult } from "./types";
+import Bezier from "./bezier/bezier";
+import StraightLine from "./straight-line";
 
-export function collectionIntersect(polylineA, polylineB) {
+export function collectionIntersect(
+  polylineA: Point[],
+  polylineB: Point[]
+): CollectionIntersectionResult | undefined {
   let lineA;
   let lineB;
   let intersection;
   for (let idxA = 0; idxA < polylineA.length - 1; idxA++) {
-    lineA = polylineA.slice(idxA, idxA + 2);
+    lineA = polylineA.slice(idxA, idxA + 2) as [Point, Point];
     for (let idxB = 0; idxB < polylineB.length - 1; idxB++) {
-      lineB = polylineB.slice(idxB, idxB + 2);
+      lineB = polylineB.slice(idxB, idxB + 2) as [Point, Point];
       intersection = kldIntersections.Intersection.intersectLineLine(
         ...lineA,
         ...lineB
       );
-      if (intersection.points.length > 0) {
+      if (intersection.status === "Intersection") {
         return {
           idxA: idxA,
           idxB: idxB,
@@ -24,19 +30,21 @@ export function collectionIntersect(polylineA, polylineB) {
   }
 }
 
-export function polyline(collection) {
-  function reducer(acc, curve, idx) {
-    if (curve.constructor.name === "StraightLine") {
+type Shape = Bezier | StraightLine;
+
+export function polyline(collection: Shape[]) {
+  function reducer(acc: Point[], shape: Shape, idx: number) {
+    if (shape instanceof StraightLine) {
       if (idx === 0) {
         return acc.concat([
-          { x: curve.start[0], y: curve.start[1] },
-          { x: curve.end[0], y: curve.end[1] },
+          { x: shape.start[0], y: shape.start[1] },
+          { x: shape.end[0], y: shape.end[1] },
         ]);
       } else {
-        return acc.concat([{ x: curve.end[0], y: curve.end[1] }]);
+        return acc.concat([{ x: shape.end[0], y: shape.end[1] }]);
       }
     } else {
-      return acc.concat(curve.getLUT(config.resolution));
+      return acc.concat(shape.getLUT(config.resolution));
     }
   }
   return collection
@@ -44,21 +52,7 @@ export function polyline(collection) {
     .map((point) => new kldIntersections.Point2D(point.x, point.y));
 }
 
-export function bezString(p0, p1, p2, p3) {
-  return `M${p0[0]} ${p0[1]} C ${p1[0]} ${p1[1]}, ${p2[0]} ${p2[1]}, ${p3[0]} ${
-    p3[1]
-  }`;
-}
-
-export function format(snapObj) {
-  snapObj.attr({
-    stroke: "black",
-    strokeWidth: config.knot.borderWidth,
-    fill: "none",
-  });
-}
-
-export function rotateAboutOrigin(point, angle) {
+export function rotateAboutOrigin(point: Coords, angle: number): Coords {
   const x = point[0];
   const y = point[1];
   const newX = x * Math.cos(angle) - y * Math.sin(angle);
@@ -66,28 +60,9 @@ export function rotateAboutOrigin(point, angle) {
   return [newX, newY];
 }
 
-function rotate(point, center, angle) {
-  // first shift to origin
-  const shiftedPoint = [point[0] - center[0], point[1] - center[1]];
-  const rotated = rotateAboutOrigin(shiftedPoint, angle);
-  return [rotated[0] + center[0], rotated[1] + center[1]];
-}
-
-function alignBez(p0, p1, p2, p3) {
-  // translate to get p0 on x axis
-  const translated = [p0, p1, p2, p3].map((coords) => [
-    coords[0],
-    coords[1] + -p0[1],
-  ]);
-  // now rotate so p3 is also on x axis
-  const deltaX = translated[0][0];
-  const angle = -Math.atan(translated[3][1] / (translated[3][0] - deltaX));
-  return translated.map((coord) => rotate(coord, translated[0], angle));
-}
-
 // TODO - this seems like it could be very inefficient...
-export function mutate(arr, newArr) {
-  // sets arr to newArr in mutating fashion
+export function mutate<T>(arr: T[], newArr: T[]): T[] {
+  // sets arr to newArr in mutating fashion.
   while (arr.length > 0) {
     arr.pop();
   }
@@ -97,6 +72,6 @@ export function mutate(arr, newArr) {
   return arr;
 }
 
-export function reducer(acc, point) {
+export function reducer(acc: number[], point: Point): number[] {
   return acc.concat([point.x, point.y]);
 }

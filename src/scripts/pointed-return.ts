@@ -1,12 +1,10 @@
 import Bezier from "./bezier/bezier";
 import { collectionIntersect, mutate } from "./knot-utils";
 import {
-  CrossingPoint,
-  PointedReturnPoint,
   Direction,
-  OffsetInfo,
-  PolyLine,
+  XYPolyLine,
   PointedReturnPointWithOffsetInfo,
+  CollectionIntersectionResult,
 } from "./types";
 
 interface PointedReturnOptions {
@@ -18,10 +16,10 @@ interface PointedReturnOptions {
 export default class PointedReturn {
   options: PointedReturnOptions;
   direction: Direction;
-  private innerInboundPolyline: PolyLine;
-  private innerOutboundPolyline: PolyLine;
-  private outerInboundPolyline: PolyLine;
-  private outerOutboundPolyline: PolyLine;
+  private innerInboundPolyline: XYPolyLine;
+  private innerOutboundPolyline: XYPolyLine;
+  private outerInboundPolyline: XYPolyLine;
+  private outerOutboundPolyline: XYPolyLine;
   constructor(options: PointedReturnOptions) {
     this.options = options;
     this.direction = options.direction;
@@ -35,7 +33,8 @@ export default class PointedReturn {
     this.innerOutboundPolyline = innerOutboundPolyline;
     this.outerInboundPolyline = outerInboundPolyline;
     this.outerOutboundPolyline = outerOutboundPolyline;
-    this.fixOffsets(options.point);
+    debugger;
+    this.fixOffsets();
   }
   organizeOffsets(offsets: PointedReturnPointWithOffsetInfo) {
     let innerInboundPolyline;
@@ -73,34 +72,43 @@ export default class PointedReturn {
       outerOutboundPolyline,
     };
   }
-  fixOffsets(offsets: PointedReturnPointWithOffsetInfo) {
-    this.fixInnerOffsets(offsets);
-    this.fixOuterOffsets(offsets);
+  fixOffsets() {
+    this.fixInnerOffsets();
+    this.fixOuterOffsets();
   }
-  clipOutboundPath(intersection, polyline) {
+  clipOutboundPath(
+    intersection: CollectionIntersectionResult,
+    polyline: XYPolyLine
+  ): void {
     const points = polyline.slice(0, intersection.idxA + 1);
     points.push(intersection.intersection);
     mutate(polyline, points);
   }
-  clipInboundPath(intersection, polyline) {
+  clipInboundPath(
+    intersection: CollectionIntersectionResult,
+    polyline: XYPolyLine
+  ): void {
     const points = polyline.slice(intersection.idxB + 1);
     points.unshift(intersection.intersection);
     mutate(polyline, points);
   }
-  fixInnerOffsets(offsets: OffsetInfo) {
+  fixInnerOffsets() {
     // get intersection of inner outbound with inner inbound
 
     const intersection = collectionIntersect(
       this.innerOutboundPolyline,
       this.innerInboundPolyline
     );
+    if (!intersection) {
+      throw new Error("no intersection found");
+    }
     // split at intersection point
     // concatenate part of outbound inner from before intersection,
     // with the part of inbound inner from after the intersection...
     this.clipOutboundPath(intersection, this.innerOutboundPolyline);
     this.clipInboundPath(intersection, this.innerInboundPolyline);
   }
-  fixOuterOffsets(offsets: OffsetInfo) {
+  fixOuterOffsets() {
     const innerTip = this.innerInboundPolyline[0];
     const midTip = this.options.middleInbound.points[0];
     const outerTip = {

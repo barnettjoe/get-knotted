@@ -1,7 +1,6 @@
 import { makeCrossingPoint, fullyCrossed } from "./crossing-point";
 import {
   Coords,
-  Line,
   INode,
   Vector,
   FrameLine,

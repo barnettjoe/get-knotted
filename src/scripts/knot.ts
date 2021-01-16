@@ -13,12 +13,13 @@ import {
   PolyLine,
   PolyLines,
   CollectionIntersect,
+  XYPolyLine,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
   const contours = makeStrands(frame).map(makeContour);
-  const polylines = new Set();
+  const polylines = new Set<XYPolyLine>();
   contours.forEach((contour) => {
     addOffsetInfoToCrossingPoints(contour, polylines);
   });
@@ -130,13 +131,13 @@ export function knotPolylines(knot: Knot): PolyLines | null {
       }
     });
   });
-  const result = [];
+  const result = [] as PolyLines;
   knot.polylines.forEach((polyline) => {
     result.push(polylinePoints(polyline));
   });
   return result;
 }
 
-function polylinePoints(outline) {
+function polylinePoints(outline: XYPolyLine) {
   return outline.reduce(reducer, []);
 }
