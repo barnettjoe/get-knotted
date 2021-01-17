@@ -1,10 +1,11 @@
-# useful articles which explain this setup
+# useful articles which explain similar setups
 # https://surma.dev/things/c-to-webassembly/
 # https://depth-first.com/articles/2019/10/16/compiling-c-to-webassembly-and-running-it-without-emscripten/
 
 FROM debian:10.7
-COPY wasm /source
-WORKDIR /source
+COPY wasm /builder
+COPY src/c /source
+WORKDIR /builder
 RUN apt-get update && apt-get -y install git make wget gnupg software-properties-common
 
 # install llvm & clang
@@ -27,5 +28,4 @@ RUN target_dir=/usr/lib/llvm-11/lib/clang/11.1.0/lib/wasi && mkdir -p $target_di
 
 # LLVM supports the wasm/wasi compile target, allowing us to compile C source files directly to wasm, provided that the environment
 # supplies libc. We tell clang to look in the sysroot directory which we made above, when looking for libc.
-RUN clang --target=wasm32-unknown-wasi --sysroot ./wasi-libc/sysroot -O2 -s -o add.wasm add.c
-RUN cat add.wasm
+CMD rm -rf /wasm-output/* && clang --target=wasm32-unknown-wasi --sysroot ./wasi-libc/sysroot -O2 -s -o /wasm-output/add.wasm /source/add.c
