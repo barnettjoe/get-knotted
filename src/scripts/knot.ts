@@ -99,7 +99,6 @@ function trimUnder(
   direction: "L" | "R",
   bound: "in" | "out"
 ) {
-  debugger;
   const overLeft = point.overInLeft.concat(point.overOutLeft);
   const overRight = point.overInRight.concat(point.overOutRight);
   const under = getUnder(point, direction, bound);
