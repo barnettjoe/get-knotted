@@ -17,6 +17,8 @@
   "private": true,
   "scripts": {
     "test": "yarn tsc --noEmit",
+    "build:docker": "docker build -t wasm-builder -f wasm/Dockerfile .",
+    "build:wasm": "docker run -it wasm-builder /bin/bash",
     "lint": "eslint .",
     "build": "webpack --config webpack.prod.js",
     "start": "webpack-dev-server --open --config webpack.dev.js",
