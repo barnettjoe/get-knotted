@@ -24,3 +24,5 @@ document.addEventListener(
   },
   false
 );
+
+import("../../wasm/output/add.wasm").then(console.log);

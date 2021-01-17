@@ -28,4 +28,4 @@ RUN target_dir=/usr/lib/llvm-11/lib/clang/11.1.0/lib/wasi && mkdir -p $target_di
 
 # LLVM supports the wasm/wasi compile target, allowing us to compile C source files directly to wasm, provided that the environment
 # supplies libc. We tell clang to look in the sysroot directory which we made above, when looking for libc.
-CMD rm -rf /wasm-output/* && clang --target=wasm32-unknown-wasi --sysroot ./wasi-libc/sysroot -O2 -s -o /wasm-output/add.wasm /source/add.c
+CMD rm -rf /wasm-output/* && clang --target=wasm32-unknown-wasi --sysroot ./wasi-libc/sysroot -nostartfiles -Wl,--import-memory -Wl,--no-entry -Wl,--export-all -o /wasm-output/add.wasm /source/add.c

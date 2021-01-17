@@ -11,7 +11,7 @@ fi
 rm -rf wasm/output
 
 # compile C source to wasm on docker container
-docker run -it --name wasm-builder --mount source=wasm-output,target=/wasm-output wasm-builder-image
+docker run -it --name wasm-builder --mount source=wasm-output,target=/wasm-output wasm-builder-image /bin/bash
 
 # copy output onto host
 docker cp wasm-builder:/wasm-output ./wasm/output
