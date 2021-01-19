@@ -7,11 +7,18 @@ then
   docker rm wasm-builder
 fi
 
+
+# make sure output directory exists on host
+mkdir -p wasm/output
+
 # clear output directory on host
-rm -rf wasm/output
+rm -rf wasm/output/*
 
 # compile C source to wasm on docker container
-docker run -it --name wasm-builder --mount source=wasm-output,target=/wasm-output wasm-builder-image
+docker run -it --name wasm-builder \
+  --mount type=bind,source="$(pwd)"/wasm/output,target=/wasm-output \
+  --mount type=bind,source="$(pwd)"/src/c,target=/source \
+  wasm-builder-image
 
 # copy output onto host
-docker cp wasm-builder:/wasm-output ./wasm/output
+# docker cp wasm-builder:/wasm-output ./wasm/output

@@ -6,11 +6,15 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "module": "es6",
+    "module": "es2020",
     "target": "es6",
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "./wasm/output/add.wasm": ["./wasm/output/add.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.glsl"]

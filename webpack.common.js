@@ -45,18 +45,9 @@ module.exports = {
           },
         ],
       },
-      // {
-      //   test: /\.wasm$/,
-      //   use: [
-      //     {
-      //       loader: path.resolve(__dirname, "./wasm-loader.js"),
-      //     },
-      //   ],
-      // },
     ],
   },
   resolve: {
-    // Add `.ts` and `.tsx` as a resolvable extension.
-    extensions: [".ts", ".tsx", ".js", ".wasm"],
+    extensions: [".ts", ".tsx", ".js"],
   },
 };

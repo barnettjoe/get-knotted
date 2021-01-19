@@ -1,5 +1,9 @@
+import foo from "../../wasm/output/add.mjs";
 import drawing from "./drawing";
 import { Mode, MODES } from "./types";
+
+// testing wasm
+foo();
 
 function changeDrawingMode(newMode: Mode) {
   return () => (drawing.mode = newMode);
@@ -24,5 +28,3 @@ document.addEventListener(
   },
   false
 );
-
-import("../../wasm/output/add.wasm").then(console.log);

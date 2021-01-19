@@ -2,6 +2,6 @@
 
 int main(void)
 {
-    puts("Hello");
+    puts("Hello from wasm...");
     return 0;
 }
