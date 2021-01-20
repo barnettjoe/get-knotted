@@ -19,6 +19,3 @@ docker run -it --name wasm-builder \
   --mount type=bind,source="$(pwd)"/wasm/output,target=/wasm-output \
   --mount type=bind,source="$(pwd)"/src/c,target=/source \
   wasm-builder-image
-
-# copy output onto host
-# docker cp wasm-builder:/wasm-output ./wasm/output
