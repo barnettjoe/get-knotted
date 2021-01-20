@@ -1,7 +1,6 @@
 #include <stdio.h>
 
-int main(void)
+int add(int a, int b)
 {
-    puts("Hello from wasm...");
-    return 0;
+    return a + b;
 }

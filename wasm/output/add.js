@@ -30,9 +30,9 @@ Module['ready'] = new Promise(function(resolve, reject) {
   readyPromiseReject = reject;
 });
 
-      if (!Object.getOwnPropertyDescriptor(Module['ready'], '_main')) {
-        Object.defineProperty(Module['ready'], '_main', { configurable: true, get: function() { abort('You are getting _main on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
-        Object.defineProperty(Module['ready'], '_main', { configurable: true, set: function() { abort('You are setting _main on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+      if (!Object.getOwnPropertyDescriptor(Module['ready'], '_add')) {
+        Object.defineProperty(Module['ready'], '_add', { configurable: true, get: function() { abort('You are getting _add on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
+        Object.defineProperty(Module['ready'], '_add', { configurable: true, set: function() { abort('You are setting _add on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js') } });
       }
     
 
@@ -1599,7 +1599,7 @@ function createExportWrapper(name, fixedasm) {
   };
 }
 
-var wasmBinaryFile = 'data:application/octet-stream;base64,AGFzbQEAAAABvoCAgAAKYAF/AX9gA39/fwF/YAABf2ABfwBgAABgAn9/AX9gA39+fwF+YAR/f39/AX9gBX9/f39/AX9gBH9/fn8BfgLigICAAAQWd2FzaV9zbmFwc2hvdF9wcmV2aWV3MQhmZF93cml0ZQAHA2VudhVlbXNjcmlwdGVuX21lbWNweV9iaWcAAQNlbnYLc2V0VGVtcFJldDAAAwNlbnYGbWVtb3J5AgGAAoACA6GAgIAAIAQCBQIAAQAGAwMCBAABAQcFBQAAAwAEAgICAwAAAAkIBIWAgIAAAXABBAQGk4CAgAADfwFB4JHAAgt/AUEAC38BQQALB9qBgIAADBlfX2luZGlyZWN0X2Z1bmN0aW9uX3RhYmxlAQARX193YXNtX2NhbGxfY3RvcnMAAwRtYWluAAUQX19lcnJub19sb2NhdGlvbgAGBmZmbHVzaAAfCXN0YWNrU2F2ZQAcDHN0YWNrUmVzdG9yZQAdCnN0YWNrQWxsb2MAHhVlbXNjcmlwdGVuX3N0YWNrX2luaXQAGRllbXNjcmlwdGVuX3N0YWNrX2dldF9mcmVlABoYZW1zY3JpcHRlbl9zdGFja19nZXRfZW5kABsMZHluQ2FsbF9qaWppACIJiYCAgAABAEEBCwMJCAoK5ZGAgAAgBAAQGQs+AQd/IwAhAEEQIQEgACABayECIAIkAEEAIQNBgAghBCACIAM2AgwgBBAVGkEQIQUgAiAFaiEGIAYkACADDwsLAQF/EAQhAiACDwsFAEGwCQsVAAJAIAANAEEADwsQBiAANgIAQX8L1gIBB38jAEEgayIDJAAgAyAAKAIcIgQ2AhAgACgCFCEFIAMgAjYCHCADIAE2AhggAyAFIARrIgE2AhQgASACaiEGQQIhByADQRBqIQECQAJAAkACQCAAKAI8IANBEGpBAiADQQxqEAAQBw0AA0AgBiADKAIMIgRGDQIgBEF/TA0DIAEgBCABKAIEIghLIgVBA3RqIgkgCSgCACAEIAhBACAFG2siCGo2AgAgAUEMQQQgBRtqIgkgCSgCACAIazYCACAGIARrIQYgACgCPCABQQhqIAEgBRsiASAHIAVrIgcgA0EMahAAEAdFDQALCyAGQX9HDQELIAAgACgCLCIBNgIcIAAgATYCFCAAIAEgACgCMGo2AhAgAiEEDAELQQAhBCAAQQA2AhwgAEIANwMQIAAgACgCAEEgcjYCACAHQQJGDQAgAiABKAIEayEECyADQSBqJAAgBAsEAEEACwQAQgALAgALAgALCgBByBEQC0HQEQsHAEHIERAMC1wBAX8gACAALQBKIgFBf2ogAXI6AEoCQCAAKAIAIgFBCHFFDQAgACABQSByNgIAQX8PCyAAQgA3AgQgACAAKAIsIgE2AhwgACABNgIUIAAgASAAKAIwajYCEEEAC5EEAQN/AkAgAkGABEkNACAAIAEgAhABGiAADwsgACACaiEDAkACQCABIABzQQNxDQACQAJAIAJBAU4NACAAIQIMAQsCQCAAQQNxDQAgACECDAELIAAhAgNAIAIgAS0AADoAACABQQFqIQEgAkEBaiICIANPDQEgAkEDcQ0ACwsCQCADQXxxIgRBwABJDQAgAiAEQUBqIgVLDQADQCACIAEoAgA2AgAgAiABKAIENgIEIAIgASgCCDYCCCACIAEoAgw2AgwgAiABKAIQNgIQIAIgASgCFDYCFCACIAEoAhg2AhggAiABKAIcNgIcIAIgASgCIDYCICACIAEoAiQ2AiQgAiABKAIoNgIoIAIgASgCLDYCLCACIAEoAjA2AjAgAiABKAI0NgI0IAIgASgCODYCOCACIAEoAjw2AjwgAUHAAGohASACQcAAaiICIAVNDQALCyACIARPDQEDQCACIAEoAgA2AgAgAUEEaiEBIAJBBGoiAiAESQ0ADAILAAsCQCADQQRPDQAgACECDAELAkAgA0F8aiIEIABPDQAgACECDAELIAAhAgNAIAIgAS0AADoAACACIAEtAAE6AAEgAiABLQACOgACIAIgAS0AAzoAAyABQQRqIQEgAkEEaiICIARNDQALCwJAIAIgA08NAANAIAIgAS0AADoAACABQQFqIQEgAkEBaiICIANHDQALCyAAC8wBAQN/AkACQCACKAIQIgMNAEEAIQQgAhAPDQEgAigCECEDCwJAIAMgAigCFCIFayABTw0AIAIgACABIAIoAiQRAQAPCwJAAkAgAiwAS0EATg0AQQAhAwwBCyABIQQDQAJAIAQiAw0AQQAhAwwCCyAAIANBf2oiBGotAABBCkcNAAsgAiAAIAMgAigCJBEBACIEIANJDQEgACADaiEAIAEgA2shASACKAIUIQULIAUgACABEBAaIAIgAigC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';
+var wasmBinaryFile = 'data:application/octet-stream;base64,AGFzbQEAAAABpYCAgAAHYAABf2ABfwBgAX8Bf2AAAGACf38Bf2ADf39/AX9gA39+fwF+ApKAgIAAAQNlbnYGbWVtb3J5AgGAAoACA5KAgIAAEQMEAwAAAAECAgEBAQADAgIABIWAgIAAAXABAQEGk4CAgAADfwFBoIjAAgt/AUEAC38BQQALB8qBgIAACxlfX2luZGlyZWN0X2Z1bmN0aW9uX3RhYmxlAQARX193YXNtX2NhbGxfY3RvcnMAAANhZGQAARBfX2Vycm5vX2xvY2F0aW9uABAGZmZsdXNoAA4Jc3RhY2tTYXZlAAUMc3RhY2tSZXN0b3JlAAYKc3RhY2tBbGxvYwAHFWVtc2NyaXB0ZW5fc3RhY2tfaW5pdAACGWVtc2NyaXB0ZW5fc3RhY2tfZ2V0X2ZyZWUAAxhlbXNjcmlwdGVuX3N0YWNrX2dldF9lbmQABArCg4CAABEEABACCzkBBn8jACECQRAhAyACIANrIQQgBCAANgIMIAQgATYCCCAEKAIMIQUgBCgCCCEGIAUgBmohByAHDwsUAEGgiMACJAJBlAhBD2pBcHEkAQsHACMAIwFrCwQAIwELBAAjAAsGACAAJAALEgECfyMAIABrQXBxIgEkACABCwQAQQELAgALAgALAgALCgBBgAgQCkGICAsHAEGACBALC6wBAQJ/AkACQCAARQ0AAkAgACgCTEF/Sg0AIAAQDw8LIAAQCCEBIAAQDyECIAFFDQEgABAJIAIPC0EAIQICQEEAKAKMCEUNAEEAKAKMCBAOIQILAkAQDCgCACIARQ0AA0BBACEBAkAgACgCTEEASA0AIAAQCCEBCwJAIAAoAhQgACgCHE0NACAAEA8gAnIhAgsCQCABRQ0AIAAQCQsgACgCOCIADQALCxANCyACC2sBAn8CQCAAKAIUIAAoAhxNDQAgAEEAQQAgACgCJBEFABogACgCFA0AQX8PCwJAIAAoAgQiASAAKAIIIgJPDQAgACABIAJrrEEBIAAoAigRBgAaCyAAQQA2AhwgAEIANwMQIABCADcCBEEACwUAQZAICwubgICAAAEAQYAICxQAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
 if (!isDataURI(wasmBinaryFile)) {
   wasmBinaryFile = locateFile(wasmBinaryFile);
 }
@@ -1834,59 +1834,6 @@ var ASM_CONSTS = {
       if (Module['extraStackTrace']) js += '\n' + Module['extraStackTrace']();
       return demangleAll(js);
     }
-
-  function _emscripten_memcpy_big(dest, src, num) {
-      HEAPU8.copyWithin(dest, src, src + num);
-    }
-
-  function flush_NO_FILESYSTEM() {
-      // flush anything remaining in the buffers during shutdown
-      if (typeof _fflush !== 'undefined') _fflush(0);
-      var buffers = SYSCALLS.buffers;
-      if (buffers[1].length) SYSCALLS.printChar(1, 10);
-      if (buffers[2].length) SYSCALLS.printChar(2, 10);
-    }
-  
-  var SYSCALLS={mappings:{},buffers:[null,[],[]],printChar:function(stream, curr) {
-        var buffer = SYSCALLS.buffers[stream];
-        assert(buffer);
-        if (curr === 0 || curr === 10) {
-          (stream === 1 ? out : err)(UTF8ArrayToString(buffer, 0));
-          buffer.length = 0;
-        } else {
-          buffer.push(curr);
-        }
-      },varargs:undefined,get:function() {
-        assert(SYSCALLS.varargs != undefined);
-        SYSCALLS.varargs += 4;
-        var ret = HEAP32[(((SYSCALLS.varargs)-(4))>>2)];
-        return ret;
-      },getStr:function(ptr) {
-        var ret = UTF8ToString(ptr);
-        return ret;
-      },get64:function(low, high) {
-        if (low >= 0) assert(high === 0);
-        else assert(high === -1);
-        return low;
-      }};
-  function _fd_write(fd, iov, iovcnt, pnum) {
-      // hack to support printf in SYSCALLS_REQUIRE_FILESYSTEM=0
-      var num = 0;
-      for (var i = 0; i < iovcnt; i++) {
-        var ptr = HEAP32[(((iov)+(i*8))>>2)];
-        var len = HEAP32[(((iov)+(i*8 + 4))>>2)];
-        for (var j = 0; j < len; j++) {
-          SYSCALLS.printChar(fd, HEAPU8[ptr+j]);
-        }
-        num += len;
-      }
-      HEAP32[((pnum)>>2)]=num
-      return 0;
-    }
-
-  function _setTempRet0($i) {
-      setTempRet0(($i) | 0);
-    }
 var ASSERTIONS = true;
 
 
@@ -1998,17 +1945,14 @@ function tryParseAsDataURI(filename) {
 
 __ATINIT__.push({ func: function() { ___wasm_call_ctors() } });
 var asmLibraryArg = {
-  "emscripten_memcpy_big": _emscripten_memcpy_big,
-  "fd_write": _fd_write,
-  "memory": wasmMemory,
-  "setTempRet0": _setTempRet0
+  "memory": wasmMemory
 };
 var asm = createWasm();
 /** @type {function(...*):?} */
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
 
 /** @type {function(...*):?} */
-var _main = Module["_main"] = createExportWrapper("main");
+var _add = Module["_add"] = createExportWrapper("add");
 
 /** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
@@ -2040,9 +1984,6 @@ var _emscripten_stack_get_end = Module["_emscripten_stack_get_end"] = function()
   return (_emscripten_stack_get_end = Module["_emscripten_stack_get_end"] = Module["asm"]["emscripten_stack_get_end"]).apply(null, arguments);
 };
 
-/** @type {function(...*):?} */
-var dynCall_jiji = Module["dynCall_jiji"] = createExportWrapper("dynCall_jiji");
-
 
 
 
@@ -2052,7 +1993,7 @@ var dynCall_jiji = Module["dynCall_jiji"] = createExportWrapper("dynCall_jiji");
 if (!Object.getOwnPropertyDescriptor(Module, "intArrayFromString")) Module["intArrayFromString"] = function() { abort("'intArrayFromString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "intArrayToString")) Module["intArrayToString"] = function() { abort("'intArrayToString' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "ccall")) Module["ccall"] = function() { abort("'ccall' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
-if (!Object.getOwnPropertyDescriptor(Module, "cwrap")) Module["cwrap"] = function() { abort("'cwrap' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
+Module["cwrap"] = cwrap;
 if (!Object.getOwnPropertyDescriptor(Module, "setValue")) Module["setValue"] = function() { abort("'setValue' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "getValue")) Module["getValue"] = function() { abort("'getValue' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
 if (!Object.getOwnPropertyDescriptor(Module, "allocate")) Module["allocate"] = function() { abort("'allocate' was not exported. add it to EXTRA_EXPORTED_RUNTIME_METHODS (see the FAQ)") };
@@ -2241,54 +2182,6 @@ dependenciesFulfilled = function runCaller() {
   if (!calledRun) dependenciesFulfilled = runCaller; // try this again later, after new deps are fulfilled
 };
 
-function callMain(args) {
-  assert(runDependencies == 0, 'cannot call main when async dependencies remain! (listen on Module["onRuntimeInitialized"])');
-  assert(__ATPRERUN__.length == 0, 'cannot call main when preRun functions remain to be called');
-
-  var entryFunction = Module['_main'];
-
-  args = args || [];
-
-  var argc = args.length+1;
-  var argv = stackAlloc((argc + 1) * 4);
-  HEAP32[argv >> 2] = allocateUTF8OnStack(thisProgram);
-  for (var i = 1; i < argc; i++) {
-    HEAP32[(argv >> 2) + i] = allocateUTF8OnStack(args[i - 1]);
-  }
-  HEAP32[(argv >> 2) + argc] = 0;
-
-  try {
-
-    var ret = entryFunction(argc, argv);
-
-    // In PROXY_TO_PTHREAD builds, we should never exit the runtime below, as execution is asynchronously handed
-    // off to a pthread.
-    // if we're not running an evented main loop, it's time to exit
-      exit(ret, /* implicit = */ true);
-  }
-  catch(e) {
-    if (e instanceof ExitStatus) {
-      // exit() throws this once it's done to make sure execution
-      // has been stopped completely
-      return;
-    } else if (e == 'unwind') {
-      // running an evented main loop, don't immediately exit
-      noExitRuntime = true;
-      return;
-    } else {
-      var toLog = e;
-      if (e && typeof e === 'object' && e.stack) {
-        toLog = [e, e.stack];
-      }
-      err('exception thrown: ' + toLog);
-      quit_(1, e);
-    }
-  } finally {
-    calledMain = true;
-
-  }
-}
-
 /** @type {function(Array=)} */
 function run(args) {
   args = args || arguments_;
@@ -2324,7 +2217,7 @@ function run(args) {
     readyPromiseResolve(Module);
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
-    if (shouldRunNow) callMain(args);
+    assert(!Module['_main'], 'compiled without a main, but one is present. if you added it from JS, use Module["onRuntimeInitialized"]');
 
     postRun();
   }
@@ -2364,7 +2257,7 @@ function checkUnflushedContent() {
     has = true;
   }
   try { // it doesn't matter if it fails
-    var flush = flush_NO_FILESYSTEM;
+    var flush = null;
     if (flush) flush();
   } catch(e) {}
   out = print;
@@ -2414,11 +2307,6 @@ if (Module['preInit']) {
     Module['preInit'].pop()();
   }
 }
-
-// shouldRunNow refers to calling main(), not run().
-var shouldRunNow = true;
-
-if (Module['noInitialRun']) shouldRunNow = false;
 
   noExitRuntime = true;
 

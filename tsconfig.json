@@ -10,11 +10,7 @@
     "target": "es6",
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "baseUrl": ".",
-    "paths": {
-      "./wasm/output/add.wasm": ["./wasm/output/add.d.ts"]
-    }
+    "allowJs": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.glsl"]

@@ -13,4 +13,11 @@ RUN /bin/bash -c 'source ./emsdk/emsdk_env.sh'
 
 # The SINGLE_FLAG option means we'll emit the wasm embedded as a base64 string within a JS file, along with all the glue JS.
 # This means webpack will just build everything into the bundle - it saves us from having to serve the wasm files separately.
-CMD rm -rf /wasm-output/* && cd emsdk/upstream/emscripten && ./emcc /source/add.c -o /wasm-output/add.mjs -s SINGLE_FILE=1
+CMD rm -rf /wasm-output/* && \
+  cd emsdk/upstream/emscripten && \
+  ./emcc /source/add.c \
+  -o /wasm-output/add.mjs \
+  -s SINGLE_FILE=1 \
+  -s EXPORTED_FUNCTIONS='["_add"]' \
+  -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
+  && mv /wasm-output/add.mjs /wasm-output/add.js
