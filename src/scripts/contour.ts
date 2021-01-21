@@ -26,6 +26,9 @@ function bezier(polygon: Polygon): Bezier {
 
 // TODO - explain all the maths...
 function matrixSolution(strand: Strand) {
+  if (strand.length > 100) {
+    debugger;
+  }
   const [matrix, equals] = constructMatrix(strand);
   const controlPoints = numeric.solve(matrix, equals);
   return {
