@@ -3,7 +3,6 @@ const path = require("path");
 const { merge } = require("webpack-merge");
 const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const common = require("./webpack.common.js");
 
 module.exports = merge(common, {
@@ -14,7 +13,6 @@ module.exports = merge(common, {
       new TerserPlugin({
         extractComments: true,
       }),
-      new OptimizeCssAssetsPlugin(),
     ],
   },
   module: {

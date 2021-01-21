@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -eu
+
+rm -rf /wasm-output/*
+
+cd emsdk/upstream/emscripten
+
+# When the output file has the .mjs extension, emcc creates an ES module rather than a plain ol' JS script.
+
+# The SINGLE_FILE option means we'll emit the wasm embedded as a base64 string within a JS file, along with all the glue JS;
+# this makes it easier to bundle everything up with webpack - we don't have to serve the wasm separately.
+
+# The EXPORTED_FUNCTIONS option tells emcc that we want the add function to be accessible from the compiled wasm
+# (everything else might be removed if the compiiler can't see it being used). N.B. the underscore prefix is
+# added by the compiler as part of the calling convention.
+
+# The EXPORTED_RUNTIME_METHODS option tells emcc we want to use the cwrap function in our JS to interface with the wasm.
+./emcc /source/add.c \
+  -o /wasm-output/add.mjs \
+  -s SINGLE_FILE=1 \
+  -s EXPORTED_FUNCTIONS='["_add"]' \
+  -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
+  -s ENVIRONMENT='web' \
+
+# We don't particularly want to keep the mjs extension
+mv /wasm-output/add.mjs /wasm-output/add.js
