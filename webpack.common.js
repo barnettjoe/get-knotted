@@ -2,19 +2,8 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
-const postcssPresetEnv = require("postcss-preset-env");
 
-const cssLoaders = [
-  "style-loader",
-  { loader: "css-loader", options: { importLoaders: 1 } },
-  {
-    loader: "postcss-loader",
-    options: {
-      ident: "postcss",
-      plugins: () => [postcssPresetEnv(/* pluginOptions */)],
-    },
-  },
-];
+const cssLoaders = ["style-loader", { loader: "css-loader" }];
 
 module.exports = {
   entry: "./src/index.ts",

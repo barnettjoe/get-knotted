@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 
-set -eu
+set -e
 
 rm -rf /wasm-output/*
 
 cd emsdk/upstream/emscripten
+
+# Decide if we want an optimized build
+if [ "$PROD" = 'true' ];
+then
+  optimization_flag="O3"
+else
+  optimization_flag="O0"
+fi
+
+echo "using optimization flag" "$optimization_flag"
 
 # When the output file has the .mjs extension, emcc creates an ES module rather than a plain ol' JS script.
 
@@ -22,6 +32,7 @@ cd emsdk/upstream/emscripten
   -s EXPORTED_FUNCTIONS='["_add"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s ENVIRONMENT='web' \
+  -"$optimization_flag"
 
 # We don't particularly want to keep the mjs extension
 mv /wasm-output/add.mjs /wasm-output/add.js
