@@ -7,7 +7,7 @@
     "test": "yarn tsc --noEmit",
     "build:docker": "docker build -t wasm-builder-image -f wasm/Dockerfile .",
     "build:wasm": "./shell-scripts/build-wasm",
-    "build:wasm:optimized": "PROD=true ./shell-scripts/build-wasm",
+    "build:wasm:optimized": "OPTIMIZE=true ./shell-scripts/build-wasm",
     "lint": "eslint .",
     "build": "yarn build:wasm:optimized && webpack --config webpack.prod.js",
     "start": "webpack serve --open --config webpack.dev.js",

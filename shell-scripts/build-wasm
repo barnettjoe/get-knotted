@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
-set -eu
+set -e
+
+# Decide if we want an optimized build
+if [ "$OPTIMIZE" = 'true' ];
+then
+  optimization_arg="O3"
+else
+  optimization_arg="O0"
+fi
+
 
 # if there's already a container with the same name, remove it (it's probably from the last time we ran this script)
 if [[ $(docker ps -aq --filter 'name=wasm-builder') ]]
 then
   docker rm wasm-builder
 fi
-
 
 # make sure output directory exists on host
 mkdir -p wasm/output
@@ -18,4 +26,5 @@ rm -rf wasm/output/*
 docker run -it --name wasm-builder \
   --mount type=bind,source="$(pwd)"/wasm/output,target=/wasm-output \
   --mount type=bind,source="$(pwd)"/src/c,target=/source \
-  wasm-builder-image
+  wasm-builder-image \
+  ./compile "$optimization_arg"

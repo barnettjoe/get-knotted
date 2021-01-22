@@ -1,5 +1,3 @@
-- [x] fully convert to TS and turn on strict mode
-- [ ] review dependencies...probably some stuff can be removed...
 - [ ] take stock of types.ts...there is probably a load of old crap and duplicated stuff in there...especially check optional properties etc...
 - [ ] fully switch to model/primitives/drawloop
 - [ ] draw beziers with width
@@ -8,3 +6,4 @@
 - [ ] identify hot code for performance improvements
 - [ ] fix debug tools
 - [ ] why are there 2 eslint config files?
+- [ ] analyze webpack bundle size

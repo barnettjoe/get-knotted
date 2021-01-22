@@ -10,5 +10,3 @@ RUN git clone --depth 1 --branch 2.0.12 https://github.com/emscripten-core/emsdk
 RUN ./emsdk/emsdk install 2.0.12
 RUN ./emsdk/emsdk activate 2.0.12
 RUN /bin/bash -c 'source ./emsdk/emsdk_env.sh'
-
-CMD ./compile
