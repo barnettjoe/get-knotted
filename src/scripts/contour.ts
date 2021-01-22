@@ -26,9 +26,6 @@ function bezier(polygon: Polygon): Bezier {
 
 // TODO - explain all the maths...
 function matrixSolution(strand: Strand) {
-  if (strand.length > 100) {
-    debugger;
-  }
   const [matrix, equals] = constructMatrix(strand);
   const controlPoints = numeric.solve(matrix, equals);
   return {
@@ -65,7 +62,7 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
   return [matrix, equals];
 }
 
-function emptyRow(strand: Strand) {
+function emptyRow(strand: Strand): number[] {
   return Array(strand.length * 2).fill(0);
 }
 
@@ -98,6 +95,8 @@ function setC1continuity(
   newEquals.push(2 * strand[i].point.coords[1]);
   return [newMatrix, newEquals];
 }
+
+// see https://stackoverflow.com/questions/12295773/joining-two-b%C3%A9zier-curves-smoothly-c2-continuous
 function setC2continuity(
   i: number,
   strand: Strand,
