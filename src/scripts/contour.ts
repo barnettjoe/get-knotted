@@ -54,7 +54,7 @@
 */
 
 import numeric from "numeric";
-import Bezier from "./bezier/bezier.js";
+import { Bezier } from "bezier-js";
 import { pointFollowing } from "./strand";
 import {
   Contour,

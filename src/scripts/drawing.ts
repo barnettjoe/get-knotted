@@ -46,7 +46,6 @@ function drawLoop() {
   }
   requestAnimationFrame(drawLoop);
 }
-
 const drawing: Drawing = {
   knots: [],
   mode: "add-grid",
@@ -130,7 +129,7 @@ const drawing: Drawing = {
   },
   createKnot() {
     if (model.frame === null) {
-      throw new Error('tried to create a knot with null frame');
+      throw new Error("tried to create a knot with null frame");
     }
     const knot = makeKnot(model.frame);
     model.knot = knot;
@@ -200,7 +199,7 @@ const drawing: Drawing = {
   newLineIsValid(lineStart, lineEnd) {
     const currentFrame = model.frame;
     if (currentFrame === null) {
-      throw new Error('current frame is null');
+      throw new Error("current frame is null");
     }
     return (
       lineEnd &&
@@ -210,7 +209,7 @@ const drawing: Drawing = {
   },
   finishDrawingLine(e) {
     if (model.userLine === null) {
-      throw new Error('userLine is null');
+      throw new Error("userLine is null");
     }
     const lineStart = model.userLine.startNode;
     model.userLine = null;
@@ -223,7 +222,7 @@ const drawing: Drawing = {
   makeNewLine(lineStart, lineEnd) {
     const currentKnot = model.knot;
     if (currentKnot === null) {
-      throw new Error('currentKnot is null');
+      throw new Error("currentKnot is null");
     }
     const knotA = this.findKnotWith(lineStart);
     const knotB = this.findKnotWith(lineEnd);
@@ -231,6 +230,7 @@ const drawing: Drawing = {
       this.mergeKnots(knotA, knotB, lineStart, lineEnd);
     } else {
       addLineBetween(currentKnot, lineStart, lineEnd);
+      dirty = true;
     }
   },
   mergeKnots(knotA, knotB, startNode, endNode) {
