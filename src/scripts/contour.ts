@@ -122,7 +122,6 @@ function checkLUCache(matrix: Matrix): LUDecomposition | undefined {
 
 function matrixSolution(strand: Strand) {
   const [matrix, equals] = constructMatrix(strand);
-  console.log(JSON.stringify({ matrix, equals }, null, 2));
   let lu = checkLUCache(matrix);
   if (!lu) {
     lu = numeric.LU(matrix);
@@ -167,12 +166,12 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
   }
 
   function controlPointIndex(
-    controlPoint: ControlPoint,
+    controlPoint: BezierControlPoint,
     bezierIndex: number,
     dimension: Dimension
   ): number {
     let result = bezierIndex * 2;
-    if (controlPoint === ControlPoint.second) result++;
+    if (controlPoint === BezierControlPoint.P2) result++;
     if (dimension === Dimension.y) result += strand.length * 2;
     return result;
   }
@@ -202,26 +201,23 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
     for this row of the "A" matrix, and 2 * Q0 in our "equals" vector.
   */
     const prevBezIdx = previousBezierIndex(bezierIndex);
-    setConstraint(
-      2 * strand[bezierIndex].point.coords[0],
-      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.x)],
-      [1, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)]
-    );
-    setConstraint(
-      2 * strand[bezierIndex].point.coords[1],
-      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.y)],
-      [1, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
-    );
+    [Dimension.x, Dimension.y].forEach((dimension) => {
+      setConstraint(
+        2 * strand[bezierIndex].point.coords[dimension],
+        [1, controlPointIndex(BezierControlPoint.P2, prevBezIdx, dimension)],
+        [1, controlPointIndex(BezierControlPoint.P1, bezierIndex, dimension)]
+      );
+    });
   }
   function setC2continuity(bezierIndex: number): void {
     const prevBezIdx = previousBezierIndex(bezierIndex);
     [Dimension.x, Dimension.y].forEach((dimension) => {
       setConstraint(
         0,
-        [1, controlPointIndex(ControlPoint.first, prevBezIdx, dimension)],
-        [-2, controlPointIndex(ControlPoint.second, prevBezIdx, dimension)],
-        [2, controlPointIndex(ControlPoint.first, bezierIndex, dimension)],
-        [-1, controlPointIndex(ControlPoint.second, bezierIndex, dimension)]
+        [1, controlPointIndex(BezierControlPoint.P1, prevBezIdx, dimension)],
+        [-2, controlPointIndex(BezierControlPoint.P2, prevBezIdx, dimension)],
+        [2, controlPointIndex(BezierControlPoint.P1, bezierIndex, dimension)],
+        [-1, controlPointIndex(BezierControlPoint.P2, bezierIndex, dimension)]
       );
     });
   }
@@ -237,43 +233,45 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
     const sin = Math.sin(angle);
     setConstraint(
       (1 - cos) * x + sin * y,
-      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.x)],
-      [-cos, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)],
-      [sin, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
+      [1, controlPointIndex(BezierControlPoint.P2, prevBezIdx, Dimension.x)],
+      [
+        -cos,
+        controlPointIndex(BezierControlPoint.P1, bezierIndex, Dimension.x),
+      ],
+      [sin, controlPointIndex(BezierControlPoint.P1, bezierIndex, Dimension.y)]
     );
     setConstraint(
       (1 - cos) * y - sin * x,
-      [-sin, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)],
-      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.y)],
-      [-cos, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
+      [
+        -sin,
+        controlPointIndex(BezierControlPoint.P1, bezierIndex, Dimension.x),
+      ],
+      [1, controlPointIndex(BezierControlPoint.P2, prevBezIdx, Dimension.y)],
+      [-cos, controlPointIndex(BezierControlPoint.P1, bezierIndex, Dimension.y)]
     );
-    // const row1 = condition(2 * bezierIndex - 1, [1, -cos], strand.length);
-    // const row2 = condition(2 * bezierIndex, [sin], strand.length);
-    // const row3 = condition(2 * bezierIndex, [-sin], strand.length);
-    // newMatrix.push(row1.concat(row2), row3.concat(row1));
-    // newEquals.push((1 - cos) * x + sin * y);
-    // newEquals.push();
   }
 
   const matrix: Matrix = [];
   const equals: number[] = [];
-  for (let strandIdx = 0; strandIdx < strand.length; strandIdx++) {
+  strand.forEach((strandElement, strandIdx) => {
     setC2continuity(strandIdx);
-    if (strand[strandIdx].pr) {
+    if (strandElement.pr) {
       setPointedReturnAngle(strandIdx);
     } else {
       setC1continuity(strandIdx);
     }
-  }
+  });
   return [matrix, equals];
 }
 
-enum ControlPoint {
-  first,
-  second,
+enum BezierControlPoint {
+  P0,
+  P1,
+  P2,
+  P3,
 }
 
 enum Dimension {
-  x,
+  x = 0,
   y,
 }
