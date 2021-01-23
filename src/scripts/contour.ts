@@ -54,6 +54,16 @@
   The matrices are always quite sparse - is the method used by numeric optimized for this?
 */
 
+/*
+
+Notes on performance.
+The matrix A is just based on the topology of of the strand, not on the actual positions
+of the points (todo - confirm this is true...)
+This means if we create a knot and then move the points around, we are only changing B.
+The LU decomposition of A remains the same. This means the LU decomposition can be cached
+, keyed by the strand topology. This should make it much faster to move knots around etc...
+*/
+
 import numeric from "numeric";
 import Bezier from "./bezier/bezier.js";
 import { pointFollowing } from "./strand";
@@ -79,9 +89,42 @@ function bezier(polygon: Polygon): Bezier {
   return new Bezier(...polygon.reduce((arr, sub) => arr.concat(sub)));
 }
 
+// todo - we could probably make this a bit fuzzy
+function deepEqual(a: Matrix, b: Matrix): boolean {
+  return a.every((row, rowIdx) =>
+    row.every((num, numIdx) => num === b[rowIdx][numIdx])
+  );
+}
+
+interface LUDecomposition {
+  LU: Matrix;
+  P: number[];
+}
+
+// todo - it would probs be better if the keys on here were the strand
+// themselves (or the useful part of them) rather than the matrix derived
+// from them?
+// todo - we should probably limit the number of records held by the cache...
+// todo - define strand topology in a manner independent of translation etc etc
+const LUCache = new Map<Matrix, LUDecomposition>();
+
+function checkLUCache(matrix: Matrix): LUDecomposition | undefined {
+  for (const [cacheKey, decomposition] of LUCache.entries()) {
+    if (deepEqual(cacheKey, matrix)) {
+      return decomposition;
+    }
+  }
+  return undefined;
+}
+
 function matrixSolution(strand: Strand) {
   const [matrix, equals] = constructMatrix(strand);
-  const controlPoints = numeric.solve(matrix, equals);
+  let lu = checkLUCache(matrix);
+  if (!lu) {
+    lu = numeric.LU(matrix);
+    LUCache.set(matrix, lu);
+  }
+  const controlPoints = numeric.LUsolve(lu, equals);
   return {
     xControlPoints: controlPoints.slice(0, controlPoints.length / 2),
     yControlPoints: controlPoints.slice(controlPoints.length / 2),
