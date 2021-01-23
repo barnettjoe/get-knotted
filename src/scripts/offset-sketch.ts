@@ -11,7 +11,8 @@ export default function addOffsetInfoToCrossingPoints(
   polylines: Set<PolyLine>
 ) {
   function polyLineOffset(bezier: Bezier, offset: number): PolyLine {
-    return polyline(bezier.reduce().map((segment) => segment.scale(offset)));
+    const simpleSegments = bezier.reduce();
+    return polyline(simpleSegments.map((segment) => segment.scale(offset)));
   }
   contour.forEach((strandElement, index) => {
     const nextStrandElement = pointFollowing(index, contour);

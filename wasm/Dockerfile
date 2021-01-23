@@ -1,7 +1,3 @@
-# useful articles which explain similar setups
-# https://surma.dev/things/c-to-webassembly/
-# https://depth-first.com/articles/2019/10/16/compiling-c-to-webassembly-and-running-it-without-emscripten/
-
 FROM debian:10.7
 COPY wasm /builder
 WORKDIR /builder

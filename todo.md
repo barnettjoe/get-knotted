@@ -1,4 +1,4 @@
-- [ ] improve performance of contour generation
+- [ ] improve performance of offsetting
 - [ ] take stock of types.ts...there is probably a load of old crap and duplicated stuff in there...especially check optional properties etc...
 - [ ] fully switch to model/primitives/drawloop
 - [ ] draw beziers with width

@@ -38,33 +38,19 @@
 
   Ax = B
 
-  The matrix A is dependent only on the sequence of crossing-points and
+  We solve for x using the LU-decomposition method. In some cases this is the slowest
+  part of the process. The matrix A is dependent only on the sequence of crossing-points and
   pointed-returns i.e. the topology of the strand (using the term loosely). This
-  allows us to use a cache when calculating its LU-decomposition.
-
-
-  a matrix of coefficients (TODO explain size etc...), x is a vector containing the
-  x and y values of our control points which we want to find.
-
-  We solve this using the numeric library, which uses LU decomposition. This can be quite slow
-  (although it's much better than computing the inverse of A) and is something we should look into optimizing.
+  allows us to use a cache when calculating the LU-decomposition, which improves the performance
+  a lot but of course doesn't help make it any better the first time, when the cache is empty.
+  The cache should make things much faster when e.g. moving around the frame of an existing knot,
+  although the LU-decomposition will need to be calculated afresh if the angles change such that
+  a pointed-return needs to be added or removed.
 
   When creating large knots by dragging a frame on a square grid, you initially create a lot of
   straight lines - one avenue worth exploring would be to account for these straight, lines first,
   to reduce the amount of control points you need to solve for i.e. reduce the size of the matrices
   involved in this calculation.
-
-  The matrices are always quite sparse - is the method used by numeric optimized for this?
-*/
-
-/*
-
-Notes on performance.
-The matrix A is just based on the topology of of the strand, not on the actual positions
-of the points (todo - confirm this is true...)
-This means if we create a knot and then move the points around, we are only changing B.
-The LU decomposition of A remains the same. This means the LU decomposition can be cached
-, keyed by the strand topology. This should make it much faster to move knots around etc...
 */
 
 import numeric from "numeric";
@@ -100,12 +86,6 @@ export default function contour(strand: Strand): Contour {
 
 function bezier(polygon: Polygon): Bezier {
   return new Bezier(...polygon.reduce((arr, sub) => arr.concat(sub)));
-}
-
-function deepEqual(a: Matrix, b: Matrix): boolean {
-  return a.every((row, rowIdx) =>
-    row.every((num, numIdx) => num === b[rowIdx][numIdx])
-  );
 }
 
 interface LUDecomposition {
@@ -151,7 +131,8 @@ function strandTopology(strand: Strand): StrandTopology {
 }
 
 function matrixSolution(strand: Strand) {
-  // todo - if we have a cache hit from the strand topology we don't actually need to generate the matrix...
+  // TODO - if we have a cache hit from the strand topology we only actually need to generate "equals",
+  // not the matrix. I don't think this has much effect on performance though.
   const [matrix, equals] = constructMatrix(strand);
   const topology = strandTopology(strand);
   let lu = checkLUCache(topology);
