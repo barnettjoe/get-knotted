@@ -70,6 +70,8 @@ import { pointFollowing } from "./strand";
 import { Contour, Strand, Matrix, Polygon, Vector } from "./types";
 
 const POINTED_RETURN_THETA = 1.5;
+const rightPointedReturnAngle = POINTED_RETURN_THETA;
+const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;
 
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
@@ -89,7 +91,6 @@ function bezier(polygon: Polygon): Bezier {
   return new Bezier(...polygon.reduce((arr, sub) => arr.concat(sub)));
 }
 
-// todo - we could probably make this a bit fuzzy
 function deepEqual(a: Matrix, b: Matrix): boolean {
   return a.every((row, rowIdx) =>
     row.every((num, numIdx) => num === b[rowIdx][numIdx])
@@ -110,6 +111,8 @@ const LUCache = new Map<Matrix, LUDecomposition>();
 
 function checkLUCache(matrix: Matrix): LUDecomposition | undefined {
   for (const [cacheKey, decomposition] of LUCache.entries()) {
+    // TODO - we could probably check equality within some small tolerance,
+    // rather than absolute equality.
     if (deepEqual(cacheKey, matrix)) {
       return decomposition;
     }
@@ -119,6 +122,7 @@ function checkLUCache(matrix: Matrix): LUDecomposition | undefined {
 
 function matrixSolution(strand: Strand) {
   const [matrix, equals] = constructMatrix(strand);
+  console.log(JSON.stringify({ matrix, equals }, null, 2));
   let lu = checkLUCache(matrix);
   if (!lu) {
     lu = numeric.LU(matrix);
@@ -149,86 +153,127 @@ function getBezier(
 }
 
 function constructMatrix(strand: Strand): [Matrix, number[]] {
-  let matrix: Matrix = [];
-  let equals: number[] = [];
+  function setConstraint(value: number, ...terms: [number, number][]): void {
+    const row = Array(strand.length * 4).fill(0);
+    terms.forEach(([coefficient, index]) => {
+      row[index] = coefficient;
+    });
+    matrix.push(row);
+    equals.push(value);
+  }
+
+  function previousBezierIndex(idx: number): number {
+    return idx > 0 ? idx - 1 : strand.length - 1;
+  }
+
+  function controlPointIndex(
+    controlPoint: ControlPoint,
+    bezierIndex: number,
+    dimension: Dimension
+  ): number {
+    let result = bezierIndex * 2;
+    if (controlPoint === ControlPoint.second) result++;
+    if (dimension === Dimension.y) result += strand.length * 2;
+    return result;
+  }
+
+  function setC1continuity(bezierIndex: number): void {
+    /*
+    We have two adjoining bezier curves P and Q.
+    P is defined by the points P0 P1 P2 P3.
+    Q is defined by the points Q0 Q1 Q2 Q3.
+
+    P3 is equal to Q0, and its value is already known (it
+    is the crossing-point at strand[i]).
+
+    The C1 constraint can be given as:
+    P3 - P2 = Q1 - Q0
+
+    i.e.
+    Q0 - P2 = Q1 - Q0
+
+    i.e.
+    Q1 + P2 = 2 * Q0
+
+    i.e.
+    1 * Q1 + 1 * P2 = 2 * Q0
+
+    This means we need to have [1, 1] as coefficients of Q1 and P2
+    for this row of the "A" matrix, and 2 * Q0 in our "equals" vector.
+  */
+    const prevBezIdx = previousBezierIndex(bezierIndex);
+    setConstraint(
+      2 * strand[bezierIndex].point.coords[0],
+      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.x)],
+      [1, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)]
+    );
+    setConstraint(
+      2 * strand[bezierIndex].point.coords[1],
+      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.y)],
+      [1, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
+    );
+  }
+  function setC2continuity(bezierIndex: number): void {
+    const prevBezIdx = previousBezierIndex(bezierIndex);
+    [Dimension.x, Dimension.y].forEach((dimension) => {
+      setConstraint(
+        0,
+        [1, controlPointIndex(ControlPoint.first, prevBezIdx, dimension)],
+        [-2, controlPointIndex(ControlPoint.second, prevBezIdx, dimension)],
+        [2, controlPointIndex(ControlPoint.first, bezierIndex, dimension)],
+        [-1, controlPointIndex(ControlPoint.second, bezierIndex, dimension)]
+      );
+    });
+  }
+  function setPointedReturnAngle(bezierIndex: number): void {
+    const strandElement = strand[bezierIndex];
+    const [x, y] = strandElement.point.coords;
+    const angle =
+      strandElement.pr === "R"
+        ? rightPointedReturnAngle
+        : leftPointedReturnAngle;
+    const prevBezIdx = previousBezierIndex(bezierIndex);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    setConstraint(
+      (1 - cos) * x + sin * y,
+      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.x)],
+      [-cos, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)],
+      [sin, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
+    );
+    setConstraint(
+      (1 - cos) * y - sin * x,
+      [-sin, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.x)],
+      [1, controlPointIndex(ControlPoint.second, prevBezIdx, Dimension.y)],
+      [-cos, controlPointIndex(ControlPoint.first, bezierIndex, Dimension.y)]
+    );
+    // const row1 = condition(2 * bezierIndex - 1, [1, -cos], strand.length);
+    // const row2 = condition(2 * bezierIndex, [sin], strand.length);
+    // const row3 = condition(2 * bezierIndex, [-sin], strand.length);
+    // newMatrix.push(row1.concat(row2), row3.concat(row1));
+    // newEquals.push((1 - cos) * x + sin * y);
+    // newEquals.push();
+  }
+
+  const matrix: Matrix = [];
+  const equals: number[] = [];
   for (let strandIdx = 0; strandIdx < strand.length; strandIdx++) {
-    [matrix, equals] = setC2continuity(strandIdx, strand, matrix, equals);
-    [matrix, equals] = strand[strandIdx].pr
-      ? setPointedReturnAngle(strandIdx, strand, matrix, equals)
-      : setC1continuity(strandIdx, strand, matrix, equals);
+    setC2continuity(strandIdx);
+    if (strand[strandIdx].pr) {
+      setPointedReturnAngle(strandIdx);
+    } else {
+      setC1continuity(strandIdx);
+    }
   }
   return [matrix, equals];
 }
 
-function emptyRow(strand: Strand): number[] {
-  return Array(strand.length * 2).fill(0);
+enum ControlPoint {
+  first,
+  second,
 }
 
-function condition(startIdx: number, entries: number[], strand: Strand) {
-  const row = emptyRow(strand);
-  for (const x of entries) {
-    if (startIdx > row.length - 1) {
-      row[startIdx % row.length] = x;
-    } else if (startIdx >= 0) {
-      row[startIdx] = x;
-    } else {
-      row[row.length + startIdx] = x;
-    }
-    startIdx++;
-  }
-  return row;
-}
-function setC1continuity(
-  i: number,
-  strand: Strand,
-  matrix: number[][],
-  equals: number[]
-): [Matrix, number[]] {
-  const newMatrix = matrix.slice();
-  const newEquals = equals.slice();
-  const row = condition(2 * i - 1, [1, 1], strand);
-  newMatrix.push(row.concat(emptyRow(strand)));
-  newMatrix.push(emptyRow(strand).concat(row));
-  newEquals.push(2 * strand[i].point.coords[0]);
-  newEquals.push(2 * strand[i].point.coords[1]);
-  return [newMatrix, newEquals];
-}
-
-function setC2continuity(
-  i: number,
-  strand: Strand,
-  matrix: number[][],
-  equals: number[]
-): [Matrix, number[]] {
-  const newMatrix = matrix.slice();
-  const newEquals = equals.slice();
-  const row = condition(2 * i, [1, -2, 2, -1], strand);
-  newMatrix.push(row.concat(emptyRow(strand)));
-  newMatrix.push(emptyRow(strand).concat(row));
-  newEquals.push(0);
-  newEquals.push(0);
-  return [newMatrix, newEquals];
-}
-
-function setPointedReturnAngle(
-  i: number,
-  strand: Strand,
-  matrix: number[][],
-  equals: number[]
-): [Matrix, number[]] {
-  const newMatrix = matrix.slice();
-  const newEquals = equals.slice();
-  const strandElement = strand[i];
-  const [x, y] = strandElement.point.coords;
-  const angle =
-    strandElement.pr === "R"
-      ? POINTED_RETURN_THETA
-      : 2 * Math.PI - POINTED_RETURN_THETA;
-  const row1 = condition(2 * i - 1, [1, -Math.cos(angle)], strand);
-  const row2 = condition(2 * i, [Math.sin(angle)], strand);
-  const row3 = condition(2 * i, [-Math.sin(angle)], strand);
-  newMatrix.push(row1.concat(row2), row3.concat(row1));
-  newEquals.push((1 - Math.cos(angle)) * x + Math.sin(angle) * y);
-  newEquals.push((1 - Math.cos(angle)) * y - Math.sin(angle) * x);
-  return [newMatrix, newEquals];
+enum Dimension {
+  x,
+  y,
 }

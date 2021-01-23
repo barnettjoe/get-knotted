@@ -1,9 +1,9 @@
+- [ ] improve performance of contour generation
 - [ ] take stock of types.ts...there is probably a load of old crap and duplicated stuff in there...especially check optional properties etc...
 - [ ] fully switch to model/primitives/drawloop
 - [ ] draw beziers with width
 - [ ] add color buffers to allow color drawing...
 - [ ] tidy up webgl code
-- [ ] identify hot code for performance improvements
 - [ ] fix debug tools
 - [ ] why are there 2 eslint config files?
 - [ ] analyze webpack bundle size
