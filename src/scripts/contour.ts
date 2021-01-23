@@ -1,10 +1,10 @@
 /*
   Our goal here is to produce for each strand a set of
-  bezier curves which fit together in a manner thay complies
-  with some constraints.
+  bezier curves which fit together in a manner that satisfies
+  some constraints.
 
   We're using cubic beziers, so each curve is defined by 4 points: a
-  start point, two control points, and an end point.
+  start point P0, two control points P1 and P2, and an end point P3.
 
   Our constraints are given in terms of parametric continuity.
   Some useful links for background:
@@ -12,15 +12,13 @@
   https://en.wikipedia.org/wiki/Smoothness#Geometric_continuity
   https://stackoverflow.com/questions/12295773/joining-two-b%C3%A9zier-curves-smoothly-c2-continuous
 
-  Our first constraint is C0 continuity i.e. positional continuity;
-  this means the end point of each bezier curve is equal to the start
-  point of the next curve. This constraint doesn't have to be explicitly
-  applied as part of this calculation - it's ensured by the fact that
-  we're using the same points for the end of each curve as for the start
-  of the next one. This applies both for crossing-points and pointed-return
-  points.
+  Our first constraint is C0 continuity i.e. positional continuity.
+  This just means the end point of each bezier curve is equal to the start
+  point of the next curve. We don't have to do anything special as part of this
+  calculation to ensure that C0 continuity is met; the start and end points are
+  already known (they are the crossing-points and pointed-return points).
 
-  At the crossing-points, we go beyond C0 continuity to C2 continuity.
+  At the crossing-points, we apply the constraint of C2 continuity.
   This means that each pair of bezier curves meeting at a crossing-point
   must be equal in both their first (C1) and second (C2) derivatives at
   that point.
@@ -31,7 +29,7 @@
 
   The C1 and C2 constraints are applied only at the crossing-points. The
   pointed-return points instead have a constant-angle constraint i.e. the
-  angle between the tangents of the two curves must equal some constant
+  angle between the tangents of the two curves must equal the constant
   POINTED_RETURN_THETA at the point where they meet.
 
   This whole set of constraints, applied to a cyclic strand of crossing-points
@@ -40,11 +38,16 @@
 
   Ax = B
 
-  where A is a matrix of coefficients (TODO explain size etc...), x is a vector containing the
+  The matrix A is dependent only on the sequence of crossing-points and
+  pointed-returns i.e. the topology of the strand (using the term loosely). This
+  allows us to use a cache when calculating its LU-decomposition.
+
+
+  a matrix of coefficients (TODO explain size etc...), x is a vector containing the
   x and y values of our control points which we want to find.
 
   We solve this using the numeric library, which uses LU decomposition. This can be quite slow
-  and is something we should look into optimizing.
+  (although it's much better than computing the inverse of A) and is something we should look into optimizing.
 
   When creating large knots by dragging a frame on a square grid, you initially create a lot of
   straight lines - one avenue worth exploring would be to account for these straight, lines first,
@@ -67,7 +70,15 @@ The LU decomposition of A remains the same. This means the LU decomposition can 
 import numeric from "numeric";
 import Bezier from "./bezier/bezier.js";
 import { pointFollowing } from "./strand";
-import { Contour, Strand, Matrix, Polygon, Vector } from "./types";
+import {
+  Contour,
+  Strand,
+  Matrix,
+  Polygon,
+  Vector,
+  Dimension,
+  BezierControlPoint,
+} from "./types";
 
 const POINTED_RETURN_THETA = 1.5;
 const rightPointedReturnAngle = POINTED_RETURN_THETA;
@@ -102,30 +113,51 @@ interface LUDecomposition {
   P: number[];
 }
 
-// todo - it would probs be better if the keys on here were the strand
-// themselves (or the useful part of them) rather than the matrix derived
-// from them?
-// todo - we should probably limit the number of records held by the cache...
-// todo - define strand topology in a manner independent of translation etc etc
-const LUCache = new Map<Matrix, LUDecomposition>();
+// TODO - we might want to limit the number of records held by the cache
+type MapWithResult = Map<null, LUDecomposition>;
+type MapWithMore = Map<boolean, RecursiveCache>;
+type RecursiveCache = MapWithResult & MapWithMore;
+const LUCache: RecursiveCache = new Map();
 
-function checkLUCache(matrix: Matrix): LUDecomposition | undefined {
-  for (const [cacheKey, decomposition] of LUCache.entries()) {
-    // TODO - we could probably check equality within some small tolerance,
-    // rather than absolute equality.
-    if (deepEqual(cacheKey, matrix)) {
-      return decomposition;
-    }
+function checkLUCache(topology: StrandTopology): LUDecomposition | undefined {
+  let cache = LUCache;
+  for (const element of topology) {
+    const nextCache = cache.get(element);
+    if (nextCache === undefined) return undefined;
+    cache = nextCache;
   }
-  return undefined;
+  if (cache === undefined) return undefined;
+  return cache.get(null);
+}
+
+function setLUCache(topology: StrandTopology, lu: LUDecomposition): void {
+  let cache = LUCache;
+  for (const element of topology) {
+    let nextCache = cache.get(element);
+    if (nextCache === undefined) {
+      nextCache = new Map();
+      cache.set(element, nextCache);
+    }
+    cache = nextCache;
+  }
+  cache.set(null, lu);
+}
+
+type StrandTopology = boolean[];
+function strandTopology(strand: Strand): StrandTopology {
+  // the "topology" is very simple - all that matters
+  // is the sequence of points, and whether each one is a pointed-return
+  return strand.map((element) => !!element.pr);
 }
 
 function matrixSolution(strand: Strand) {
+  // todo - if we have a cache hit from the strand topology we don't actually need to generate the matrix...
   const [matrix, equals] = constructMatrix(strand);
-  let lu = checkLUCache(matrix);
+  const topology = strandTopology(strand);
+  let lu = checkLUCache(topology);
   if (!lu) {
     lu = numeric.LU(matrix);
-    LUCache.set(matrix, lu);
+    setLUCache(topology, lu);
   }
   const controlPoints = numeric.LUsolve(lu, equals);
   return {
@@ -262,16 +294,4 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
     }
   });
   return [matrix, equals];
-}
-
-enum BezierControlPoint {
-  P0,
-  P1,
-  P2,
-  P3,
-}
-
-enum Dimension {
-  x = 0,
-  y,
 }

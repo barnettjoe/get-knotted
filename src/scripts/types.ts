@@ -242,3 +242,15 @@ export interface CollectionIntersectionResult {
   idxB: number;
   intersection: Point;
 }
+
+export enum BezierControlPoint {
+  P0,
+  P1,
+  P2,
+  P3,
+}
+
+export enum Dimension {
+  x = 0,
+  y,
+}
