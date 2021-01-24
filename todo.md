@@ -1,6 +1,8 @@
+- [ ] set up environment for testing c code without wasm
+- [ ] set up language server/formatting, linting? for writing c
 - [ ] take stock of types.ts...there is probably a load of old crap and duplicated stuff in there...especially check optional properties etc...
 - [ ] fully switch to model/primitives/drawloop
-- [ ] draw beziers with width
+- [ ] draw beziers with width (offset on the gpu?!)
 - [ ] add color buffers to allow color drawing...
 - [ ] tidy up webgl code
 - [ ] fix debug tools

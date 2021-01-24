@@ -23,6 +23,7 @@ cd emsdk/upstream/emscripten
   -s SINGLE_FILE=1 \
   -s EXPORTED_FUNCTIONS='["_add", "_malloc", "_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
+  -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
   -s ENVIRONMENT='web' \
   -"$OPTIMIZATION_ARG"
 

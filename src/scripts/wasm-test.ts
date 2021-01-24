@@ -1,21 +1,37 @@
 import wasmWrapperModule from "../../wasm/output/add";
 
-// TODO - can this be better typed?
+type BaseDataType = "i8" | "i16" | "i32" | "i64" | "float" | "double";
+type DataType = BaseDataType | `${BaseDataType}*` | "*";
+
 interface WasmModule {
   cwrap(fnName: string, returnType: string, paramTypes: string[]): any;
   _malloc(size: number): number;
   _free(address: number): void;
-  HEAPF32: { set(data: Float32Array, address: number): void };
+  getValue(address: number, dataType: DataType): void;
+  setValue(address: number, value: number, dataType: DataType): void;
 }
 
 // testing wasm
 wasmWrapperModule().then((wasmModule: WasmModule) => {
-  const typedArray = new Float32Array([1, 2, 3, 4, 5]);
-  const buffer = wasmModule._malloc(
-    typedArray.length * typedArray.BYTES_PER_ELEMENT
+  // create an array to pass in to wasm
+  const inputArray = new Uint16Array([11, 22, 33, 44]);
+  const inputPointer = wasmModule._malloc(
+    inputArray.length * inputArray.BYTES_PER_ELEMENT
   );
-  wasmModule.HEAPF32.set(typedArray, buffer >> 2);
-  const add = wasmModule.cwrap("add", "number", ["number"]);
-  console.log(add(buffer));
-  wasmModule._free(buffer);
+  inputArray.forEach((val, idx) => {
+    wasmModule.setValue(
+      inputPointer + idx * inputArray.BYTES_PER_ELEMENT,
+      val,
+      "i16"
+    );
+  });
+  const wasmFn = wasmModule.cwrap("add", "number", ["number"]);
+  const pointer = wasmFn(inputPointer);
+  // log out values from the array whose pointer was returned from wasm-land
+  for (let i = 0; i < 5; i++) {
+    console.log(wasmModule.getValue(pointer + 4 * i, "i16"));
+  }
+  // cleanup
+  wasmModule._free(pointer);
+  wasmModule._free(inputPointer);
 });
