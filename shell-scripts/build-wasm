@@ -27,4 +27,4 @@ docker run -it --name wasm-builder \
   --mount type=bind,source="$(pwd)"/wasm/output,target=/wasm-output \
   --mount type=bind,source="$(pwd)"/src/c,target=/source \
   wasm-builder-image \
-  ./compile "$optimization_arg"
+  /source/compile "$optimization_arg"

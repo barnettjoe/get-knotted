@@ -1,17 +1,6 @@
-import wasmWrapperModule from "../../wasm/output/add";
+import "./wasm-test.ts";
 import drawing from "./drawing";
 import { Mode, MODES } from "./types";
-
-// TODO - can this be better typed?
-interface WasmModule {
-  cwrap(...args: any): any;
-}
-
-// testing wasm
-wasmWrapperModule().then((wasmModule: WasmModule) => {
-  const add = wasmModule.cwrap("add", "number", ["number", "number"]);
-  console.log(add(1, 2));
-});
 
 function changeDrawingMode(newMode: Mode) {
   return () => (drawing.mode = newMode);

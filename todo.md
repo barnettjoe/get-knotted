@@ -9,5 +9,7 @@
 
 performance ideas:
 
+- do LU-decomp in wasm - https://becominghuman.ai/passing-and-returning-webassembly-array-parameters-a0f572c65d97
 - move more onto the gpu
 - split large strands before constructing matrix/doing LU decomposition?
+- use pthreads?

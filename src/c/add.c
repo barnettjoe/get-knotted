@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int add(int a, int b)
+float add(float num[])
 {
-    return a + b;
+    return num[1];
 }

@@ -21,7 +21,7 @@ cd emsdk/upstream/emscripten
 ./emcc /source/add.c \
   -o /wasm-output/add.mjs \
   -s SINGLE_FILE=1 \
-  -s EXPORTED_FUNCTIONS='["_add"]' \
+  -s EXPORTED_FUNCTIONS='["_add", "_malloc", "_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s ENVIRONMENT='web' \
   -"$OPTIMIZATION_ARG"
