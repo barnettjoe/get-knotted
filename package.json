@@ -4,7 +4,8 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "yarn tsc --noEmit",
+    "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
+    "test:wasm": "TEST=true ./shell-scripts/build-wasm && node ./test/test-wasm.js",
     "build:docker": "docker build -t wasm-builder-image -f wasm/Dockerfile .",
     "build:wasm": "./shell-scripts/build-wasm",
     "build:wasm:optimized": "OPTIMIZE=true ./shell-scripts/build-wasm",
@@ -27,6 +28,7 @@
     "eslint": "^7.18.0",
     "eslint-config-prettier": "^7.2.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "esm": "^3.2.25",
     "html-webpack-plugin": "^5.0.0-alpha.10",
     "prettier": "^2.2.1",
     "raw-loader": "^4.0.2",

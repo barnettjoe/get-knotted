@@ -65,7 +65,6 @@ import {
   Dimension,
   BezierControlPoint,
 } from "./types";
-
 const POINTED_RETURN_THETA = 1.5;
 const rightPointedReturnAngle = POINTED_RETURN_THETA;
 const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;

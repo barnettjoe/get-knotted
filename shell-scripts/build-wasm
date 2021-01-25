@@ -1,14 +1,33 @@
 #!/usr/bin/env bash
 set -e
 
-# Decide if we want an optimized build
+# see details of compiler flags here https://github.com/emscripten-core/emscripten/blob/master/src/settings.js
+
 if [ "$OPTIMIZE" = 'true' ];
 then
-  optimization_arg="O3"
+  export OPTIMIZATION="O3"
+  export ASSERTIONS=0
+  export SAFE_HEAP=0
+  export STACK_OVERFLOW_CHECK=0
+  export DEMANGLE_SUPPORT=0
 else
-  optimization_arg="O0"
+  export OPTIMIZATION="O0"
+  export ASSERTIONS=2
+  export SAFE_HEAP=1
+  export STACK_OVERFLOW_CHECK=2
+  export DEMANGLE_SUPPORT=1
 fi
 
+if [ "$TEST" = 'true' ];
+then
+  export RUNTIME_ENV=node
+  export USE_ES6_IMPORT_META=0
+  export FILENAME="matrix"
+else
+  export RUNTIME_ENV=web
+  export USE_ES6_IMPORT_META=1
+  export FILENAME="add"
+fi
 
 # if there's already a container with the same name, remove it (it's probably from the last time we ran this script)
 if [[ $(docker ps -aq --filter 'name=wasm-builder') ]]
@@ -26,5 +45,14 @@ rm -rf wasm/output/*
 docker run -it --name wasm-builder \
   --mount type=bind,source="$(pwd)"/wasm/output,target=/wasm-output \
   --mount type=bind,source="$(pwd)"/src/c,target=/source \
+  --env OPTIMIZATION  \
+  --env RUNTIME_ENV \
+  --env OPTIMIZATION \
+  --env ASSERTIONS \
+  --env SAFE_HEAP \
+  --env STACK_OVERFLOW_CHECK \
+  --env DEMANGLE_SUPPORT \
+  --env OPTIMIZATION \
+  --env FILENAME \
   wasm-builder-image \
-  /source/compile "$optimization_arg"
+  /source/compile

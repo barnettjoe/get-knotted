@@ -1,5 +1,6 @@
-- [ ] set up environment for testing c code without wasm
-- [ ] set up language server/formatting, linting? for writing c
+- [ ] improve setup of testing and compiling environments
+- [ ] research which compiler flags I should be using for strictest/most helpful errors...
+- [ ] write tests in jest for matrix lib in c?
 - [ ] take stock of types.ts...there is probably a load of old crap and duplicated stuff in there...especially check optional properties etc...
 - [ ] fully switch to model/primitives/drawloop
 - [ ] draw beziers with width (offset on the gpu?!)
