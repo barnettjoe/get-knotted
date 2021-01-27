@@ -1,25 +1,22 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-static int length = 10000;
-
-int* range()
+void print_matrix(float** m, int rows, int cols)
 {
-    int* arr = malloc(length * sizeof(int));
-    int i;
-    for (i = 0; i < length; i++) {
-        arr[i] = i;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            printf("%f ", m[i][j]);
+        }
+        printf("\n");
     }
-    return arr;
 }
 
 int matrix()
 {
-    int* arr = range();
-    int i;
-    for (i = 0; i < length; i++) {
-        printf("%d\n", arr[i]);
-    }
-    free(arr);
+    float first_row[] = { 1, 2, 3 };
+    float second_row[] = { 4, 5, 6 };
+    float* matrix[2];
+    matrix[0] = first_row;
+    matrix[1] = second_row;
+    print_matrix(matrix, 2, 3);
     return 0;
 }
