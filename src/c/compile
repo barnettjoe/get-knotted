@@ -28,6 +28,7 @@ cd emsdk/upstream/emscripten
   -s SAFE_HEAP="$SAFE_HEAP" \
   -s STACK_OVERFLOW_CHECK="$STACK_OVERFLOW_CHECK" \
   -s DEMANGLE_SUPPORT="$DEMANGLE_SUPPORT" \
+  -Werror \
   -"$OPTIMIZATION"
 
 # We don't particularly want to keep the mjs extension
