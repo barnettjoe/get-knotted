@@ -7,7 +7,6 @@
 - [ ] add color buffers to allow color drawing...
 - [ ] tidy up webgl code
 - [ ] fix debug tools
-- [ ] why are there 2 eslint config files?
 - [ ] analyze webpack bundle size
 
 performance ideas:

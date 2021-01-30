@@ -1,27 +1,7 @@
-#include <math.h>
+#include "test.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define ANSI_COLOR_RED "\x1b[31m"
-#define ANSI_COLOR_GREEN "\x1b[32m"
-#define ANSI_COLOR_RESET "\x1b[0m"
-
-void report_test_failure(char* text)
-
-{
-    printf(ANSI_COLOR_RED);
-    printf("test failed: ");
-    puts(text);
-    printf(ANSI_COLOR_RESET);
-}
-
-void report_test_success(char* text)
-{
-    printf(ANSI_COLOR_GREEN);
-    printf("test passed: ");
-    puts(text);
-    printf(ANSI_COLOR_RESET);
-}
 
 void* allocate_matrix(int rows, int cols)
 {
@@ -134,17 +114,6 @@ void solve_lup(
     // then obtain x by backward substitution
 }
 
-void expectToBeCloseTo(float actualVal, float expectedVal)
-{
-    float errorThreshold = 0.0005;
-    float diff = fabsf(actualVal - expectedVal);
-    if (diff > errorThreshold) {
-        report_test_failure("value was outside floating point error threshold");
-    }
-}
-
-void expectMatrixCloseTo() { }
-
 int matrix()
 {
     int start_matrix_rows = 2;
@@ -166,7 +135,7 @@ int matrix()
     float matrix_a[][3] = { { 0, 3, 5 }, { 5, 5, 2 } };
     float matrix_b[][2] = { { 3, 4 }, { 3, -2 }, { 4, -2 } };
     float(*mult_result)[] = allocate_matrix(matrix_a_rows, matrix_b_cols);
-    multiply(matrix_a_rows, matrix_a_cols, matrix_b_rows, matrix_b_cols, matrix_a, matrix_b, mult_result);
+    // multiply(matrix_a_rows, matrix_a_cols, matrix_b_rows, matrix_b_cols, matrix_a, matrix_b, mult_result);
     print_matrix(matrix_a_rows, matrix_b_cols, mult_result);
     free(mult_result);
 
@@ -179,5 +148,9 @@ int matrix()
     forward_substitution(b_rows, L, pi, b, y);
     print_array(b_rows, y);
     free(y);
+
+    bool foo = isCloseTo(1234, 1234);
+    printf(foo ? "true" : "false");
+    printf("\n");
     return 0;
 }

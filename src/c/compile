@@ -16,7 +16,7 @@ cd emsdk/upstream/emscripten
 # added by the compiler as part of the calling convention.
 
 # The EXPORTED_RUNTIME_METHODS option tells emcc we want to use the cwrap function in our JS to interface with the wasm.
-./emcc /source/"$FILENAME".c \
+./emcc /source/{matrix.c,test.c} \
   -v \
   -o /wasm-output/"$FILENAME".mjs \
   -s SINGLE_FILE=1 \

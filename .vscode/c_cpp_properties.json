@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "defines": [],
+      "macFrameworkPath": [],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11"
+    }
+  ],
+  "version": 4
+}
