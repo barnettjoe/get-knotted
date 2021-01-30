@@ -29,6 +29,7 @@ cd emsdk/upstream/emscripten
   -s STACK_OVERFLOW_CHECK="$STACK_OVERFLOW_CHECK" \
   -s DEMANGLE_SUPPORT="$DEMANGLE_SUPPORT" \
   -Werror \
+  -std=c11 \
   -"$OPTIMIZATION"
 
 # We don't particularly want to keep the mjs extension

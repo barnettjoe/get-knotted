@@ -8,35 +8,28 @@ float get_value(int row_count, int col_count, int row_idx, int col_idx, float ma
     return matrix[row_idx][col_idx];
 }
 
-void set_value(int row_count, int col_count, int row_idx, int col_idx, float matrix[row_count][col_count], float value)
-{
-    matrix[row_idx][col_idx] = value;
-}
-
 void print_matrix(int row_count, int col_count, float matrix[row_count][col_count])
 {
     for (int i = 0; i < row_count; i++) {
         for (int j = 0; j < col_count; j++) {
-            printf("%f ", get_value(row_count, col_count, i, j, matrix));
+            printf("%f ", matrix[i][j]);
         }
         printf("\n");
     }
 }
 
-float* allocate_matrix(int row_count, int col_count)
-{
-    return malloc(row_count * col_count * sizeof(float));
-}
+// float* allocate_matrix(int row_count, int col_count)
+// {
+//     return malloc(row_count * col_count * sizeof(float));
+// }
 
-float** transpose(int row_count, int col_count, float matrix[col_count][row_count])
+void transpose(int row_count, int col_count, float matrix[row_count][col_count], float result[col_count][row_count])
 {
-    float* result = allocate_matrix(col_count, row_count);
     for (int row_idx = 0; row_idx < row_count; row_idx++) {
         for (int col_idx = 0; col_idx < col_count; col_idx++) {
-            set_value(row_count, col_count, col_idx, row_idx, result, get_value(row_count, col_count, row_idx, col_idx, matrix));
+            result[col_idx][row_idx] = matrix[row_idx][col_idx];
         }
     }
-    return result;
 }
 
 // // We could define multiplication in terms of dot products of rows of A
@@ -64,14 +57,20 @@ float** transpose(int row_count, int col_count, float matrix[col_count][row_coun
 
 int matrix()
 {
-    float m[2][3] = {
-        { 1, 2, 3 },
-        { 4, 5, 6 }
-    };
-    print_matrix(2, 3, m);
-    puts("\n");
+    int start_matrix_rows = 2;
+    int start_matrix_cols = 3;
+    float start_matrix[][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
+    print_matrix(start_matrix_rows, start_matrix_cols, start_matrix);
+
     // test transposition
-    float** transposed_matrix = transpose(2, 3, m);
+    float(*result_matrix)[] = malloc(start_matrix_rows * sizeof(float[start_matrix_cols]));
+    transpose(start_matrix_rows, start_matrix_cols, start_matrix, result_matrix);
+    print_matrix(start_matrix_cols, start_matrix_rows, result_matrix);
+    free(result_matrix);
+
+    // test multiplication
+
+    // float[3][2] transposed_matrix = transpose(2, 3, m);
     // print_matrix(transposed_matrix, 3, 2);
     // printf("%f\n", get_value(transposed_matrix, 2, 1, 1));
     // free(transposed_matrix);
