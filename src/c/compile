@@ -16,14 +16,15 @@ cd emsdk/upstream/emscripten
 # added by the compiler as part of the calling convention.
 
 # The EXPORTED_RUNTIME_METHODS option tells emcc we want to use the cwrap function in our JS to interface with the wasm.
-./emcc /source/{matrix.c,test.c} \
+./emcc /source/"$FILENAME".c \
   -v \
-  -o /wasm-output/"$FILENAME".mjs \
+  -o /wasm-output/"$FILENAME".js \
   -s SINGLE_FILE=1 \
+  -s MODULARIZE=1 \
   -s EXPORTED_FUNCTIONS="[\"_$FILENAME\", \"_malloc\", \"_free\"]" \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
-  -s ENVIRONMENT="$RUNTIME_ENV" \
+  -s ENVIRONMENT="node" \
   -s ASSERTIONS="$ASSERTIONS" \
   -s SAFE_HEAP="$SAFE_HEAP" \
   -s STACK_OVERFLOW_CHECK="$STACK_OVERFLOW_CHECK" \
@@ -33,5 +34,5 @@ cd emsdk/upstream/emscripten
   -"$OPTIMIZATION"
 
 # We don't particularly want to keep the mjs extension
-mv /wasm-output/"$FILENAME".mjs /wasm-output/"$FILENAME".js
+# mv /wasm-output/"$FILENAME".mjs /wasm-output/"$FILENAME".js
 

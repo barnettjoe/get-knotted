@@ -1,4 +1,3 @@
-#include "test.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -114,7 +113,7 @@ void solve_lup(
     // then obtain x by backward substitution
 }
 
-int matrix()
+void test_transposition()
 {
     int start_matrix_rows = 2;
     int start_matrix_cols = 3;
@@ -126,8 +125,10 @@ int matrix()
     transpose(start_matrix_rows, start_matrix_cols, start_matrix, transposed_matrix);
     print_matrix(start_matrix_cols, start_matrix_rows, transposed_matrix);
     free(transposed_matrix);
+}
 
-    // test multiplication;
+void test_multiplication()
+{
     int matrix_a_rows = 2;
     int matrix_a_cols = 3;
     int matrix_b_rows = 3;
@@ -138,19 +139,25 @@ int matrix()
     // multiply(matrix_a_rows, matrix_a_cols, matrix_b_rows, matrix_b_cols, matrix_a, matrix_b, mult_result);
     print_matrix(matrix_a_rows, matrix_b_cols, mult_result);
     free(mult_result);
+}
 
-    // test forward substitution
+void test_forward_substitution()
+{
     int b_rows = 3;
     float L[][3] = { { 1, 0, 0 }, { 0.2, 1, 0 }, { 0.6, 0.5, 1 } };
     int pi[] = { 2, 0, 1 };
     float b[] = { 3, 7, 8 };
     float* y = malloc(b_rows * sizeof(float));
     forward_substitution(b_rows, L, pi, b, y);
+    float expected_result[] = { 8, 1.4, 1.5 };
     print_array(b_rows, y);
     free(y);
+}
 
-    bool foo = isCloseTo(1234, 1234);
-    printf(foo ? "true" : "false");
-    printf("\n");
+int matrix()
+{
+    test_transposition();
+    test_multiplication();
+    test_forward_substitution();
     return 0;
 }
