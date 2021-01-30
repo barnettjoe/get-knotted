@@ -157,7 +157,6 @@ void test_forward_substitution()
 int matrix()
 {
     test_transposition();
-    test_multiplication();
     test_forward_substitution();
     return 0;
 }
