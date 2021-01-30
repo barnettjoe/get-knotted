@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void* allocate_matrix(int rows, int cols)
+{
+    return malloc(rows * sizeof(float[cols]));
+}
+
 void print_matrix(int row_count, int col_count, float matrix[row_count][col_count])
 {
     for (int i = 0; i < row_count; i++) {
@@ -12,7 +17,19 @@ void print_matrix(int row_count, int col_count, float matrix[row_count][col_coun
     printf("\n");
 }
 
-void transpose(int row_count, int col_count, float matrix[row_count][col_count], float result[col_count][row_count])
+void print_array(int count, float array[count])
+{
+    for (int i = 0; i < count; i++) {
+        printf("%f ", array[i]);
+    }
+    printf("\n");
+}
+
+void transpose(
+    int row_count,
+    int col_count,
+    float matrix[row_count][col_count],
+    float result[col_count][row_count])
 {
     for (int row_idx = 0; row_idx < row_count; row_idx++) {
         for (int col_idx = 0; col_idx < col_count; col_idx++) {
@@ -29,7 +46,14 @@ void transpose(int row_count, int col_count, float matrix[row_count][col_count],
 // There are also multi-threaded algos in CLRS which we could explore if needs be.
 // There are also the galactic algos e.g. coppersmith-winograd which we can safely ignore...
 // NB. numeric.js takes its matrix multiplication method from the google closure library, which is just the simple On3 algo.
-void multiply(int a_rows, int a_cols, int b_rows, int b_cols, float a[a_rows][a_cols], float b[b_rows][b_cols], float result[a_rows][b_cols])
+void multiply(
+    int a_rows,
+    int a_cols,
+    int b_rows,
+    int b_cols,
+    float a[a_rows][a_cols],
+    float b[b_rows][b_cols],
+    float result[a_rows][b_cols])
 {
     if (a_cols != b_rows) {
         puts("row count of matrix A does not match column count of matrix B");
@@ -46,9 +70,46 @@ void multiply(int a_rows, int a_cols, int b_rows, int b_cols, float a[a_rows][a_
     }
 }
 
-void* allocate_matrix(int rows, int cols)
+/*
+  Given a unit-lower-triangular matrix L, a permutation matrix P (represented
+  by a 1d array called pi), and a vector b, such that Ly = Pb, solve for the vector y
+  by forward substitution.
+*/
+void forward_substitution(
+    int b_rows,
+    float L[b_rows][b_rows],
+    int pi[b_rows],
+    float b[b_rows],
+    float result[b_rows])
 {
-    return malloc(rows * sizeof(float[cols]));
+    for (int i = 0; i < b_rows; i++) {
+        float sum = 0;
+        for (int j = 0; j < i; j++) {
+            sum += L[i][j] * result[j];
+        }
+        result[i] = b[pi[i]] - sum;
+    }
+}
+
+/*
+  Given a unit-lower-triangular matrix L, a unit-upper-triangular matrix U,
+  a permutation matrix P (represented by a 1d array called pi), and a vector b,
+  such that LUx = Pb, solve for the vector x.
+  See CLRS 2nd Edition, chapter 28.
+*/
+void solve_lup(
+    int b_rows,
+    float L[b_rows][b_rows],
+    float U[b_rows][b_rows],
+    int pi[b_rows],
+    float b[b_rows],
+    float result[b_rows])
+{
+    // We have LUx = Pb
+    // Let y = Ux, so that Ly = Pb
+    float y[b_rows];
+    // Obtain y by forward substitution
+    // then obtain x by backward substitution
 }
 
 int matrix()
@@ -75,5 +136,15 @@ int matrix()
     multiply(matrix_a_rows, matrix_a_cols, matrix_b_rows, matrix_b_cols, matrix_a, matrix_b, mult_result);
     print_matrix(matrix_a_rows, matrix_b_cols, mult_result);
     free(mult_result);
+
+    // test forward substitution
+    int b_rows = 3;
+    float L[][3] = { { 1, 0, 0 }, { 0.2, 1, 0 }, { 0.6, 0.5, 1 } };
+    int pi[] = { 2, 0, 1 };
+    float b[] = { 3, 7, 8 };
+    float* y = malloc(b_rows * sizeof(float));
+    forward_substitution(b_rows, L, pi, b, y);
+    print_array(b_rows, y);
+    free(y);
     return 0;
 }
