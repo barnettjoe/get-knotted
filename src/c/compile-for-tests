@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -eu
+
+cd /builder/emsdk/upstream/emscripten
+
+./emcc /source/matrix.c \
+  -v \
+  -o /built-wasm/matrix.js \
+  -s SINGLE_FILE=1 \
+  -s MODULARIZE=1 \
+  -s EXPORTED_FUNCTIONS='["_multiply", "_forward_substitution", "_malloc", "_free"]' \
+  -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
+  -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
+  -s ENVIRONMENT="node" \
+  -s ASSERTIONS=1 \
+  -s SAFE_HEAP=1 \
+  -s STACK_OVERFLOW_CHECK=2 \
+  -s DEMANGLE_SUPPORT=1 \
+  -Werror \
+  -std=c11 \
+  -O0

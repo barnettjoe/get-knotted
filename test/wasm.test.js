@@ -3,7 +3,7 @@ const {
   toMatchCloseTo,
 } = require("jest-matcher-deep-close-to");
 expect.extend({ toBeDeepCloseTo });
-const wasmModuleWrapper = require("../wasm/output/matrix.js");
+const wasmModuleWrapper = require("../built-wasm/matrix.js");
 
 // TODO - using an absolute number of decimal points isn't ideal...
 const DECIMAL_POINTS_FOR_CLOSETO_TEST = 7;

@@ -5,14 +5,11 @@
   "private": true,
   "scripts": {
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
-    "test:wasm": "TEST=true ./shell-scripts/build-wasm && jest test/wasm.test.js",
-    "build:docker": "docker build -t wasm-builder-image -f wasm/Dockerfile .",
-    "build:wasm": "./shell-scripts/build-wasm",
-    "build:wasm:optimized": "OPTIMIZE=true ./shell-scripts/build-wasm",
+    "test:wasm": "./shell-scripts/test-wasm",
+    "build:docker": "docker build -t wasm-builder-image .",
     "lint": "eslint .",
-    "build": "yarn build:wasm:optimized && webpack --config webpack.prod.js",
-    "start": "webpack serve --open --config webpack.dev.js",
-    "serve": "node server/app.js"
+    "build": "webpack --config webpack.prod.js",
+    "start": "webpack serve --open --config webpack.dev.js"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,3 @@
-import "./wasm-test.ts";
 import drawing from "./drawing";
 import { Mode, MODES } from "./types";
 
