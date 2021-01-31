@@ -104,7 +104,7 @@ void LUP_decomposition(
         // initialize the permutation array
         // TODO - I think in our case we don't particularly care about the permutation matrix -
         // it doesn't make a difference to the solution of our set of simultaneous eqns. That's
-        // not to day we don't need to permute - we need to pivot to avoid dividing by zero. But
+        // not to say we don't need to permute - we need to pivot to avoid dividing by zero. But
         // we don't really need to keep track of where we have pivoted. Tracking the permutation matrix
         // probably has a negligible performance impact though, so we'll just do it anyway for now.
         P_result[i] = i;
