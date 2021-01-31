@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,6 +98,41 @@ void LUP_decomposition(
     float A[a_rows][a_rows],
     float L_result[a_rows][a_rows],
     float U_result[a_rows][a_rows],
-    int P_result[a_rows][a_rows])
+    int P_result[a_rows])
 {
+    for (int i = 0; i < a_rows; i++) {
+        // initialize the permutation array
+        // TODO - I think in our case we don't particularly care about the permutation matrix -
+        // it doesn't make a difference to the solution of our set of simultaneous eqns. That's
+        // not to day we don't need to permute - we need to pivot to avoid dividing by zero. But
+        // we don't really need to keep track of where we have pivoted. Tracking the permutation matrix
+        // probably has a negligible performance impact though, so we'll just do it anyway for now.
+        P_result[i] = i;
+        // initialize the unit-lower-triangular and upper-triangular result matrices
+        for (int j = 0; j < a_rows; j++) {
+            L_result[i][j] = i == j ? 1 : 0;
+            U_result[i][j] = 0;
+        }
+    }
+    // This outer for-loop implements the tail-recursion.
+    for (int outer_row_idx = 0; outer_row_idx < a_rows; outer_row_idx++) {
+        // Find the greatest absolute value in the leftmost column and use that
+        // as the pivot point.
+        float max_abs_value = 0;
+        int pivot_row = 0;
+        for (int row_idx = outer_row_idx; row_idx < a_rows; row_idx++) {
+            float abs_value = fabsf(A[row_idx][outer_row_idx]);
+            if (abs_value > max_abs_value) {
+                max_abs_value = abs_value;
+                pivot_row = row_idx;
+            }
+        }
+        if (max_abs_value == 0) {
+            puts("can't get LUP decomposition of a singular matrix");
+            exit(1);
+        }
+        int swap = P_result[outer_row_idx];
+        P_result[outer_row_idx] = P_result[pivot_row];
+        P_result[pivot_row] = swap;
+    }
 }

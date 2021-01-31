@@ -1,15 +1,26 @@
-const {
-  toBeDeepCloseTo,
-  toMatchCloseTo,
-} = require("jest-matcher-deep-close-to");
-expect.extend({ toBeDeepCloseTo });
 const wasmModuleWrapper = require("../built-wasm/matrix.js");
 
-// TODO - using an fixed number of decimal points isn't ideal...
 const DECIMAL_POINTS_FOR_CLOSETO_TEST = 5;
 
 let wasmModule;
 const pointersToFree = [];
+
+const NUMERICAL_ERROR_THRESHOLD = 0.00001;
+
+function isCloseTo(a, b) {
+  return Math.abs(a - b) < NUMERICAL_ERROR_THRESHOLD;
+}
+
+function arrayIsCloseTo(a, b) {
+  return a.length === b.length && a.every((x, idx) => isCloseTo(x, b[idx]));
+}
+
+function matrixIsCloseTo(a, b) {
+  return (
+    rowCount(a) === rowCount(b) &&
+    a.every((row, rowIdx) => arrayIsCloseTo(row, b[rowIdx]))
+  );
+}
 
 function flatten(matrix) {
   const result = [];
@@ -25,6 +36,10 @@ const dataTypes = {
   i32: {
     arrayConstructor: Uint32Array,
     size: 4,
+  },
+  double: {
+    arrayConstructor: Float64Array,
+    size: 8,
   },
 };
 
@@ -89,30 +104,37 @@ function readMatrix(rows, columns, pointer, dataType) {
   return result;
 }
 
+function zeroArray(length) {
+  const result = [];
+  for (let i = 0; i < length; i++) {
+    result.push(0);
+  }
+  return result;
+}
+
 function zeroMatrix(rows, cols) {
   const result = [];
   for (let i = 0; i < rows; i++) {
-    const row = [];
-    for (let j = 0; j < cols; j++) {
-      row.push(0);
-    }
-    result.push(row);
+    result.push(zeroArray(cols));
   }
   return result;
 }
 
 function isZeroMatrix(matrix) {
-  return flatten(matrix).every((element) => element === 0);
+  return flatten(matrix).every((element) => isCloseTo(element, 0));
 }
 
 function isUnitLowerTriangularMatrix(matrix) {
   const isSquare = rowCount(matrix) === columnCount(matrix);
   if (!isSquare) return false;
   return matrix.every((row, rowIdx) => {
-    return row.every(
-      (element, colIdx) =>
-        colIdx < rowIdx || (colIdx === rowIdx && element === 1) || element === 0
-    );
+    return row.every((element, colIdx) => {
+      return (
+        colIdx < rowIdx ||
+        (colIdx === rowIdx && isCloseTo(element, 1)) ||
+        isCloseTo(element, 0)
+      );
+    });
   });
 }
 
@@ -120,24 +142,13 @@ function isUpperTriangularMatrix(matrix) {
   const isSquare = rowCount(matrix) === columnCount(matrix);
   if (!isSquare) return false;
   return matrix.every((row, rowIdx) =>
-    row.every((element, colIdx) => colIdx > rowIdx || element === 0)
+    row.every((element, colIdx) => colIdx > rowIdx || isCloseTo(element, 0))
   );
 }
 
-function isStandardBasisVector(vector) {
-  const uniqueElements = new Set(vector);
-  return (
-    uniqueElements.has(0) && uniqueElements.has(1) && uniqueElements.size === 2
-  );
-}
-
-function isPermutationMatrix(matrix) {
-  const isSquare = rowCount(matrix) === columnCount(matrix);
-  if (!isSquare) return false;
-  return (
-    matrix.every(isStandardBasisVector) &&
-    transpose(matrix).every(isStandardBasisVector)
-  );
+function isPermutationArray(array) {
+  const sorted = array.slice().sort();
+  return sorted.every((el, idx) => el === idx);
 }
 
 function innerProduct(vecA, vecB) {
@@ -204,13 +215,13 @@ describe("multiply", () => {
       bPointer,
       resultPointer
     );
-    expect(readMatrix(2, 2, resultPointer, "float")).toBeDeepCloseTo(
-      [
+
+    expect(
+      matrixIsCloseTo(readMatrix(2, 2, resultPointer, "float"), [
         [29, -16],
         [38, 6],
-      ],
-      DECIMAL_POINTS_FOR_CLOSETO_TEST
-    );
+      ])
+    ).toBe(true);
   });
 });
 
@@ -236,9 +247,8 @@ describe("forward substitution", () => {
     const bPointer = createArray(b, "float");
     const yPointer = createArray(y, "float");
     forwardSubstitution(b.length, lPointer, piPointer, bPointer, yPointer);
-    expect(readArray(3, yPointer, "float")).toBeDeepCloseTo(
-      [8, 1.4, 1.5],
-      DECIMAL_POINTS_FOR_CLOSETO_TEST
+    expect(arrayIsCloseTo(readArray(3, yPointer, "float"), [8, 1.4, 1.5])).toBe(
+      true
     );
   });
 });
@@ -261,10 +271,9 @@ describe("backward substitution", () => {
     const yPointer = createArray(y, "float");
     const xPointer = createArray(x, "float");
     backward_substitution(x.length, uPointer, yPointer, xPointer);
-    expect(readArray(3, xPointer, "float")).toBeDeepCloseTo(
-      [-1.4, 2.2, 0.6],
-      DECIMAL_POINTS_FOR_CLOSETO_TEST
-    );
+    expect(
+      arrayIsCloseTo(readArray(3, xPointer, "float"), [-1.4, 2.2, 0.6])
+    ).toBe(true);
   });
 });
 
@@ -285,24 +294,24 @@ describe("LUP decomposition", () => {
     ];
     const L = zeroMatrix(4, 4);
     const U = zeroMatrix(4, 4);
-    const P = zeroMatrix(4, 4);
+    const P = zeroArray(4);
     const aPointer = createMatrix(A, "float");
     const lPointer = createMatrix(L, "float");
     const uPointer = createMatrix(U, "float");
-    const pPointer = createMatrix(P, "i32");
-    lup(rowCount(A), aPointer, lPointer, uPointer, lPointer);
+    const pPointer = createArray(P, "i32");
+    lup(rowCount(A), aPointer, lPointer, uPointer, pPointer);
     const lResult = readMatrix(rowCount(L), columnCount(L), lPointer, "float");
     const uResult = readMatrix(rowCount(U), columnCount(U), uPointer, "float");
-    const pResult = readMatrix(rowCount(P), columnCount(P), pPointer, "i32");
+    const pResult = readArray(P.length, pPointer, "i32");
     expect(isZeroMatrix(lResult)).toBe(false);
     expect(isUnitLowerTriangularMatrix(lResult)).toBe(true);
     expect(isZeroMatrix(uResult)).toBe(false);
     expect(isUpperTriangularMatrix(uResult)).toBe(true);
     expect(isZeroMatrix(pResult)).toBe(false);
-    expect(isPermutationMatrix(pResult)).toBe(true);
-    expect(multiply(pResult, A)).toBeDeepCloseTo(
-      multiply(lResult, uResult),
-      DECIMAL_POINTS_FOR_CLOSETO_TEST
-    );
+    expect(isPermutationArray(pResult)).toBe(true);
+    expect(
+      // TODO - we'll need to actually convert pResult to a matrix for this to work...
+      matrixIsCloseTo(multiply(pResult, A), multiply(lResult, uResult))
+    ).toBe(true);
   });
 });
