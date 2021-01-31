@@ -72,6 +72,25 @@ void multiply(
 }
 
 /*
+  Given a upper-triangular matrix U (not necessarily unit-upper) and
+  a vector y such that Ux = y,  solve for the vector x by backward-substitution.
+*/
+void backward_substitution(
+    int x_rows,
+    float U[x_rows][x_rows],
+    float y[x_rows],
+    float result[x_rows])
+{
+    for (int i = x_rows - 1; i >= 0; i--) {
+        float sum = 0;
+        for (int j = i + 1; j < x_rows; j++) {
+            sum += U[i][j] * result[j];
+        }
+        result[i] = (y[i] - sum) / U[i][i];
+    }
+}
+
+/*
   Given a unit-lower-triangular matrix L, a permutation matrix P (represented
   by a 1d array called pi), and a vector b, such that Ly = Pb, solve for the vector y
   by forward substitution.

@@ -6,7 +6,7 @@ expect.extend({ toBeDeepCloseTo });
 const wasmModuleWrapper = require("../built-wasm/matrix.js");
 
 // TODO - using an absolute number of decimal points isn't ideal...
-const DECIMAL_POINTS_FOR_CLOSETO_TEST = 7;
+const DECIMAL_POINTS_FOR_CLOSETO_TEST = 5;
 
 let wasmModule;
 const pointersToFree = [];
@@ -158,6 +158,31 @@ describe("forward substitution", () => {
     forwardSubstitution(b.length, lPointer, piPointer, bPointer, yPointer);
     expect(readArray(3, yPointer, "float")).toBeDeepCloseTo(
       [8, 1.4, 1.5],
+      DECIMAL_POINTS_FOR_CLOSETO_TEST
+    );
+  });
+});
+
+describe("backward substitution", () => {
+  it("should solve for x", () => {
+    const backward_substitution = wasmModule.cwrap(
+      "backward_substitution",
+      null,
+      ["number", "number", "number", "number", "number"]
+    );
+    const U = [
+      [5, 6, 3],
+      [0, 0.8, -0.6],
+      [0, 0, 2.5],
+    ];
+    const y = [8, 1.4, 1.5];
+    const x = [0, 0, 0];
+    const uPointer = createMatrix(U, "float");
+    const yPointer = createArray(y, "float");
+    const xPointer = createArray(x, "float");
+    backward_substitution(x.length, uPointer, yPointer, xPointer);
+    expect(readArray(3, xPointer, "float")).toBeDeepCloseTo(
+      [-1.4, 2.2, 0.6],
       DECIMAL_POINTS_FOR_CLOSETO_TEST
     );
   });

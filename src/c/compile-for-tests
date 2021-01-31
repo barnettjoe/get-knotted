@@ -9,7 +9,7 @@ cd /builder/emsdk/upstream/emscripten
   -o /built-wasm/matrix.js \
   -s SINGLE_FILE=1 \
   -s MODULARIZE=1 \
-  -s EXPORTED_FUNCTIONS='["_multiply", "_forward_substitution", "_malloc", "_free"]' \
+  -s EXPORTED_FUNCTIONS='["_multiply", "_forward_substitution", "_backward_substitution", "_malloc", "_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
   -s ENVIRONMENT="node" \
