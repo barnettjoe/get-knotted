@@ -5,7 +5,7 @@ const {
 expect.extend({ toBeDeepCloseTo });
 const wasmModuleWrapper = require("../built-wasm/matrix.js");
 
-// TODO - using an absolute number of decimal points isn't ideal...
+// TODO - using an fixed number of decimal points isn't ideal...
 const DECIMAL_POINTS_FOR_CLOSETO_TEST = 5;
 
 let wasmModule;
@@ -48,12 +48,22 @@ function createMatrix(matrix, dataType) {
   return createArray(flatten(matrix), dataType);
 }
 
-function rows(matrix) {
+function rowCount(matrix) {
   return matrix.length;
 }
 
-function columns(matrix) {
+function columnCount(matrix) {
   return matrix[0].length;
+}
+
+function transpose(matrix) {
+  const result = zeroMatrix(columnCount(matrix), rowCount(matrix));
+  matrix.forEach((row, rowIdx) => {
+    row.forEach((element, colIdx) => {
+      result[colIdx][rowIdx] = element;
+    });
+  });
+  return result;
 }
 
 function readArray(length, pointer, dataType) {
@@ -79,6 +89,76 @@ function readMatrix(rows, columns, pointer, dataType) {
   return result;
 }
 
+function zeroMatrix(rows, cols) {
+  const result = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(0);
+    }
+    result.push(row);
+  }
+  return result;
+}
+
+function isZeroMatrix(matrix) {
+  return flatten(matrix).every((element) => element === 0);
+}
+
+function isUnitLowerTriangularMatrix(matrix) {
+  const isSquare = rowCount(matrix) === columnCount(matrix);
+  if (!isSquare) return false;
+  return matrix.every((row, rowIdx) => {
+    return row.every(
+      (element, colIdx) =>
+        colIdx < rowIdx || (colIdx === rowIdx && element === 1) || element === 0
+    );
+  });
+}
+
+function isUpperTriangularMatrix(matrix) {
+  const isSquare = rowCount(matrix) === columnCount(matrix);
+  if (!isSquare) return false;
+  return matrix.every((row, rowIdx) =>
+    row.every((element, colIdx) => colIdx > rowIdx || element === 0)
+  );
+}
+
+function isStandardBasisVector(vector) {
+  const uniqueElements = new Set(vector);
+  return (
+    uniqueElements.has(0) && uniqueElements.has(1) && uniqueElements.size === 2
+  );
+}
+
+function isPermutationMatrix(matrix) {
+  const isSquare = rowCount(matrix) === columnCount(matrix);
+  if (!isSquare) return false;
+  return (
+    matrix.every(isStandardBasisVector) &&
+    transpose(matrix).every(isStandardBasisVector)
+  );
+}
+
+function innerProduct(vecA, vecB) {
+  if (vecA.length !== vecB.length) {
+    throw new Error(
+      "could not calculate inner product: vector lengths don't match"
+    );
+  }
+  return vecA.reduce((acc, value, idx) => acc + value * vecB[idx], 0);
+}
+
+function multiply(matrixA, matrixB) {
+  if (columnCount(matrixA) !== rowCount(matrixB)) {
+    throw new Error("could not multiply matrices: dimensions didn't match");
+  }
+  const bCols = transpose(matrixB);
+  return matrixA.map((aRow) => {
+    return bCols.map((bCol) => innerProduct(bCol, aRow));
+  });
+}
+
 beforeAll(async () => {
   wasmModule = await wasmModuleWrapper();
 });
@@ -91,7 +171,7 @@ afterEach(() => {
 
 describe("multiply", () => {
   it("should multiply two matrices", () => {
-    const multiply = wasmModule.cwrap("multiply", null, [
+    const wasmMultiply = wasmModule.cwrap("multiply", null, [
       "number",
       "number",
       "number",
@@ -115,11 +195,11 @@ describe("multiply", () => {
     const aPointer = createMatrix(matrixA, "float");
     const bPointer = createMatrix(matrixB, "float");
     const resultPointer = createMatrix(result, "float");
-    multiply(
-      rows(matrixA),
-      columns(matrixA),
-      rows(matrixB),
-      columns(matrixB),
+    wasmMultiply(
+      rowCount(matrixA),
+      columnCount(matrixA),
+      rowCount(matrixB),
+      columnCount(matrixB),
       aPointer,
       bPointer,
       resultPointer
@@ -183,6 +263,45 @@ describe("backward substitution", () => {
     backward_substitution(x.length, uPointer, yPointer, xPointer);
     expect(readArray(3, xPointer, "float")).toBeDeepCloseTo(
       [-1.4, 2.2, 0.6],
+      DECIMAL_POINTS_FOR_CLOSETO_TEST
+    );
+  });
+});
+
+describe("LUP decomposition", () => {
+  it("should factorize a square matrix into a unit-lower-triangular matrix, an upper triangular matrix and a permutation matrix", () => {
+    const lup = wasmModule.cwrap("LUP_decomposition", null, [
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+    ]);
+    const A = [
+      [2, 0, 2, 0.6],
+      [3, 3, 4, -1],
+      [5, 5, 4, 2],
+      [-1, -2, 3.4, -1],
+    ];
+    const L = zeroMatrix(4, 4);
+    const U = zeroMatrix(4, 4);
+    const P = zeroMatrix(4, 4);
+    const aPointer = createMatrix(A, "float");
+    const lPointer = createMatrix(L, "float");
+    const uPointer = createMatrix(U, "float");
+    const pPointer = createMatrix(P, "i32");
+    lup(rowCount(A), aPointer, lPointer, uPointer, lPointer);
+    const lResult = readMatrix(rowCount(L), columnCount(L), lPointer, "float");
+    const uResult = readMatrix(rowCount(U), columnCount(U), uPointer, "float");
+    const pResult = readMatrix(rowCount(P), columnCount(P), pPointer, "i32");
+    expect(isZeroMatrix(lResult)).toBe(false);
+    expect(isUnitLowerTriangularMatrix(lResult)).toBe(true);
+    expect(isZeroMatrix(uResult)).toBe(false);
+    expect(isUpperTriangularMatrix(uResult)).toBe(true);
+    expect(isZeroMatrix(pResult)).toBe(false);
+    expect(isPermutationMatrix(pResult)).toBe(true);
+    expect(multiply(pResult, A)).toBeDeepCloseTo(
+      multiply(lResult, uResult),
       DECIMAL_POINTS_FOR_CLOSETO_TEST
     );
   });

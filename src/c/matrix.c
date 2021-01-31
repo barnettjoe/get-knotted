@@ -7,25 +7,6 @@ void* allocate_matrix(int rows, int cols)
     return malloc(rows * sizeof(float[cols]));
 }
 
-void print_matrix(int row_count, int col_count, float matrix[row_count][col_count])
-{
-    for (int i = 0; i < row_count; i++) {
-        for (int j = 0; j < col_count; j++) {
-            printf("%f ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
-void print_array(int count, float array[count])
-{
-    for (int i = 0; i < count; i++) {
-        printf("%f ", array[i]);
-    }
-    printf("\n");
-}
-
 void transpose(
     int row_count,
     int col_count,
@@ -111,71 +92,11 @@ void forward_substitution(
     }
 }
 
-/*
-  Given a unit-lower-triangular matrix L, a unit-upper-triangular matrix U,
-  a permutation matrix P (represented by a 1d array called pi), and a vector b,
-  such that LUx = Pb, solve for the vector x.
-  See CLRS 2nd Edition, chapter 28.
-*/
-void solve_lup(
-    int b_rows,
-    float L[b_rows][b_rows],
-    float U[b_rows][b_rows],
-    int pi[b_rows],
-    float b[b_rows],
-    float result[b_rows])
+void LUP_decomposition(
+    int a_rows,
+    float A[a_rows][a_rows],
+    float L_result[a_rows][a_rows],
+    float U_result[a_rows][a_rows],
+    int P_result[a_rows][a_rows])
 {
-    // We have LUx = Pb
-    // Let y = Ux, so that Ly = Pb
-    float y[b_rows];
-    // Obtain y by forward substitution
-    // then obtain x by backward substitution
-}
-
-void test_transposition()
-{
-    int start_matrix_rows = 2;
-    int start_matrix_cols = 3;
-    float start_matrix[][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
-    print_matrix(start_matrix_rows, start_matrix_cols, start_matrix);
-
-    // test transposition
-    float(*transposed_matrix)[] = allocate_matrix(start_matrix_cols, start_matrix_rows);
-    transpose(start_matrix_rows, start_matrix_cols, start_matrix, transposed_matrix);
-    print_matrix(start_matrix_cols, start_matrix_rows, transposed_matrix);
-    free(transposed_matrix);
-}
-
-void test_multiplication()
-{
-    int matrix_a_rows = 2;
-    int matrix_a_cols = 3;
-    int matrix_b_rows = 3;
-    int matrix_b_cols = 2;
-    float matrix_a[][3] = { { 0, 3, 5 }, { 5, 5, 2 } };
-    float matrix_b[][2] = { { 3, 4 }, { 3, -2 }, { 4, -2 } };
-    float(*mult_result)[] = allocate_matrix(matrix_a_rows, matrix_b_cols);
-    // multiply(matrix_a_rows, matrix_a_cols, matrix_b_rows, matrix_b_cols, matrix_a, matrix_b, mult_result);
-    print_matrix(matrix_a_rows, matrix_b_cols, mult_result);
-    free(mult_result);
-}
-
-void test_forward_substitution()
-{
-    int b_rows = 3;
-    float L[][3] = { { 1, 0, 0 }, { 0.2, 1, 0 }, { 0.6, 0.5, 1 } };
-    int pi[] = { 2, 0, 1 };
-    float b[] = { 3, 7, 8 };
-    float* y = malloc(b_rows * sizeof(float));
-    forward_substitution(b_rows, L, pi, b, y);
-    float expected_result[] = { 8, 1.4, 1.5 };
-    print_array(b_rows, y);
-    free(y);
-}
-
-int matrix()
-{
-    test_transposition();
-    test_forward_substitution();
-    return 0;
 }
