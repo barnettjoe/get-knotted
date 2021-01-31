@@ -131,8 +131,37 @@ void LUP_decomposition(
             puts("can't get LUP decomposition of a singular matrix");
             exit(1);
         }
+        // record pivot points in the permutation array
         int swap = P_result[outer_row_idx];
         P_result[outer_row_idx] = P_result[pivot_row];
         P_result[pivot_row] = swap;
+        // pivot the matrix (i.e. swap rows around)
+        for (int j = 0; j < a_rows; j++) {
+            float swap = A[outer_row_idx][j];
+            A[outer_row_idx][j] = A[pivot_row][j];
+            A[pivot_row][j] = swap;
+        }
+        float pivot_value = A[outer_row_idx][outer_row_idx];
+        for (int i = outer_row_idx + 1; i < a_rows; i++) {
+            // compute the column vector v
+            float column_vector_value = A[i][outer_row_idx] / pivot_value;
+            A[i][outer_row_idx] = column_vector_value;
+            // compute a row of the Schur complement
+            for (int j = outer_row_idx + 1; j < a_rows; j++) {
+                float row_vector_value = A[outer_row_idx][j];
+                // To compute each element of the Schur complement,
+                // subtract the value of the outer product of the v and w
+                // at that position. N.B. column_vector has already been
+                // divided by the pivot value, so we don't need to divide
+                // again here.
+                A[i][j] -= column_vector_value * row_vector_value;
+            }
+        }
+    }
+    // so far we have done our work in-place, now split results from mutated A into L and U
+    for (int i = 0; i < a_rows; i++) {
+        for (int j = 0; j < a_rows; j++) {
+            (i > j ? L_result : U_result)[i][j] = A[i][j];
+        }
     }
 }

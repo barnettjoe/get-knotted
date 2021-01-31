@@ -17,7 +17,6 @@ cd /builder/emsdk/upstream/emscripten
   -s SAFE_HEAP=1 \
   -s STACK_OVERFLOW_CHECK=2 \
   -s DEMANGLE_SUPPORT=1 \
-  -s PRECISE_F32=1 \
   -Werror \
   -std=c11 \
   -O0

@@ -1,11 +1,9 @@
 const wasmModuleWrapper = require("../built-wasm/matrix.js");
 
-const DECIMAL_POINTS_FOR_CLOSETO_TEST = 5;
-
 let wasmModule;
 const pointersToFree = [];
 
-const NUMERICAL_ERROR_THRESHOLD = 0.00001;
+const NUMERICAL_ERROR_THRESHOLD = 1e-6;
 
 function isCloseTo(a, b) {
   return Math.abs(a - b) < NUMERICAL_ERROR_THRESHOLD;
@@ -142,7 +140,7 @@ function isUpperTriangularMatrix(matrix) {
   const isSquare = rowCount(matrix) === columnCount(matrix);
   if (!isSquare) return false;
   return matrix.every((row, rowIdx) =>
-    row.every((element, colIdx) => colIdx > rowIdx || isCloseTo(element, 0))
+    row.every((element, colIdx) => colIdx >= rowIdx || isCloseTo(element, 0))
   );
 }
 
@@ -179,6 +177,14 @@ afterEach(() => {
     wasmModule._free(pointersToFree.pop());
   }
 });
+
+function permutationMatrixFromArray(array) {
+  return array.map((idx) => {
+    const row = zeroArray(array.length);
+    row[idx] = 1;
+    return row;
+  });
+}
 
 describe("multiply", () => {
   it("should multiply two matrices", () => {
@@ -288,7 +294,7 @@ describe("LUP decomposition", () => {
     ]);
     const A = [
       [2, 0, 2, 0.6],
-      [3, 3, 4, -1],
+      [3, 3, 4, -2],
       [5, 5, 4, 2],
       [-1, -2, 3.4, -1],
     ];
@@ -303,15 +309,18 @@ describe("LUP decomposition", () => {
     const lResult = readMatrix(rowCount(L), columnCount(L), lPointer, "float");
     const uResult = readMatrix(rowCount(U), columnCount(U), uPointer, "float");
     const pResult = readArray(P.length, pPointer, "i32");
+    const aResult = readMatrix(rowCount(U), columnCount(U), aPointer, "float");
     expect(isZeroMatrix(lResult)).toBe(false);
     expect(isUnitLowerTriangularMatrix(lResult)).toBe(true);
     expect(isZeroMatrix(uResult)).toBe(false);
     expect(isUpperTriangularMatrix(uResult)).toBe(true);
-    expect(isZeroMatrix(pResult)).toBe(false);
     expect(isPermutationArray(pResult)).toBe(true);
     expect(
       // TODO - we'll need to actually convert pResult to a matrix for this to work...
-      matrixIsCloseTo(multiply(pResult, A), multiply(lResult, uResult))
+      matrixIsCloseTo(
+        multiply(permutationMatrixFromArray(pResult), A),
+        multiply(lResult, uResult)
+      )
     ).toBe(true);
   });
 });
