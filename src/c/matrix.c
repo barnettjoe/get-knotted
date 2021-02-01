@@ -93,6 +93,11 @@ void forward_substitution(
     }
 }
 
+/*
+  Given a matrix A, find a unit-lower-triangular matrix L, an upper-triangular matrix U,
+  and a permutation matrix P (in its column representation), such that:
+  PA = LU
+*/
 void LUP_decomposition(
     int a_rows,
     float A[a_rows][a_rows],
@@ -164,4 +169,15 @@ void LUP_decomposition(
             (i > j ? L_result : U_result)[i][j] = A[i][j];
         }
     }
+}
+
+/*
+  Given a matrix A and a vector b, such that Ax = b, solve for x
+*/
+void solve(
+    int a_rows,
+    float A[a_rows][a_rows],
+    float b[a_rows],
+    float x_result[a_rows])
+{
 }

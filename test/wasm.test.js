@@ -316,11 +316,36 @@ describe("LUP decomposition", () => {
     expect(isUpperTriangularMatrix(uResult)).toBe(true);
     expect(isPermutationArray(pResult)).toBe(true);
     expect(
-      // TODO - we'll need to actually convert pResult to a matrix for this to work...
       matrixIsCloseTo(
         multiply(permutationMatrixFromArray(pResult), A),
         multiply(lResult, uResult)
       )
     ).toBe(true);
+  });
+});
+
+describe("solve", () => {
+  it("can solve a system of linear equations", () => {
+    const solve = wasmModule.cwrap("solve", null, [
+      "number",
+      "number",
+      "number",
+      "number",
+    ]);
+    const A = [
+      [1, 2, 0],
+      [3, 4, 4],
+      [5, 6, 3],
+    ];
+    const b = [3, 7, 8];
+    const x = zeroArray(3);
+    const aPointer = createMatrix(A, "float");
+    const bPointer = createArray(b, "float");
+    const xPointer = createArray(x, "float");
+    solve(rowCount(A), aPointer, bPointer, xPointer);
+    const xResult = readArray(x.length, xPointer, "float");
+    const columnX = transpose([xResult]);
+    const columnB = transpose([b]);
+    expect(matrixIsCloseTo(multiply(A, columnX), columnB)).toBe(true);
   });
 });
