@@ -180,4 +180,15 @@ void solve(
     float b[a_rows],
     float x_result[a_rows])
 {
+    float(*L)[a_rows] = allocate_matrix(a_rows, a_rows);
+    float(*U)[a_rows] = allocate_matrix(a_rows, a_rows);
+    int* pi = malloc(a_rows * sizeof(int));
+    LUP_decomposition(a_rows, A, L, U, pi);
+    float* y_result = malloc(a_rows * sizeof(float));
+    forward_substitution(a_rows, L, pi, b, y_result);
+    backward_substitution(a_rows, U, y_result, x_result);
+    free(L);
+    free(U);
+    free(pi);
+    free(y_result);
 }
