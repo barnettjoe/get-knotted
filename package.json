@@ -6,6 +6,7 @@
   "scripts": {
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",
+    "build:wasm": "./shell-scripts/build-wasm",
     "build:docker": "docker build -t wasm-builder-image .",
     "lint": "eslint .",
     "build": "webpack --config webpack.prod.js",
@@ -24,6 +25,7 @@
     "css-loader": "^5.0.1",
     "eslint": "^7.18.0",
     "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-prettier": "^3.3.1",
     "esm": "^3.2.25",
     "html-webpack-plugin": "^5.0.0-alpha.10",

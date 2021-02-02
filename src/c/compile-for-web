@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+cd /builder/emsdk/upstream/emscripten
+
+./emcc /source/matrix.c \
+  -v \
+  -o /built-wasm/matrix.mjs \
+  -s SINGLE_FILE=1 \
+  -s MODULARIZE=1 \
+  -s EXPORTED_FUNCTIONS='["_malloc", "_free"]' \
+  -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
+  -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
+  -s ENVIRONMENT="web" \
+  -Werror \
+  -std=c11 \
+  -O3
+
+mv /built-wasm/matrix.mjs /built-wasm/matrix.js

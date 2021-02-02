@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void* allocate_matrix(int rows, int cols)
@@ -56,8 +55,6 @@ void forward_substitution(
 void LUP_decomposition(
     int a_rows,
     float A[a_rows][a_rows],
-    float L_result[a_rows][a_rows],
-    float U_result[a_rows][a_rows],
     int P_result[a_rows])
 {
     for (int i = 0; i < a_rows; i++) {
@@ -69,10 +66,10 @@ void LUP_decomposition(
         // probably has a negligible performance impact though, so we'll just do it anyway for now.
         P_result[i] = i;
         // initialize the unit-lower-triangular and upper-triangular result matrices
-        for (int j = 0; j < a_rows; j++) {
-            L_result[i][j] = i == j ? 1 : 0;
-            U_result[i][j] = 0;
-        }
+        // for (int j = 0; j < a_rows; j++) {
+        //     L_result[i][j] = i == j ? 1 : 0;
+        //     U_result[i][j] = 0;
+        // }
     }
     // This outer for-loop implements the tail-recursion.
     for (int outer_row_idx = 0; outer_row_idx < a_rows; outer_row_idx++) {
@@ -88,7 +85,6 @@ void LUP_decomposition(
             }
         }
         if (max_abs_value == 0) {
-            puts("can't get LUP decomposition of a singular matrix");
             exit(1);
         }
         // record pivot points in the permutation array
@@ -118,32 +114,35 @@ void LUP_decomposition(
             }
         }
     }
-    // so far we have done our work in-place, now split results from mutated A into L and U
-    for (int i = 0; i < a_rows; i++) {
-        for (int j = 0; j < a_rows; j++) {
-            (i > j ? L_result : U_result)[i][j] = A[i][j];
-        }
-    }
+    // so far we have done our work in-place,
+    // if we wanted to split the result out in to L and U, we would do something like this
+    // ...but for now we're matching the numeric.js API which just returns
+    // the mutated A
+    // for (int i = 0; i < a_rows; i++) {
+    //     for (int j = 0; j < a_rows; j++) {
+    //         (i > j ? L_result : U_result)[i][j] = A[i][j];
+    //     }
+    // }
 }
 
 /*
   Given a matrix A and a vector b, such that Ax = b, solve for x
 */
-void solve(
-    int a_rows,
-    float A[a_rows][a_rows],
-    float b[a_rows],
-    float x_result[a_rows])
-{
-    float(*L)[a_rows] = allocate_matrix(a_rows, a_rows);
-    float(*U)[a_rows] = allocate_matrix(a_rows, a_rows);
-    int* pi = malloc(a_rows * sizeof(int));
-    LUP_decomposition(a_rows, A, L, U, pi);
-    float* y_result = malloc(a_rows * sizeof(float));
-    forward_substitution(a_rows, L, pi, b, y_result);
-    backward_substitution(a_rows, U, y_result, x_result);
-    free(L);
-    free(U);
-    free(pi);
-    free(y_result);
-}
+// void solve(
+//     int a_rows,
+//     float A[a_rows][a_rows],
+//     float b[a_rows],
+//     float x_result[a_rows])
+// {
+//     float(*L)[a_rows] = allocate_matrix(a_rows, a_rows);
+//     float(*U)[a_rows] = allocate_matrix(a_rows, a_rows);
+//     int* pi = malloc(a_rows * sizeof(int));
+//     LUP_decomposition(a_rows, A, pi);
+//     float* y_result = malloc(a_rows * sizeof(float));
+//     forward_substitution(a_rows, L, pi, b, y_result);
+//     backward_substitution(a_rows, U, y_result, x_result);
+//     free(L);
+//     free(U);
+//     free(pi);
+//     free(y_result);
+// }

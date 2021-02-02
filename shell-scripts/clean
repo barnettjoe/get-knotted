@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# if there's already a container with the same name, remove it (it's probably from the last time we ran this script)
+if [[ $(docker ps -aq --filter 'name=wasm-builder') ]]
+then
+  docker rm wasm-builder
+fi
+
+# make sure output directory exists on host
+mkdir -p built-wasm
+
+# clear output directory on host
+rm -rf built-wasm/*

@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -eu
-
 ./shell-scripts/clean
 
 # compile C source to wasm on docker container
@@ -8,6 +6,4 @@ docker run -it --name wasm-builder \
   --mount type=bind,source="$(pwd)"/built-wasm,target=/built-wasm \
   --mount type=bind,source="$(pwd)"/src/c,target=/source \
   wasm-builder-image \
-  /source/compile-for-tests
-
-yarn jest test/wasm.test.js
+  /source/compile-for-web
