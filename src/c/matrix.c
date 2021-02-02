@@ -8,51 +8,6 @@ void* allocate_matrix(int rows, int cols)
     return malloc(rows * sizeof(float[cols]));
 }
 
-void transpose(
-    int row_count,
-    int col_count,
-    float matrix[row_count][col_count],
-    float result[col_count][row_count])
-{
-    for (int row_idx = 0; row_idx < row_count; row_idx++) {
-        for (int col_idx = 0; col_idx < col_count; col_idx++) {
-            result[col_idx][row_idx] = matrix[row_idx][col_idx];
-        }
-    }
-}
-
-// We could define multiplication in terms of dot products of rows of A
-// with cols of B, or in terms of dot products of rows of A with rows of the transpose of B...
-// but that would require some copying of data. This should be a bit faster (although I haven't actually
-// tested that...)
-// This is the basic On3 algorithm. It would be worth trying Strassen instead to see if the improvement is significant.
-// There are also multi-threaded algos in CLRS which we could explore if needs be.
-// There are also the galactic algos e.g. coppersmith-winograd which we can safely ignore...
-// NB. numeric.js takes its matrix multiplication method from the google closure library, which is just the simple On3 algo.
-void multiply(
-    int a_rows,
-    int a_cols,
-    int b_rows,
-    int b_cols,
-    float a[a_rows][a_cols],
-    float b[b_rows][b_cols],
-    float result[a_rows][b_cols])
-{
-    if (a_cols != b_rows) {
-        puts("row count of matrix A does not match column count of matrix B");
-        exit(1);
-    }
-    for (int a_row_idx = 0; a_row_idx < a_rows; a_row_idx++) {
-        for (int b_col_idx = 0; b_col_idx < b_cols; b_col_idx++) {
-            float val = 0;
-            for (int a_col_idx = 0; a_col_idx < a_cols; a_col_idx++) {
-                val += a[a_row_idx][a_col_idx] * b[a_col_idx][b_col_idx];
-            }
-            result[a_row_idx][b_col_idx] = val;
-        }
-    }
-}
-
 /*
   Given a upper-triangular matrix U (not necessarily unit-upper) and
   a vector y such that Ux = y,  solve for the vector x by backward-substitution.

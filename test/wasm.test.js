@@ -186,51 +186,6 @@ function permutationMatrixFromArray(array) {
   });
 }
 
-describe("multiply", () => {
-  it("should multiply two matrices", () => {
-    const wasmMultiply = wasmModule.cwrap("multiply", null, [
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-      "number",
-    ]);
-    const matrixA = [
-      [0, 3, 5],
-      [5, 5, 2],
-    ];
-    const matrixB = [
-      [3, 4],
-      [3, -2],
-      [4, -2],
-    ];
-    const result = [
-      [0, 0],
-      [0, 0],
-    ];
-    const aPointer = createMatrix(matrixA, "float");
-    const bPointer = createMatrix(matrixB, "float");
-    const resultPointer = createMatrix(result, "float");
-    wasmMultiply(
-      rowCount(matrixA),
-      columnCount(matrixA),
-      rowCount(matrixB),
-      columnCount(matrixB),
-      aPointer,
-      bPointer,
-      resultPointer
-    );
-
-    expect(
-      matrixIsCloseTo(readMatrix(2, 2, resultPointer, "float"), [
-        [29, -16],
-        [38, 6],
-      ])
-    ).toBe(true);
-  });
-});
-
 describe("forward substitution", () => {
   it("should solve for y", () => {
     const forwardSubstitution = wasmModule.cwrap("forward_substitution", null, [
