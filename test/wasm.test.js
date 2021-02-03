@@ -286,28 +286,37 @@ describe("LUP decomposition", () => {
   });
 });
 
-// describe("solve", () => {
-//   it("can solve a system of linear equations", () => {
-//     const solve = wasmModule.cwrap("solve", null, [
-//       "number",
-//       "number",
-//       "number",
-//       "number",
-//     ]);
-//     const A = [
-//       [1, 2, 0],
-//       [3, 4, 4],
-//       [5, 6, 3],
-//     ];
-//     const b = [3, 7, 8];
-//     const x = zeroArray(3);
-//     const aPointer = createMatrix(A, "float");
-//     const bPointer = createArray(b, "float");
-//     const xPointer = createArray(x, "float");
-//     solve(rowCount(A), aPointer, bPointer, xPointer);
-//     const xResult = readArray(x.length, xPointer, "float");
-//     const columnX = transpose([xResult]);
-//     const columnB = transpose([b]);
-//     expect(matrixIsCloseTo(multiply(A, columnX), columnB)).toBe(true);
-//   });
-// });
+describe("solve", () => {
+  it("can solve a system of linear equations", () => {
+    const solve = wasmModule.cwrap("solve", null, [
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+    ]);
+    const LU = [
+      [5, 6, 3],
+      [0.2, 0.8, -0.6],
+      [0.6, 0.5, 2.5],
+    ];
+    const b = [3, 7, 8];
+    const pi = [2, 0, 1];
+    const x = zeroArray(3);
+    const luPointer = createMatrix(LU, "float");
+    const bPointer = createArray(b, "float");
+    const xPointer = createArray(x, "float");
+    const piPointer = createArray(pi, "i32");
+    solve(3, luPointer, piPointer, bPointer, xPointer);
+    const xResult = readArray(x.length, xPointer, "float");
+    const columnX = transpose([xResult]);
+    const columnB = transpose([b]);
+    const [L, U] = splitIntoLU(LU);
+    expect(
+      matrixIsCloseTo(
+        multiply(multiply(L, U), columnX),
+        multiply(permutationMatrixFromArray(pi), columnB)
+      )
+    ).toBe(true);
+  });
+});

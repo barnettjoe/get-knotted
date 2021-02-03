@@ -126,23 +126,17 @@ void LUP_decomposition(
 }
 
 /*
-  Given a matrix A and a vector b, such that Ax = b, solve for x
+  Given a matrix LU, a permutation array pi and a vector b, such that LUx = Pb, solve for x
 */
-// void solve(
-//     int a_rows,
-//     float A[a_rows][a_rows],
-//     float b[a_rows],
-//     float x_result[a_rows])
-// {
-//     float(*L)[a_rows] = allocate_matrix(a_rows, a_rows);
-//     float(*U)[a_rows] = allocate_matrix(a_rows, a_rows);
-//     int* pi = malloc(a_rows * sizeof(int));
-//     LUP_decomposition(a_rows, A, pi);
-//     float* y_result = malloc(a_rows * sizeof(float));
-//     forward_substitution(a_rows, L, pi, b, y_result);
-//     backward_substitution(a_rows, U, y_result, x_result);
-//     free(L);
-//     free(U);
-//     free(pi);
-//     free(y_result);
-// }
+void solve(
+    int a_rows,
+    float LU[a_rows][a_rows],
+    int pi[a_rows],
+    float b[a_rows],
+    float x_result[a_rows])
+{
+    float* y_result = malloc(a_rows * sizeof(float));
+    forward_substitution(a_rows, LU, pi, b, y_result);
+    backward_substitution(a_rows, LU, y_result, x_result);
+    free(y_result);
+}

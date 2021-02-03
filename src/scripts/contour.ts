@@ -65,8 +65,7 @@ import {
   Dimension,
   BezierControlPoint,
 } from "./types";
-import { solve } from "./wasm-interface";
-solve();
+import { lup, solve } from "./wasm-interface";
 const POINTED_RETURN_THETA = 1.5;
 const rightPointedReturnAngle = POINTED_RETURN_THETA;
 const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;
@@ -138,10 +137,10 @@ function matrixSolution(strand: Strand) {
   const topology = strandTopology(strand);
   let lu = checkLUCache(topology);
   if (!lu) {
-    lu = numeric.LU(matrix);
+    lu = lup(matrix);
     setLUCache(topology, lu);
   }
-  const controlPoints = numeric.LUsolve(lu, equals);
+  const controlPoints = solve(lu, equals);
   return {
     xControlPoints: controlPoints.slice(0, controlPoints.length / 2),
     yControlPoints: controlPoints.slice(controlPoints.length / 2),

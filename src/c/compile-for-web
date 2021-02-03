@@ -9,10 +9,11 @@ cd /builder/emsdk/upstream/emscripten
   -o /built-wasm/matrix.mjs \
   -s SINGLE_FILE=1 \
   -s MODULARIZE=1 \
-  -s EXPORTED_FUNCTIONS='["_malloc", "_free"]' \
+  -s EXPORTED_FUNCTIONS='["_solve", "_LUP_decomposition", "_malloc", "_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
   -s ENVIRONMENT="web" \
+  --profiling \
   -Werror \
   -std=c11 \
   -O3
