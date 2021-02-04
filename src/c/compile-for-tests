@@ -12,11 +12,15 @@ cd /builder/emsdk/upstream/emscripten
   -s EXPORTED_FUNCTIONS='["_solve", "_LUP_decomposition", "_forward_substitution", "_backward_substitution", "_malloc", "_free"]' \
   -s EXPORTED_RUNTIME_METHODS='["cwrap"]' \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='["getValue", "setValue"]' \
-  -s ENVIRONMENT="node" \
+  -s ENVIRONMENT="node,worker" \
   -s ASSERTIONS=1 \
   -s SAFE_HEAP=1 \
   -s STACK_OVERFLOW_CHECK=2 \
   -s DEMANGLE_SUPPORT=1 \
+  -pthread \
+  -s PTHREAD_POOL_SIZE=4 \
+  -s EXPORT_NAME=foo \
+  -s EXIT_RUNTIME=1 \
   -Werror \
   -std=c11 \
   -O0

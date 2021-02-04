@@ -10,4 +10,4 @@ docker run -it --name wasm-builder \
   wasm-builder-image \
   /source/compile-for-tests
 
-yarn jest test/wasm.test.js
+node --experimental-wasm-threads node_modules/.bin/jest --detectOpenHandles test/wasm.test.js

@@ -271,7 +271,7 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
     // otherwise we would have an under-determined set of simultaneous
     // eqns. There might be a more suitable constraint we could use
     // instead, though. This might also allow us to form symmetric matrices
-    // and use the faster Cholesky decomposition.
+    // and use the faster Cholesky decomposition??
     setC2continuity(strandIdx);
     if (strandElement.pr) {
       setPointedReturnAngle(strandIdx);
