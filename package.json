@@ -6,6 +6,7 @@
   "scripts": {
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",
+    "test:wasm:debug": "export DEBUG=true; ./shell-scripts/test-wasm",
     "build:wasm": "./shell-scripts/build-wasm",
     "build:docker": "docker build -t wasm-builder-image .",
     "lint": "eslint .",
@@ -43,6 +44,7 @@
   },
   "dependencies": {
     "kld-intersections": "^0.4.3",
-    "numeric": "^1.2.6"
+    "numeric": "^1.2.6",
+    "why-is-node-running": "^2.2.0"
   }
 }

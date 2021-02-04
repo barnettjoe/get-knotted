@@ -10,4 +10,6 @@ docker run -it --name wasm-builder \
   wasm-builder-image \
   /source/compile-for-tests
 
-node --experimental-wasm-threads node_modules/.bin/jest --detectOpenHandles test/wasm.test.js
+# using --forceExit for jest because otherwise it complains about the pthread workers causing "open handles" -
+# possibly related - https://github.com/emscripten-core/emscripten/issues/12801
+node ${DEBUG:+--inspect-brk} --experimental-wasm-threads node_modules/.bin/jest --forceExit test/wasm.test.js

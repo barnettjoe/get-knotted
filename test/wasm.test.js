@@ -1,5 +1,5 @@
 const wasmModuleWrapper = require("../built-wasm/matrix.test.js");
-
+const log = require("why-is-node-running");
 let wasmModule;
 const pointersToFree = [];
 
