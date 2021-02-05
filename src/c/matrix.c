@@ -1,5 +1,7 @@
 #include <math.h>
+#include <pthread.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void* allocate_matrix(int rows, int cols)
@@ -125,6 +127,12 @@ void LUP_decomposition(
     // }
 }
 
+void* PrintHello()
+{
+    printf("Hello World! It's me, your thread\n");
+    pthread_exit(NULL);
+}
+
 /*
   Given a matrix LU, a permutation array pi and a vector b, such that LUx = Pb, solve for x
 */
@@ -139,4 +147,9 @@ void solve(
     forward_substitution(a_rows, LU, pi, b, y_result);
     backward_substitution(a_rows, LU, y_result, x_result);
     free(y_result);
+    /*
+        messing around - experimenting with threads
+    */
+    pthread_t thread;
+    int rc = pthread_create(&thread, NULL, PrintHello, NULL);
 }
