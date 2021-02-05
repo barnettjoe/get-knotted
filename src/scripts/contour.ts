@@ -133,14 +133,14 @@ function strandTopology(strand: Strand): StrandTopology {
 function matrixSolution(strand: Strand) {
   // TODO - if we have a cache hit from the strand topology we only actually need to generate "equals",
   // not the matrix. I don't think this has much effect on performance though.
-  const [matrix, equals] = constructMatrix(strand);
+  const { A, b } = constructMatrixEquation(strand);
   const topology = strandTopology(strand);
   let lu = checkLUCache(topology);
   if (!lu) {
-    lu = lup(matrix);
+    lu = lup(A);
     setLUCache(topology, lu);
   }
-  const controlPoints = solve(lu, equals);
+  const controlPoints = solve(lu, b);
   return {
     xControlPoints: controlPoints.slice(0, controlPoints.length / 2),
     yControlPoints: controlPoints.slice(controlPoints.length / 2),
@@ -164,7 +164,12 @@ function getBezier(
   ];
 }
 
-function constructMatrix(strand: Strand): [Matrix, number[]] {
+interface MatrixEquation {
+  A: Matrix;
+  b: number[];
+}
+
+function constructMatrixEquation(strand: Strand): MatrixEquation {
   function setConstraint(value: number, ...terms: [number, number][]): void {
     const row = Array(strand.length * 4).fill(0);
     terms.forEach(([coefficient, index]) => {
@@ -279,5 +284,5 @@ function constructMatrix(strand: Strand): [Matrix, number[]] {
       setC1continuity(strandIdx);
     }
   });
-  return [matrix, equals];
+  return { A: matrix, b: equals };
 }
