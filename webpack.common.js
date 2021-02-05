@@ -37,6 +37,12 @@ module.exports = {
     ],
   },
   resolve: {
+    // alias: {
+    //   "bezier-js": path.resolve(
+    //     __dirname,
+    //     "./node_modules/bezier-js/dist/bezier.common.js"
+    //   ),
+    // },
     extensions: [".ts", ".tsx", ".js"],
   },
 };

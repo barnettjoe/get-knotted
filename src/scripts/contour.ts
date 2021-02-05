@@ -52,9 +52,7 @@
   to reduce the amount of control points you need to solve for i.e. reduce the size of the matrices
   involved in this calculation.
 */
-
-import numeric from "numeric";
-import { Bezier } from "bezier-js";
+import Bezier from "bezier-js";
 import { pointFollowing } from "./strand";
 import {
   Contour,
@@ -69,7 +67,6 @@ import { lup, solve } from "./wasm-interface";
 const POINTED_RETURN_THETA = 1.5;
 const rightPointedReturnAngle = POINTED_RETURN_THETA;
 const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;
-
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
  */
@@ -132,7 +129,8 @@ function strandTopology(strand: Strand): StrandTopology {
 
 function matrixSolution(strand: Strand) {
   // TODO - if we have a cache hit from the strand topology we only actually need to generate "equals",
-  // not the matrix. I don't think this has much effect on performance though.
+  // not the matrix. I don't think this has much effect on performance though, and it might be difficult
+  // to organize the code nicely...
   const { A, b } = constructMatrixEquation(strand);
   const topology = strandTopology(strand);
   let lu = checkLUCache(topology);

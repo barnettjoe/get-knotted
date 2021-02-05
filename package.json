@@ -1,10 +1,10 @@
 {
-  "name": "webpack-boilerplate",
+  "name": "knots",
   "version": "1.0.0",
   "description": "",
   "private": true,
   "scripts": {
-    "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
+    "test:typescript": "yarn tsc -p tsconfig.json --noEmit --traceResolution",
     "test:wasm": "./shell-scripts/test-wasm",
     "test:wasm:debug": "export DEBUG=true; ./shell-scripts/test-wasm",
     "build:wasm": "./shell-scripts/build-wasm",

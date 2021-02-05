@@ -1,27 +1,41 @@
 import { default as wasmWrapper } from "../../built-wasm/matrix.js";
 
-const wasmModule = {};
+type BaseDataType = "i8" | "i16" | "i32" | "i64" | "float" | "double";
+type DataType = `${BaseDataType}*` | "*";
+
+interface WasmModule {
+  lup(rowCount: number, A: number, b: number): void;
+  solve(
+    rowCount: number,
+    LU: number,
+    pi: number,
+    b: number,
+    xResult: number
+  ): void;
+  malloc(bytes: number): number;
+  free(pointer: number): void;
+  getValue(pointer: number, dataType: DataType): number;
+  setValue(pointer: number, value: number, dataType: DataType): void;
+}
+
+let wasmModule: WasmModule | null = null;
 
 export async function setup(): Promise<void> {
   const mod = await wasmWrapper();
-  wasmModule.lup = mod.cwrap("LUP_decomposition", null, [
-    "number",
-    "number",
-    "number",
-  ]);
-  wasmModule.solve = mod.cwrap("solve", null, [
-    "number",
-    "number",
-    "number",
-    "number",
-    "number",
-  ]);
-  Object.assign(wasmModule, {
+  wasmModule = {
+    lup: mod.cwrap("LUP_decomposition", null, ["number", "number", "number"]),
+    solve: mod.cwrap("solve", null, [
+      "number",
+      "number",
+      "number",
+      "number",
+      "number",
+    ]),
     malloc: mod._malloc,
     free: mod._free,
     getValue: mod.getValue,
     setValue: mod.setValue,
-  });
+  };
 }
 
 // const A = [
