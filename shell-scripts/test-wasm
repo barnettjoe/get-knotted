@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-./shell-scripts/clean
+./shell-scripts/clean-container
 
 # compile C source to wasm on docker container
 docker run -it --name wasm-builder \

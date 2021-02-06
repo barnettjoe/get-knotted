@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "yarn lint && yarn test:typescript && yarn test:wasm",
+    "test": "yarn build:wasm && yarn lint && yarn test:typescript && yarn test:wasm",
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",
     "test:wasm:debug": "export DEBUG=true; ./shell-scripts/test-wasm",

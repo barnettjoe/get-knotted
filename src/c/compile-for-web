@@ -2,7 +2,7 @@
 
 set -eu
 
-cd /builder/emsdk/upstream/emscripten
+cd emsdk/upstream/emscripten
 
 ./emcc /source/matrix.c \
   -v \
