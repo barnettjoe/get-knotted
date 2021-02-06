@@ -17,11 +17,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/bezier-js": "^0.0.8",
     "@types/numeric": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
-    "bezier-js": "^4.0.3",
     "clean-webpack-plugin": "^1.0.0",
     "css-loader": "^5.0.1",
     "eslint": "^7.18.0",

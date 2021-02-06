@@ -52,7 +52,7 @@
   to reduce the amount of control points you need to solve for i.e. reduce the size of the matrices
   involved in this calculation.
 */
-import Bezier from "bezier-js";
+import { Bezier } from "bezier-js";
 import { pointFollowing } from "./strand";
 import {
   Contour,

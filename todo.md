@@ -17,7 +17,7 @@ so can't I just use commonjs as far as TS is concerned and ESM as far as webpack
 Nope. It doesn't...because the commonjs and ESM versions don't have the same structure. The commonjs module (or rather the declaration files in @types/bezier-js, since that's all we care about from the TS side of things) has a "default" type export (i.e. it reassigns the exports object to the Bezier constructor). Whereas in the actual ESM code we'll be bundling, the Bezier constructor is exported as a named export, and there is no default export.
 
 Soon typescript should support the `exports` package.json field and this whole saga will be over. https://github.com/microsoft/TypeScript/issues/33079
-Well, not quite over because actually the types will need updating. Maybe I'll submit a PR to definitely-typed at that point. In the meantime, I will make a copy of the commonjs version (without the pesky package.json with `type: module`), and just point webpack to that via an alias, and point typescript to it via `paths`
+Well, not quite over because actually the types will need updating. Maybe I'll submit a PR to definitely-typed at that point. In the meantime, I will make a copy of the commonjs version (without the pesky package.json with `type: module`), and just point webpack to that via an alias, and point typescript to it via `paths`...and copy the types from @types/bezier-js, fixing their exports to match the actual bezier-js module.
 
 algorithm-level performance ideas:
 
