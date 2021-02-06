@@ -31,7 +31,6 @@ function lineBetween(startNode: FrameNode, endNode: FrameNode) {
   return frameLine({
     startNode,
     endNode,
-    style: config.frame,
   });
 }
 

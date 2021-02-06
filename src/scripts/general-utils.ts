@@ -1,10 +1,7 @@
-import { Vector, UnknownArrayOrObject } from "./types";
+import { Vector } from "./types";
 
-export function identicalObjects(
-  obj1: UnknownArrayOrObject,
-  obj2: UnknownArrayOrObject
-): boolean {
-  // TODO - this is often very inefficient...
+export function identicalObjects(obj1: unknown[], obj2: unknown[]): boolean {
+  // TODO - this is a bit gross, but actually has negligible performance impact
   return JSON.stringify(obj1) === JSON.stringify(obj2);
 }
 

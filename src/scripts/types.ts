@@ -21,19 +21,12 @@ export interface NodeOptions {
   y: number;
 }
 
-type EmptyObject = Record<string, never>;
-
 export interface GridOptions {
   cols: number;
   rows: number;
-  style: EmptyObject;
 }
 
-interface LineOptions {
-  style: EmptyObject;
-}
-
-export interface FrameLineOptions extends LineOptions {
+export interface FrameLineOptions {
   endNode: FrameNode;
   startNode: FrameNode;
 }
@@ -259,6 +252,3 @@ export enum Dimension {
   x = 0,
   y,
 }
-
-export type UnknownObject = Record<string, unknown>;
-export type UnknownArrayOrObject = UnknownObject | UnknownObject[];
