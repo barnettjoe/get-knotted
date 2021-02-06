@@ -1,8 +1,12 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
 import { uncrossed } from "./line";
-import { Strand as makeStrand, pointPreceding } from "./strand";
+import {
+  Strand as makeStrand,
+  pointPreceding,
+  compactRepresentation,
+} from "./strand";
 import PointedReturn from "./pointed-return";
-import makeContour from "./contour";
+import { makeContour, makeContourFromCompactStrand } from "./contour";
 import addOffsetInfoToCrossingPoints from "./offset-sketch";
 import {
   ContourWithOffsetInfo,
@@ -20,6 +24,13 @@ import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 
 export default function makeKnot(frame: Frame): Knot {
   const strands = makeStrands(frame);
+  const compactStrands = strands.map((strand) => compactRepresentation(strand));
+  // TODO - making contour in two different ways...for testing only!...
+  // for now we still have to pass the strands in in the original format... but that should be temporary!
+  const contoursFromCompact = compactStrands.map(
+    ([strandTopology, strandPoints], idx) =>
+      makeContourFromCompactStrand(strandTopology, strandPoints, strands[idx])
+  );
   const contours = strands.map(makeContour);
   const polylines = new Set<PolyLine>();
   contours.forEach((contour) => {

@@ -10,6 +10,8 @@ import {
   FrameLine,
   Strand,
   StrandElement as StrandElementType,
+  StrandElement,
+  PointType,
 } from "./types";
 
 interface StrandState {
@@ -20,6 +22,36 @@ interface StrandState {
 }
 
 let strandState: StrandState | null = null;
+
+// Produce a more data-oriented representation of a strand,
+// suitable for being passed into wasm. Eventually, this should
+// be the only representation used, so we don't need to convert
+// back and forth.
+export function compactRepresentation(
+  strand: Strand
+): [Int8Array, Float32Array] {
+  const map = new Map<StrandElement["pr"], PointType>([
+    ["L", PointType.LeftPointedReturn],
+    ["R", PointType.RightPointedReturn],
+    [null, PointType.CrossingPoint],
+  ]);
+  // for each point:
+  // - whether it's a PR, and if so which direction,
+  const topology = new Int8Array(strand.length);
+  const points = new Float32Array(strand.length * 2);
+  for (let i = 0; i < strand.length; i++) {
+    const strandElement = strand[i];
+    const num = map.get(strandElement.pr);
+    if (num === undefined) {
+      throw new Error("could not encode point type as number");
+    }
+    topology[i] = num;
+    const { coords } = strandElement.point;
+    points[2 * i] = coords[0];
+    points[2 * i + 1] = coords[1];
+  }
+  return [topology, points];
+}
 
 export function Strand(frame: Frame): Strand {
   const result: Strand = [];

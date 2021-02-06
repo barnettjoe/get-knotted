@@ -1,5 +1,4 @@
 "use strict";
-console.log("hello from vendor");
 Object.defineProperty(exports, "__esModule", {
   value: true,
 });

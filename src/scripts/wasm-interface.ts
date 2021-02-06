@@ -133,6 +133,24 @@ function createWasmArray(arr: number[], dataType: BaseDataType) {
   return pointer;
 }
 
+function createWasmFloat32Array(inputArray: Float32Array) {
+  assertIsInitialized(wasmModule);
+  const pointer = wasmModule.malloc(
+    inputArray.length * inputArray.BYTES_PER_ELEMENT
+  );
+  pointersToFree.push(pointer);
+  // typescript doesn't like a forEach here for some reason
+  for (let i = 0; i < inputArray.length; i++) {
+    const val = inputArray[i];
+    wasmModule.setValue(
+      pointer + i * inputArray.BYTES_PER_ELEMENT,
+      val,
+      "float"
+    );
+  }
+  return pointer;
+}
+
 function flatten(matrix: Matrix) {
   const result: number[] = [];
   matrix.forEach((row) => result.push(...row));
@@ -197,11 +215,40 @@ export function lup(A: number[][]): LUDecomposition {
   return { P: pResult, LU: aResult };
 }
 
+export function lupFromCompact(A: Float32Array): LUDecomposition {
+  assertIsInitialized(wasmModule);
+  const rows = A.length ** 0.5;
+  const P = zeroArray(rows);
+  const aPointer = createWasmFloat32Array(A);
+  const pPointer = createWasmArray(P, "i32");
+  wasmModule.lup(rows, aPointer, pPointer);
+  const pResult = readArray(P.length, pPointer, "i32");
+  const aResult = readMatrix(rows, rows, aPointer, "float");
+  freeAllPointers();
+  return { P: pResult, LU: aResult };
+}
+
 export function solve({ P: pi, LU }: LUDecomposition, b: number[]): number[] {
   assertIsInitialized(wasmModule);
   const x = zeroArray(LU.length);
   const luPointer = createWasmMatrix(LU, "float");
   const bPointer = createWasmArray(b, "float");
+  const xPointer = createWasmArray(x, "float");
+  const piPointer = createWasmArray(pi, "i32");
+  wasmModule.solve(LU.length, luPointer, piPointer, bPointer, xPointer);
+  const xResult = readArray(LU.length, xPointer, "float");
+  freeAllPointers();
+  return xResult;
+}
+
+export function solveFromCompact(
+  { P: pi, LU }: LUDecomposition,
+  b: Float32Array
+): number[] {
+  assertIsInitialized(wasmModule);
+  const x = zeroArray(LU.length);
+  const luPointer = createWasmMatrix(LU, "float");
+  const bPointer = createWasmFloat32Array(b);
   const xPointer = createWasmArray(x, "float");
   const piPointer = createWasmArray(pi, "i32");
   wasmModule.solve(LU.length, luPointer, piPointer, bPointer, xPointer);

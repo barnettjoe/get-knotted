@@ -252,3 +252,9 @@ export enum Dimension {
   x = 0,
   y,
 }
+
+export enum PointType {
+  LeftPointedReturn = 0,
+  RightPointedReturn,
+  CrossingPoint,
+}
