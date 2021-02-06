@@ -203,19 +203,7 @@ interface LUDecomposition {
   LU: Matrix;
 }
 
-export function lup(A: number[][]): LUDecomposition {
-  assertIsInitialized(wasmModule);
-  const P = zeroArray(A.length);
-  const aPointer = createWasmMatrix(A, "float");
-  const pPointer = createWasmArray(P, "i32");
-  wasmModule.lup(A.length, aPointer, pPointer);
-  const pResult = readArray(P.length, pPointer, "i32");
-  const aResult = readMatrix(A.length, A.length, aPointer, "float");
-  freeAllPointers();
-  return { P: pResult, LU: aResult };
-}
-
-export function lupFromCompact(A: Float32Array): LUDecomposition {
+export function lup(A: Float32Array): LUDecomposition {
   assertIsInitialized(wasmModule);
   const rows = A.length ** 0.5;
   const P = zeroArray(rows);
@@ -228,20 +216,7 @@ export function lupFromCompact(A: Float32Array): LUDecomposition {
   return { P: pResult, LU: aResult };
 }
 
-export function solve({ P: pi, LU }: LUDecomposition, b: number[]): number[] {
-  assertIsInitialized(wasmModule);
-  const x = zeroArray(LU.length);
-  const luPointer = createWasmMatrix(LU, "float");
-  const bPointer = createWasmArray(b, "float");
-  const xPointer = createWasmArray(x, "float");
-  const piPointer = createWasmArray(pi, "i32");
-  wasmModule.solve(LU.length, luPointer, piPointer, bPointer, xPointer);
-  const xResult = readArray(LU.length, xPointer, "float");
-  freeAllPointers();
-  return xResult;
-}
-
-export function solveFromCompact(
+export function solve(
   { P: pi, LU }: LUDecomposition,
   b: Float32Array
 ): number[] {

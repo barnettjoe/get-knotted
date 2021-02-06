@@ -43,7 +43,9 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.168",
     "@types/svg-intersections": "^0.4.0",
+    "lodash": "^4.17.20",
     "numeric": "^1.2.6",
     "svg-intersections": "^0.4.0"
   }
