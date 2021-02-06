@@ -1,8 +1,5 @@
-import kldIntersections from "kld-intersections";
-import config from "./config";
+import { intersect, shape } from "svg-intersections";
 import { Vector, Point, CollectionIntersectionResult } from "./types";
-import Bezier from "./bezier/bezier";
-import StraightLine from "./straight-line";
 
 export function collectionIntersect(
   polylineA: Point[],
@@ -15,11 +12,20 @@ export function collectionIntersect(
     lineA = polylineA.slice(idxA, idxA + 2) as [Point, Point];
     for (let idxB = 0; idxB < polylineB.length - 1; idxB++) {
       lineB = polylineB.slice(idxB, idxB + 2) as [Point, Point];
-      intersection = kldIntersections.Intersection.intersectLineLine(
-        ...lineA,
-        ...lineB
-      );
-      if (intersection.status === "Intersection") {
+      const shapeA = shape("line", {
+        x1: lineA[0].x,
+        y1: lineA[0].y,
+        x2: lineA[1].x,
+        y2: lineA[1].y,
+      });
+      const shapeB = shape("line", {
+        x1: lineB[0].x,
+        y1: lineB[0].y,
+        x2: lineB[1].x,
+        y2: lineB[1].y,
+      });
+      intersection = intersect(shapeA, shapeB);
+      if (intersection.points.length) {
         return {
           idxA: idxA,
           idxB: idxB,
@@ -30,27 +36,24 @@ export function collectionIntersect(
   }
 }
 
-type Shape = Bezier | StraightLine;
-
-export function polyline(collection: Shape[]) {
-  function reducer(acc: Point[], shape: Shape, idx: number) {
-    if (shape instanceof StraightLine) {
-      if (idx === 0) {
-        return acc.concat([
-          { x: shape.start[0], y: shape.start[1] },
-          { x: shape.end[0], y: shape.end[1] },
-        ]);
-      } else {
-        return acc.concat([{ x: shape.end[0], y: shape.end[1] }]);
-      }
-    } else {
-      return acc.concat(shape.getLUT(config.resolution));
-    }
-  }
-  return collection
-    .reduce(reducer, [])
-    .map((point) => new kldIntersections.Point2D(point.x, point.y));
-}
+// type Shape = Bezier | StraightLine;
+// export function polyline(collection: Shape[]) {
+//   function reducer(acc: Point[], shape: Shape, idx: number) {
+//     if (shape instanceof StraightLine) {
+//       if (idx === 0) {
+//         return acc.concat([
+//           { x: shape.start[0], y: shape.start[1] },
+//           { x: shape.end[0], y: shape.end[1] },
+//         ]);
+//       } else {
+//         return acc.concat([{ x: shape.end[0], y: shape.end[1] }]);
+//       }
+//     } else {
+//       return acc.concat(shape.getLUT(config.resolution));
+//     }
+//   }
+//   return collection.reduce(reducer, []);
+// }
 
 export function rotateAboutOrigin(point: Vector, angle: number): Vector {
   const x = point[0];

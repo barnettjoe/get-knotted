@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test:typescript": "yarn tsc -p tsconfig.json --noEmit --traceResolution",
+    "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",
     "test:wasm:debug": "export DEBUG=true; ./shell-scripts/test-wasm",
     "build:wasm": "./shell-scripts/build-wasm",
@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/types": "^7.12.13",
     "@types/numeric": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
@@ -41,8 +42,8 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
-    "kld-intersections": "^0.4.3",
+    "@types/svg-intersections": "^0.4.0",
     "numeric": "^1.2.6",
-    "why-is-node-running": "^2.2.0"
+    "svg-intersections": "^0.4.0"
   }
 }

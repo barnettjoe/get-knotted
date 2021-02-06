@@ -1,7 +1,9 @@
 import { default as wasmWrapper } from "../../built-wasm/matrix.js";
-
-type BaseDataType = "i8" | "i16" | "i32" | "i64" | "float" | "double";
-type DataType = `${BaseDataType}*` | "*";
+import { Matrix } from "./types";
+// NB there is also i64 but it's more complicated...
+// see https://emscripten.org/docs/getting_started/FAQ.html#how-do-i-pass-int64-t-and-uint64-t-values-from-js-into-wasm-functions
+type BaseDataType = "i8" | "i16" | "i32" | "float" | "double";
+type DataType = BaseDataType | `${BaseDataType}*` | "*";
 
 interface WasmModule {
   lup(rowCount: number, A: number, b: number): void;
@@ -64,14 +66,22 @@ export async function setup(): Promise<void> {
 //     ).toBe(true);
 //   });
 
-// TODO - these are copied from wasm.test.js - should factor out into a utils module
+// TODO - these are copied from wasm.test.js - should factor out into a wasm-utils module
 const dataTypes = {
-  float: {
-    arrayConstructor: Float32Array,
-    size: 4,
+  i8: {
+    arrayConstructor: Int8Array,
+    size: 1,
+  },
+  i16: {
+    arrayConstructor: Int16Array,
+    size: 2,
   },
   i32: {
-    arrayConstructor: Uint32Array,
+    arrayConstructor: Int32Array,
+    size: 4,
+  },
+  float: {
+    arrayConstructor: Float32Array,
     size: 4,
   },
   double: {
@@ -88,41 +98,53 @@ function zeroArray(length: number) {
   return result;
 }
 
-const pointersToFree = [];
+const pointersToFree: number[] = [];
 
 function freeAllPointers() {
-  while (pointersToFree.length > 0) {
-    wasmModule.free(pointersToFree.pop());
+  if (!wasmModule) {
+    throw new Error("wasm module has not yet been initialized");
+  }
+  while (true) {
+    const pointer = pointersToFree.pop();
+    if (pointer) {
+      wasmModule.free(pointer);
+    } else {
+      break;
+    }
   }
 }
 
-function createArray(arr, dataType) {
+function createWasmArray(arr: number[], dataType: BaseDataType) {
+  assertIsInitialized(wasmModule);
   const inputArray = new dataTypes[dataType].arrayConstructor(arr);
   const pointer = wasmModule.malloc(
     inputArray.length * inputArray.BYTES_PER_ELEMENT
   );
   pointersToFree.push(pointer);
-  inputArray.forEach((val, idx) => {
+  // typescript doesn't like a forEach here for some reason
+  for (let i = 0; i < inputArray.length; i++) {
+    const val = inputArray[i];
     wasmModule.setValue(
-      pointer + idx * inputArray.BYTES_PER_ELEMENT,
+      pointer + i * inputArray.BYTES_PER_ELEMENT,
       val,
       dataType
     );
-  });
+  }
   return pointer;
 }
 
-function flatten(matrix) {
-  const result = [];
+function flatten(matrix: Matrix) {
+  const result: number[] = [];
   matrix.forEach((row) => result.push(...row));
   return result;
 }
 
-function createMatrix(matrix, dataType) {
-  return createArray(flatten(matrix), dataType);
+function createWasmMatrix(matrix: Matrix, dataType: BaseDataType) {
+  return createWasmArray(flatten(matrix), dataType);
 }
 
-function readArray(length, pointer, dataType) {
+function readArray(length: number, pointer: number, dataType: BaseDataType) {
+  assertIsInitialized(wasmModule);
   const result = [];
   for (let i = 0; i < length; i++) {
     const offset = i * dataTypes[dataType].size;
@@ -131,7 +153,12 @@ function readArray(length, pointer, dataType) {
   return result;
 }
 
-function readMatrix(rows, columns, pointer, dataType) {
+function readMatrix(
+  rows: number,
+  columns: number,
+  pointer: number,
+  dataType: BaseDataType
+) {
   const result = [];
   for (let i = 0; i < rows; i++) {
     result.push(
@@ -145,13 +172,24 @@ function readMatrix(rows, columns, pointer, dataType) {
   return result;
 }
 
-export function lup(A: number[][]): void {
+function assertIsInitialized(
+  wasmModule: WasmModule | null
+): asserts wasmModule is WasmModule {
   if (!wasmModule) {
     throw new Error(`wasmModule is not yet initialized`);
   }
+}
+
+interface LUDecomposition {
+  P: number[];
+  LU: Matrix;
+}
+
+export function lup(A: number[][]): LUDecomposition {
+  assertIsInitialized(wasmModule);
   const P = zeroArray(A.length);
-  const aPointer = createMatrix(A, "float");
-  const pPointer = createArray(P, "i32");
+  const aPointer = createWasmMatrix(A, "float");
+  const pPointer = createWasmArray(P, "i32");
   wasmModule.lup(A.length, aPointer, pPointer);
   const pResult = readArray(P.length, pPointer, "i32");
   const aResult = readMatrix(A.length, A.length, aPointer, "float");
@@ -159,15 +197,13 @@ export function lup(A: number[][]): void {
   return { P: pResult, LU: aResult };
 }
 
-export function solve({ P: pi, LU }, b) {
-  if (!wasmModule) {
-    throw new Error(`wasmModule is not yet initialized`);
-  }
+export function solve({ P: pi, LU }: LUDecomposition, b: number[]): number[] {
+  assertIsInitialized(wasmModule);
   const x = zeroArray(LU.length);
-  const luPointer = createMatrix(LU, "float");
-  const bPointer = createArray(b, "float");
-  const xPointer = createArray(x, "float");
-  const piPointer = createArray(pi, "i32");
+  const luPointer = createWasmMatrix(LU, "float");
+  const bPointer = createWasmArray(b, "float");
+  const xPointer = createWasmArray(x, "float");
+  const piPointer = createWasmArray(pi, "i32");
   wasmModule.solve(LU.length, luPointer, piPointer, bPointer, xPointer);
   const xResult = readArray(LU.length, xPointer, "float");
   freeAllPointers();

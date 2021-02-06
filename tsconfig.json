@@ -3,6 +3,7 @@
     "outDir": "./dist/",
     "sourceMap": true,
     "strict": true,
+    "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "module": "es2020",

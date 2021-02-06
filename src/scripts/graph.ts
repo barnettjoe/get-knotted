@@ -1,7 +1,7 @@
 import config from "./config";
 import { pixelCoords } from "./mouse";
 import model from "./model";
-import { GridOptions } from "types";
+import { GridOptions } from "./types";
 
 const options: GridOptions = Object.freeze({
   cols: config.graphCols,

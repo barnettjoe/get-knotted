@@ -1,4 +1,4 @@
-import Bezier from "./bezier/bezier";
+import { Bezier } from "bezier-js";
 import { collectionIntersect, mutate } from "./knot-utils";
 import {
   Direction,
