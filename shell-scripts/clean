@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -eu
-
-# make sure output directory exists on host
-mkdir -p built-wasm
-
-# clear output directory on host
-rm -rf built-wasm/*
