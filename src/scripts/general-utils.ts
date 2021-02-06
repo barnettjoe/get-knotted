@@ -1,11 +1,14 @@
-import { Vector } from "./types";
+import { Vector, UnknownArrayOrObject } from "./types";
 
-export function identicalObjects(arr1: any[], arr2: any[]) {
+export function identicalObjects(
+  obj1: UnknownArrayOrObject,
+  obj2: UnknownArrayOrObject
+): boolean {
   // TODO - this is often very inefficient...
-  return JSON.stringify(arr1) === JSON.stringify(arr2);
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
 }
 
-export function distanceBetween(coordsA: Vector, coordsB: Vector) {
+export function distanceBetween(coordsA: Vector, coordsB: Vector): number {
   return (
     ((coordsA[0] - coordsB[0]) ** 2 + (coordsA[1] - coordsB[1]) ** 2) ** 0.5
   );

@@ -16,12 +16,9 @@ import {
 } from "./types";
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
-  return arr1.reduce(
-    (acc, x) => {
-      return acc.concat(arr2.map((y) => [x, y]));
-    },
-    [] as Matrix
-  );
+  return arr1.reduce((acc, x) => {
+    return acc.concat(arr2.map((y) => [x, y]));
+  }, [] as Matrix);
 }
 
 function integerRange(first: number, last: number) {
@@ -56,27 +53,24 @@ function coordinateSet({
 
 // for drawing as a grid rather than individual nodes and lines...
 function allNeighborsAdjacent(nodes: FrameNode[]) {
-  return nodes.reduce(
-    (adjacencies, firstNode) => {
-      return [
-        ...adjacencies,
-        nodes
-          .map((secondNode, j) => [secondNode, j] as [FrameNode, number])
-          .filter(([secondNode]) => isAdjacentTo(firstNode, secondNode))
-          .map(([_secondNode, j]) => j),
-      ];
-    },
-    [] as Matrix
-  );
+  return nodes.reduce((adjacencies, firstNode) => {
+    return [
+      ...adjacencies,
+      nodes
+        .map((secondNode, j) => [secondNode, j] as [FrameNode, number])
+        .filter(([secondNode]) => isAdjacentTo(firstNode, secondNode))
+        .map(([, j]) => j),
+    ];
+  }, [] as Matrix);
 }
 function nodeIndex(node: FrameNode, nodes: FrameNode[]): number {
-  return nodes.findIndex(function(someNode) {
+  return nodes.findIndex(function (someNode) {
     return sameNode(someNode, node);
   });
 }
 
 function closestNodeToPoint(coords: Vector, nodes: FrameNode[]): FrameNode {
-  return nodes.reduce(function(acc, node) {
+  return nodes.reduce(function (acc, node) {
     if (distanceFromPoint(node, coords) < distanceFromPoint(acc, coords)) {
       return node;
     } else {
@@ -96,7 +90,7 @@ function joinNodesAtIndex(
   return newAdjacencyList;
 }
 
-export function fromExtrema(initialBox: Vector, finalBox: Vector) {
+export function fromExtrema(initialBox: Vector, finalBox: Vector): Frame {
   const nodeCoords = coordinateSet({
     leftmost: Math.min(initialBox[0], finalBox[0]),
     rightmost: Math.max(initialBox[0], finalBox[0]),
@@ -136,7 +130,7 @@ export function lineExistsBetween(
   nodeA: FrameNode,
   nodeB: FrameNode,
   lines: FrameLine[]
-) {
+): boolean {
   return !!lines.find((line) => {
     return isBetween(line, nodeA, nodeB);
   });
@@ -147,7 +141,7 @@ export function markAsAdjacent(
   nodeB: FrameNode,
   nodes: FrameNode[],
   adjacencyList: Matrix
-) {
+): Matrix {
   return joinNodesAtIndex(
     nodeIndex(nodeA, nodes),
     nodeIndex(nodeB, nodes),
@@ -155,7 +149,7 @@ export function markAsAdjacent(
   );
 }
 
-export function linesOutFrom(node: FrameNode, lines: FrameLine[]) {
+export function linesOutFrom(node: FrameNode, lines: FrameLine[]): FrameLine[] {
   return lines.filter((line) => visits(line, node));
 }
 
@@ -163,7 +157,7 @@ export function overlapsExistingNode(
   pxX: number,
   pxY: number,
   nodes: FrameNode[]
-) {
+): boolean {
   return nodes.some((node) => hasOverlap(node, pxX, pxY));
 }
 
@@ -185,15 +179,12 @@ export function firstUncrossedLine(lines: FrameLine[]): FrameLine | null {
 }
 
 export function lines(nodes: FrameNode[], adjacencyList: Matrix): FrameLine[] {
-  return nodes.reduce(
-    (lines, startNode, i) => {
-      return lines.concat(
-        adjacencyList[i]
-          // avoid drawing each line twice
-          .filter((j) => i < j)
-          .map((j) => lineBetween(startNode, nodes[j]))
-      );
-    },
-    [] as FrameLine[]
-  );
+  return nodes.reduce((lines, startNode, i) => {
+    return lines.concat(
+      adjacencyList[i]
+        // avoid drawing each line twice
+        .filter((j) => i < j)
+        .map((j) => lineBetween(startNode, nodes[j]))
+    );
+  }, [] as FrameLine[]);
 }

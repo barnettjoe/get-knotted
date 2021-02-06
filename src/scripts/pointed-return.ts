@@ -5,6 +5,7 @@ import {
   PolyLine,
   PointedReturnPointWithOffsetInfo,
   CollectionIntersectionResult,
+  OrganizedPolylines,
 } from "./types";
 
 interface PointedReturnOptions {
@@ -35,7 +36,9 @@ export default class PointedReturn {
     this.outerOutboundPolyline = outerOutboundPolyline;
     this.fixOffsets();
   }
-  organizeOffsets(offsets: PointedReturnPointWithOffsetInfo) {
+  organizeOffsets(
+    offsets: PointedReturnPointWithOffsetInfo
+  ): OrganizedPolylines {
     let innerInboundPolyline;
     let innerOutboundPolyline;
     let outerInboundPolyline;
@@ -71,7 +74,7 @@ export default class PointedReturn {
       outerOutboundPolyline,
     };
   }
-  fixOffsets() {
+  fixOffsets(): void {
     this.fixInnerOffsets();
     this.fixOuterOffsets();
   }
@@ -91,7 +94,7 @@ export default class PointedReturn {
     points.unshift(intersection.intersection);
     mutate(polyline, points);
   }
-  fixInnerOffsets() {
+  fixInnerOffsets(): void {
     // get intersection of inner outbound with inner inbound
 
     const intersection = collectionIntersect(
@@ -107,7 +110,7 @@ export default class PointedReturn {
     this.clipOutboundPath(intersection, this.innerOutboundPolyline);
     this.clipInboundPath(intersection, this.innerInboundPolyline);
   }
-  fixOuterOffsets() {
+  fixOuterOffsets(): void {
     const innerTip = this.innerInboundPolyline[0];
     const midTip = this.options.middleInbound.points[0];
     const outerTip = {

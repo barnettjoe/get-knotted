@@ -40,7 +40,7 @@ export function merge(
   otherKnot: Knot,
   lineStart: FrameNode,
   lineEnd: FrameNode
-) {
+): Knot {
   const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
   mergedFrame.adjacencyList = markAsAdjacent(
     lineStart,
@@ -60,7 +60,11 @@ function makeStrands(frame: Frame): Strand[] {
   return strands;
 }
 
-export function addLineBetween(knot: Knot, nodeA: FrameNode, nodeB: FrameNode) {
+export function addLineBetween(
+  knot: Knot,
+  nodeA: FrameNode,
+  nodeB: FrameNode
+): void {
   const { frame } = knot;
   frame.adjacencyList = markAsAdjacent(
     nodeA,

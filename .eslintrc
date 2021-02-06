@@ -19,6 +19,7 @@
     "no-restricted-globals": ["error", "event"],
     "no-constant-condition": "off",
     "linebreak-style": ["error", "unix"],
-    "no-debugger": "off"
+    "no-debugger": "off",
+    "@typescript-eslint/no-var-requires": "off"
   }
 }

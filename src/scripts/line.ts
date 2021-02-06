@@ -12,8 +12,7 @@ import { sameNode } from "./node";
 export default function frameLine({
   startNode,
   endNode,
-  style,
-}: FrameLineOptions) {
+}: FrameLineOptions): FrameLine {
   return {
     startNode: startNode,
     endNode: endNode,
@@ -27,7 +26,6 @@ export default function frameLine({
       endNode.x,
       endNode.y
     ),
-    style: style,
   };
 }
 
@@ -39,7 +37,11 @@ function vector(line: FrameLine): Vector {
   return [line.endX - line.startX, line.endY - line.startY];
 }
 
-export function isBetween(line: FrameLine, nodeA: FrameNode, nodeB: FrameNode) {
+export function isBetween(
+  line: FrameLine,
+  nodeA: FrameNode,
+  nodeB: FrameNode
+): boolean {
   const isForwards =
     sameNode(line.startNode, nodeA) && sameNode(line.endNode, nodeB);
   const isReversed =
@@ -55,21 +57,21 @@ function angle(line: FrameLine, options: { reverse?: boolean }) {
   return Math.atan2(v[1], v[0]);
 }
 
-export function angleOutFrom(line: FrameLine, node: FrameNode) {
+export function angleOutFrom(line: FrameLine, node: FrameNode): number {
   if (line.startX === node.x && line.startY === node.y) {
     return angle(line, { reverse: false });
   }
   return angle(line, { reverse: true });
 }
 
-export function visits(line: FrameLine, node: FrameNode) {
+export function visits(line: FrameLine, node: FrameNode): boolean {
   return !!(sameNode(line.startNode, node) || sameNode(line.endNode, node));
 }
 
 export function angleOutCP(
   line: FrameLine,
   options: { direction: Direction; reverse?: boolean }
-) {
+): number {
   let vect = vector(line);
   if (options.reverse) {
     vect = vect.map((coord) => coord * -1) as Vector;

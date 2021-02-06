@@ -9,7 +9,7 @@ const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 export default function addOffsetInfoToCrossingPoints(
   contour: Contour,
   polylines: Set<PolyLine>
-) {
+): void {
   function polyLineOffset(bezier: Bezier, offset: number): PolyLine {
     const points = bezier.getLUT(config.resolution) as Point[];
     const result = [];

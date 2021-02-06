@@ -4,12 +4,13 @@
   "description": "",
   "private": true,
   "scripts": {
+    "test": "yarn lint && yarn test:typescript && yarn test:wasm",
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",
     "test:wasm:debug": "export DEBUG=true; ./shell-scripts/test-wasm",
     "build:wasm": "./shell-scripts/build-wasm",
     "build:docker": "docker build -t wasm-builder-image .",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "build": "webpack --config webpack.prod.js",
     "start": "webpack serve --open --config webpack.dev.js"
   },

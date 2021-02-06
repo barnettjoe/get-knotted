@@ -181,7 +181,7 @@ const drawing: Drawing = {
       doIfInGraph(
         dragEnd,
         (() => {
-          let currentFrame = model.frame;
+          const currentFrame = model.frame;
           if (currentFrame) {
             currentFrame.lines = [];
           }

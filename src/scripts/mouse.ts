@@ -19,7 +19,7 @@ export function relativeCoords(e: MouseEvent): Vector {
 }
 
 // for executing code on condition that mouse is positioned within graphArea
-export function doIfInGraph(box: Vector, fn: Function) {
+export function doIfInGraph(box: Vector, fn: () => void): void {
   const inHorizontally = box[0] >= 0 && box[0] < config.graphCols;
   const inVertically = box[1] >= 0 && box[1] < config.graphRows;
   if (inHorizontally && inVertically) {

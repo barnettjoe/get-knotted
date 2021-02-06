@@ -21,14 +21,16 @@ export interface NodeOptions {
   y: number;
 }
 
+type EmptyObject = Record<string, never>;
+
 export interface GridOptions {
   cols: number;
   rows: number;
-  style: LineStyle;
+  style: EmptyObject;
 }
 
 interface LineOptions {
-  style: LineStyle;
+  style: EmptyObject;
 }
 
 export interface FrameLineOptions extends LineOptions {
@@ -36,11 +38,14 @@ export interface FrameLineOptions extends LineOptions {
   startNode: FrameNode;
 }
 
-export interface LineStyle {
-  // TODO - part of config type
-}
-
 export type PolyLine = Point[];
+
+export interface OrganizedPolylines {
+  innerInboundPolyline: PolyLine;
+  innerOutboundPolyline: PolyLine;
+  outerInboundPolyline: PolyLine;
+  outerOutboundPolyline: PolyLine;
+}
 
 export interface Frame {
   nodes: FrameNode[];
@@ -202,7 +207,7 @@ interface UserLine {
   toCoords: Vector;
 }
 
-interface Line {
+export interface Line {
   startX: number;
   startY: number;
   endX: number;
@@ -254,3 +259,6 @@ export enum Dimension {
   x = 0,
   y,
 }
+
+export type UnknownObject = Record<string, unknown>;
+export type UnknownArrayOrObject = UnknownObject | UnknownObject[];

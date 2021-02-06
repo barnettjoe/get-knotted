@@ -1,6 +1,9 @@
 import { CrossingPoint, Direction } from "./types";
 
-export function isCrossed(crossingPoint: CrossingPoint, direction: Direction) {
+export function isCrossed(
+  crossingPoint: CrossingPoint,
+  direction: Direction
+): boolean {
   if (direction === "L") {
     return crossingPoint.crossedLeft;
   } else {
@@ -8,7 +11,7 @@ export function isCrossed(crossingPoint: CrossingPoint, direction: Direction) {
   }
 }
 
-export function fullyCrossed(crossingPoint: CrossingPoint) {
+export function fullyCrossed(crossingPoint: CrossingPoint): boolean {
   return isCrossed(crossingPoint, "R") && isCrossed(crossingPoint, "L");
 }
 

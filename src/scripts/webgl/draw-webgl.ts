@@ -56,7 +56,7 @@ function setGrid() {
   );
 }
 
-export function draw() {
+export function draw(): void {
   setCanvasSize();
   setGrid();
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -137,7 +137,7 @@ function setupAttribute(
   );
 }
 
-export function start(context: OnscreenWebglContext) {
+export function start(context: OnscreenWebglContext): void {
   gl = context;
   program = initShaders(gl, { vertexShader, fragmentShader });
   gl.clearColor(1.0, 1.0, 1.0, 1.0);

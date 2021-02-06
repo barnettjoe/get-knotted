@@ -4,7 +4,7 @@ export default function initShaders(
     vertexShader: vertexShaderSource,
     fragmentShader: fragmentShaderSource,
   }: { vertexShader: string; fragmentShader: string }
-) {
+): WebGLProgram {
   const vertexShader = gl.createShader(gl.VERTEX_SHADER);
   if (!vertexShader) {
     throw new Error("failed to create vertex shader");
