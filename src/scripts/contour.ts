@@ -71,7 +71,6 @@ const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
  */
-
 export function makeContour(
   topology: Int8Array,
   points: Float32Array,

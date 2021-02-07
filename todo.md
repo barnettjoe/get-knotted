@@ -1,4 +1,5 @@
 - [ ] add option to not do offsets, and just draw the initial contour, for work on improving contouring performance
+- [ ] create test harness for playing with different options/contour algorithms
 - [ ] try "splitting" idea for contouring performance
 - [ ] tidy up data-oriented stuff
 - [ ] do some research on lu-decomposition - is there a better algo?
@@ -10,6 +11,7 @@
 - [ ] tidy up webgl code
 - [ ] fix debug tools
 - [ ] analyze webpack bundle size
+- [ ] add project glossary?
 
 the ridiculous state of the javascript module system
 

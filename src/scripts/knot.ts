@@ -7,7 +7,7 @@ import {
 } from "./strand";
 import PointedReturn from "./pointed-return";
 import { makeContour } from "./contour";
-import addOffsetInfoToCrossingPoints from "./offset-sketch";
+import addDrawingInfoToCrossingPoints from "./offset-sketch";
 import {
   ContourWithOffsetInfo,
   Frame,
@@ -21,6 +21,7 @@ import {
   CrossingPointWithOffsetInfo,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
+import options from "./options";
 
 export default function makeKnot(frame: Frame): Knot {
   const strands = makeStrands(frame);
@@ -29,14 +30,13 @@ export default function makeKnot(frame: Frame): Knot {
   const contours = compactStrands.map(([strandTopology, strandPoints], idx) =>
     makeContour(strandTopology, strandPoints, strands[idx])
   );
-  // const contours = strands.map(makeContour);
   const polylines = new Set<PolyLine>();
   contours.forEach((contour) => {
-    addOffsetInfoToCrossingPoints(contour, polylines);
+    addDrawingInfoToCrossingPoints(contour, polylines);
   });
   const contoursWithOffsetInfo = contours as ContourWithOffsetInfo[];
   const frameWithOffsetInfo = frame as FrameWithOffsetInfo;
-  trimUnders(frameWithOffsetInfo);
+  // trimUnders(frameWithOffsetInfo);
   return {
     frame: frameWithOffsetInfo,
     contours: contoursWithOffsetInfo,
@@ -153,7 +153,9 @@ function trimPointedReturns(contours: ContourWithOffsetInfo[]) {
 export function knotPolylines(knot: Knot): PolyLines | null {
   // TODO - from its name it feels like knotPolylines should be a pure function,
   // but here we're doing some trimming - feels like this should be done in makeKnot instead
-  trimPointedReturns(knot.contours);
+  if (options.offsetContour) {
+    trimPointedReturns(knot.contours);
+  }
   const result = [] as PolyLines;
   knot.polylines.forEach((polyline) => {
     result.push(polylinePoints(polyline));

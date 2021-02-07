@@ -64,7 +64,7 @@ export interface FrameWithOffsetInfo extends Frame {
 
 export type OverUnders = Map<CrossingPoint, OffsetInfo>;
 
-type ContourElement = StrandElement & {
+export type ContourElement = StrandElement & {
   outboundBezier: Bezier;
 };
 
