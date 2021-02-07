@@ -2,7 +2,7 @@
 
 [knots.joebarnett.co.uk](https://knots.joebarnett.co.uk)
 
-![excalidraw](https://raw.githubusercontent.com/ensconced/icovellavna-logic/master/notes/how-to-make-a-knot.png?token=AG53CZ5UE7TZUQMMFYRDL3276DVIQ)
+![excalidraw](./notes/how-to-make-a-knot.png)
 
 A web app for drawing celtic-style knots
 
