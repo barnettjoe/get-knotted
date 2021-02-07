@@ -1,5 +1,5 @@
-- [ ] create test harness for playing with different options/contour algorithms
 - [ ] add option to navbar to turn on/off contour-offsetting
+- [ ] create test harness for playing with different options/contour algorithms
 - [ ] fix flakey events (model as state machine?)
 - [ ] setup issues in github
 - [ ] create performance test-suite with dashboard to show results

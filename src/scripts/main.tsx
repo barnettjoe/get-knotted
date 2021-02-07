@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
@@ -10,6 +10,9 @@ import ReactDOM from "react-dom";
 import drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
+import options from "./options";
+
+const { offsetContour: initialOffsetContour } = options;
 
 function changeDrawingMode(newMode: Mode) {
   drawing.mode = newMode;
@@ -22,9 +25,13 @@ async function doSetup() {
 }
 
 function App() {
+  const [offsetContour, setOffsetContour] = useState(initialOffsetContour);
   useEffect(() => {
     doSetup();
   }, []);
+  useEffect(() => {
+    options.offsetContour = offsetContour;
+  }, [offsetContour]);
   return (
     <>
       <Navbar bg="light" expand="lg">
@@ -51,6 +58,16 @@ function App() {
             </NavDropdown>
           </Nav>
           <Form inline>
+            <Form.Label>
+              offset&nbsp;
+              <Form.Check
+                inline
+                type="checkbox"
+                onChange={(evt) => {
+                  setOffsetContour(evt.target.checked);
+                }}
+              />
+            </Form.Label>
             <FormControl
               type="text"
               placeholder="Search knots"
