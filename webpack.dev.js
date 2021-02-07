@@ -19,6 +19,7 @@ module.exports = merge(common, {
             loader: "babel-loader",
             options: {
               presets: [
+                ["@babel/preset-react"],
                 [
                   "@babel/preset-typescript",
                   { isTSX: true, allExtensions: true },

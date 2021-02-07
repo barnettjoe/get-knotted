@@ -53,7 +53,7 @@ export function compactRepresentation(
   return [topology, points];
 }
 
-export function Strand(frame: Frame): Strand {
+export function makeStrand(frame: Frame): Strand {
   const result: Strand = [];
   addAllElements.call(result, frame);
   return result;

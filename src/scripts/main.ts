@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import drawing from "./drawing";
 import { Mode, MODES } from "./types";
@@ -16,19 +16,16 @@ function setUpButton(id: Mode) {
   }
 }
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-    await setupWasm();
-    drawing.setupWebglContext();
-    drawing.addMouseListeners();
-    drawing.startDrawLoop();
-    MODES.forEach(setUpButton);
-  },
-  false
-);
+async function doSetup() {
+  await setupWasm();
+  drawing.setupWebglContext();
+  drawing.addMouseListeners();
+  drawing.startDrawLoop();
+  MODES.forEach(setUpButton);
+}
 
 function App() {
+  useEffect(doSetup, []);
   return (
     <>
       <div id="webgl-wrapper">
@@ -43,4 +40,8 @@ function App() {
   );
 }
 
-ReactDOM.render(document.getElementById("root"), <App />);
+const root = document.getElementById("root");
+if (root === null) {
+  throw new Error("could not find root element for react");
+}
+ReactDOM.render(<App />, root);

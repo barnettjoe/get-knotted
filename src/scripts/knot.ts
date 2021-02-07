@@ -1,7 +1,7 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
 import { uncrossed } from "./line";
 import {
-  Strand as makeStrand,
+  makeStrand as makeStrand,
   pointPreceding,
   compactRepresentation,
 } from "./strand";
@@ -36,7 +36,9 @@ export default function makeKnot(frame: Frame): Knot {
   });
   const contoursWithOffsetInfo = contours as ContourWithOffsetInfo[];
   const frameWithOffsetInfo = frame as FrameWithOffsetInfo;
-  // trimUnders(frameWithOffsetInfo);
+  if (options.offsetContour) {
+    trimUnders(frameWithOffsetInfo);
+  }
   return {
     frame: frameWithOffsetInfo,
     contours: contoursWithOffsetInfo,
