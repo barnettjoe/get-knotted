@@ -18,10 +18,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.12.13",
+    "@babel/preset-react": "^7.12.13",
     "@babel/types": "^7.12.13",
     "@types/numeric": "^1.2.0",
+    "@types/react": "^17.0.1",
+    "@types/react-dom": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
+    "babel-loader": "^8.2.2",
     "clean-webpack-plugin": "^1.0.0",
     "css-loader": "^5.0.1",
     "eslint": "^7.18.0",
@@ -43,10 +48,13 @@
     "webpack-merge": "^5.7.3"
   },
   "dependencies": {
+    "@babel/preset-typescript": "^7.12.13",
     "@types/lodash": "^4.14.168",
     "@types/svg-intersections": "^0.4.0",
     "lodash": "^4.17.20",
     "numeric": "^1.2.6",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "svg-intersections": "^0.4.0"
   }
 }

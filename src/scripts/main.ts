@@ -1,3 +1,5 @@
+import React from "react";
+import ReactDOM from "react-dom";
 import drawing from "./drawing";
 import { Mode, MODES } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
@@ -25,3 +27,20 @@ document.addEventListener(
   },
   false
 );
+
+function App() {
+  return (
+    <>
+      <div id="webgl-wrapper">
+        <canvas id="webgl-surface"></canvas>
+      </div>
+      <footer>
+        <button id="add-grid">Add Grid</button>
+        <button id="add-node">Add Node</button>
+        <button id="add-line">Add Line</button>
+      </footer>
+    </>
+  );
+}
+
+ReactDOM.render(document.getElementById("root"), <App />);

@@ -16,9 +16,14 @@ module.exports = merge(common, {
         exclude: /node_modules/,
         use: [
           {
-            loader: "ts-loader",
+            loader: "babel-loader",
             options: {
-              transpileOnly: true,
+              presets: [
+                [
+                  "@babel/preset-typescript",
+                  { isTSX: true, allExtensions: true },
+                ],
+              ],
             },
           },
         ],
