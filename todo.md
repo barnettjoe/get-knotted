@@ -1,6 +1,21 @@
-- [ ] add option to navbar to turn on/off contour-offsetting
+# TODO
+
+The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
+Currently, we only have a concept of setting the drawing to dirty. But this is just the final stage of our pipeline.
+
+But we need to think about the overall data transformation pipeline:
+
+- user interactions
+- frame
+- strand
+- contour
+- (offset) knot
+- drawing primitives
+- rendered pixels
+
+We should have a consistent concept of being able to set any stage of the pipeline as "dirty", and needing re-running. We could try and provide a nice consistent API for this. There would be a waterfall effect whereby any stage being set to dirty would, cause it to change its state, thus setting the next stage to dirty etc etc.
+
 - [ ] create test harness for playing with different options/contour algorithms
-- [ ] fix flakey events (model as state machine?)
 - [ ] setup issues in github
 - [ ] create performance test-suite with dashboard to show results
 - [ ] try "splitting" idea for contouring performance
@@ -63,6 +78,8 @@ Our extra constraints will be to set the angle of the beziers at the splitting-p
   with an objective function etc?
 - split large strands before constructing matrix/doing LU decomposition? e.g. by identifying straight-line
   areas to use for split-points?
+- we're currently setting C2 constriants at the pointed returns, basically just to make the numbers up, to get a fully-determined set of equations...but are these constraints actually useful? If not, we could look into keeping the system under-determined, and seeing it as an LP-type optimization problem, to be solved e.g. by the simplex method. The objective function might be based on minimizing deviation from C3 continuity at crossing points?
 - efficient updating of LU decomposition when points are moved? there seems to be a lot of literature on this
+- is my LUP-decomp algo optimized for sparse matrices?
 - use multi-threading with a thread per strand
-- move more bezier stuff onto the gpu
+- do rendering of beziers in webgl

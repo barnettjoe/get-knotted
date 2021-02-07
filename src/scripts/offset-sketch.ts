@@ -3,7 +3,7 @@ import { pointFollowing } from "./strand";
 import { Contour, ContourElement, PolyLine, Point } from "./types";
 import { Bezier } from "bezier-js";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
-import options from "./options";
+import { options } from "./options";
 
 const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 

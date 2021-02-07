@@ -1,5 +1,14 @@
-const options = {
+import drawing from "./drawing";
+
+interface Options {
+  offsetContour: boolean;
+}
+
+export const options = {
   offsetContour: false,
 };
 
-export default options;
+export function setOptions(newOptions: Partial<Options>): void {
+  Object.assign(options, newOptions);
+  drawing.setDirty();
+}

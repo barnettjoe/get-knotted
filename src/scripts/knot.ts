@@ -17,7 +17,7 @@ import {
   CrossingPointWithOffsetInfo,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
-import options from "./options";
+import { options } from "./options";
 
 export default function makeKnot(frame: Frame): Knot {
   const strands = makeStrands(frame);

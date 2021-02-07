@@ -94,6 +94,7 @@ export interface Drawing {
   newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
   nodeAt(coords: Vector): FrameNode | null;
   placeNode(e: MouseEvent): void;
+  setDirty(): void;
   setupWebglContext(): void;
   singleNodeFrame(coords: Vector): Frame;
   startDrawLoop(): void;

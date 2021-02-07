@@ -58,6 +58,9 @@ const drawing: Drawing = {
       throw new Error("failed to get webgl context");
     }
   },
+  setDirty() {
+    dirty = true;
+  },
   handleMouseDown(this: Drawing, e: MouseEvent) {
     this.isCurrentlyDrawing = true;
     switch (this.mode) {
@@ -89,7 +92,7 @@ const drawing: Drawing = {
   },
   handleMouseMove(this: Drawing, e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
-    dirty = true;
+    this.setDirty();
     if (this.isCurrentlyDrawing) {
       switch (this.mode) {
         case "add-grid":
@@ -131,7 +134,7 @@ const drawing: Drawing = {
     }
     const knot = makeKnot(model.frame);
     model.knot = knot;
-    dirty = true;
+    this.setDirty();
   },
   addNode(coords) {
     const frame = this.singleNodeFrame(coords);
@@ -163,7 +166,7 @@ const drawing: Drawing = {
   },
   updateFrame() {
     model.frame = fromExtrema(dragStart, dragEnd);
-    dirty = true;
+    this.setDirty();
   },
   startDrawingGrid(e) {
     dragStart = rowAndCol(e);
@@ -217,7 +220,7 @@ const drawing: Drawing = {
       throw new Error("currentKnot is null");
     }
     addLineBetween(currentKnot, lineStart, lineEnd);
-    dirty = true;
+    this.setDirty();
   },
   nodeAt(coords: Vector) {
     const nodes = model.knot?.frame.nodes;
