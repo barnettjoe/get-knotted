@@ -11,7 +11,8 @@
     "build:wasm": "./shell-scripts/build-wasm",
     "build:docker": "docker build -t wasm-builder-image .",
     "lint": "eslint . --max-warnings 0",
-    "build": "yarn build:wasm && webpack --config webpack.prod.js",
+    "build:netlify": "webpack --config webpack.prod.js",
+    "build:full": "yarn build:wasm && webpack --config webpack.prod.js",
     "start": "webpack serve --open --config webpack.dev.js"
   },
   "keywords": [],
