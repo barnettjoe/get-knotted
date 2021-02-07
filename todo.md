@@ -1,4 +1,7 @@
 - [ ] create test harness for playing with different options/contour algorithms
+- [ ] add option to navbar to turn on/off contour-offsetting
+- [ ] fix flakey events (model as state machine?)
+- [ ] setup issues in github
 - [ ] create performance test-suite with dashboard to show results
 - [ ] try "splitting" idea for contouring performance
 - [ ] tidy up data-oriented stuff
