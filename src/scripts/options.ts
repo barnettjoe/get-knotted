@@ -1,3 +1,5 @@
-export default {
-  offsetContour: true,
+const options = {
+  offsetContour: false,
 };
+
+export default options;

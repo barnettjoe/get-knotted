@@ -40,7 +40,6 @@ function offsetPolyline(bezier: Bezier, offset: number): PolyLine {
     }
   }
   return result;
-  return result;
 }
 
 function addOffsetDrawingInfo(

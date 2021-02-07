@@ -1,7 +1,7 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
 import { uncrossed } from "./line";
 import {
-  makeStrand as makeStrand,
+  makeStrand,
   pointPreceding,
   compactRepresentation,
 } from "./strand";

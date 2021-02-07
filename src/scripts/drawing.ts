@@ -186,7 +186,7 @@ const drawing: Drawing = {
             currentFrame.lines = [];
           }
           model.frame = fromExtrema(dragStart, dragEnd);
-        }).bind(this)
+        })
       );
     }
   },

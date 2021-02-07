@@ -1,4 +1,4 @@
-export default {
+const config = {
   resolution: 10,
   nodeSelectionMinProximity: 20,
   knot: {
@@ -24,7 +24,7 @@ export default {
   frame: {
     fill: "none",
     stroke: "red",
-    strokeWidth: 2,
+    strokeWidth: 3,
     strokeOpacity: 1,
   },
   webgl: {
@@ -56,3 +56,5 @@ export default {
     }
   },
 };
+
+export default config;

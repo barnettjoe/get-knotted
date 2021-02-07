@@ -12,22 +12,9 @@ module.exports = merge(common, {
   module: {
     rules: [
       {
-        test: /\.ts/,
+        test: /\.tsx?$/,
         exclude: /node_modules/,
-        use: [
-          {
-            loader: "babel-loader",
-            options: {
-              presets: [
-                ["@babel/preset-react"],
-                [
-                  "@babel/preset-typescript",
-                  { isTSX: true, allExtensions: true },
-                ],
-              ],
-            },
-          },
-        ],
+        use: "ts-loader",
         include: path.resolve(__dirname, "src"),
       },
     ],

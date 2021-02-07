@@ -19,7 +19,7 @@ function addLine({
   endX: number;
   endY: number;
 }) {
-  const width = 5;
+  const width = config.frame.strokeWidth;
   const norm = normal(lineVector([startX, startY], [endX, endY]));
   // if it's worth it we could later move part of this calculation into the vertex shader
   lines.push(

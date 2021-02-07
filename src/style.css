@@ -16,15 +16,13 @@ html {
   font-weight: normal;
 }
 
-body {
-  color: #eee;
-  background-color: #aaa;
-  display: flex;
-}
-
 /*##########*/
 /*# BASICS #*/
 /*##########*/
+
+#root {
+  display: flex;
+}
 
 #wrapper,
 #webgl-wrapper {
@@ -40,7 +38,6 @@ body {
   height: 100%;
   width: 100%;
   position: absolute;
-  border: 2px solid pink;
 }
 
 footer {

@@ -25,7 +25,9 @@ async function doSetup() {
 }
 
 function App() {
-  useEffect(doSetup, []);
+  useEffect(() => {
+    doSetup();
+  }, []);
   return (
     <>
       <div id="webgl-wrapper">
@@ -44,4 +46,5 @@ const root = document.getElementById("root");
 if (root === null) {
   throw new Error("could not find root element for react");
 }
+
 ReactDOM.render(<App />, root);

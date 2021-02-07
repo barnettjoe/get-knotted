@@ -1,4 +1,3 @@
-import Knot from "./knot";
 import { Bezier } from "bezier-js";
 
 export type Matrix = number[][];
