@@ -1,5 +1,5 @@
-- [ ] add option to not do offsets, and just draw the initial contour, for work on improving contouring performance
 - [ ] create test harness for playing with different options/contour algorithms
+- [ ] create performance test-suite with dashboard to show results
 - [ ] try "splitting" idea for contouring performance
 - [ ] tidy up data-oriented stuff
 - [ ] do some research on lu-decomposition - is there a better algo?

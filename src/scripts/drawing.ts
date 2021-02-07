@@ -106,7 +106,7 @@ const drawing: Drawing = {
     }
   },
   addMouseListeners() {
-    const wrapper = document.getElementById("webgl-wrapper");
+    const wrapper = document.getElementById("webgl-surface");
     if (wrapper) {
       wrapper.addEventListener(
         "mousedown",
@@ -178,16 +178,13 @@ const drawing: Drawing = {
     const previousBox = dragEnd;
     dragEnd = rowAndCol(e);
     if (!identicalObjects(previousBox, dragEnd)) {
-      doIfInGraph(
-        dragEnd,
-        (() => {
-          const currentFrame = model.frame;
-          if (currentFrame) {
-            currentFrame.lines = [];
-          }
-          model.frame = fromExtrema(dragStart, dragEnd);
-        })
-      );
+      doIfInGraph(dragEnd, () => {
+        const currentFrame = model.frame;
+        if (currentFrame) {
+          currentFrame.lines = [];
+        }
+        model.frame = fromExtrema(dragStart, dragEnd);
+      });
     }
   },
   drawUserLine(lineStart: FrameNode, toCoords) {

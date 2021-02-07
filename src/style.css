@@ -4,7 +4,6 @@
 
 html {
   box-sizing: border-box;
-  font-size: 0;
 }
 
 *,
@@ -16,42 +15,10 @@ html {
   font-weight: normal;
 }
 
-/*##########*/
-/*# BASICS #*/
-/*##########*/
-
 #root {
   display: flex;
-}
-
-#wrapper,
-#webgl-wrapper {
-  flex: 1;
-  height: 90vh;
-  position: relative;
-  top: 5vh;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-#webgl-surface {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-}
-
-footer {
-  height: 30px;
-  position: absolute;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  bottom: 0;
-  width: 100%;
-}
-
-button {
-  font-size: 10px;
+  flex-direction: column;
+  height: 100vh;
 }
 
 #frame-type {
