@@ -1,10 +1,6 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
 import { uncrossed } from "./line";
-import {
-  makeStrand,
-  pointPreceding,
-  compactRepresentation,
-} from "./strand";
+import { makeStrand, pointPreceding, compactRepresentation } from "./strand";
 import PointedReturn from "./pointed-return";
 import { makeContour } from "./contour";
 import addDrawingInfoToCrossingPoints from "./offset-sketch";

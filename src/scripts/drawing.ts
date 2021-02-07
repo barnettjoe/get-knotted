@@ -1,8 +1,4 @@
-import makeKnot, {
-  merge as mergeKnots,
-  addLineBetween,
-  knotPolylines as drawKnot,
-} from "./knot";
+import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
   lines,
@@ -49,7 +45,7 @@ function drawLoop() {
 const drawing: Drawing = {
   knots: [],
   mode: "add-grid",
-  mouseIsDown: false,
+  isCurrentlyDrawing: false,
   setupWebglContext() {
     const webglCanvas = document.getElementById("webgl-surface");
     if (!(webglCanvas instanceof HTMLCanvasElement)) {
@@ -63,7 +59,7 @@ const drawing: Drawing = {
     }
   },
   handleMouseDown(this: Drawing, e: MouseEvent) {
-    this.mouseIsDown = true;
+    this.isCurrentlyDrawing = true;
     switch (this.mode) {
       case "add-grid":
         this.startDrawingGrid(e);
@@ -78,21 +74,23 @@ const drawing: Drawing = {
   },
   handleMouseUp(this: Drawing, e: MouseEvent) {
     if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
-      this.mouseIsDown = false;
-      switch (this.mode) {
-        case "add-grid":
-          model.frame && this.createKnot();
-          break;
-        case "add-line":
-          this.finishDrawingLine(e);
-          break;
+      if (this.isCurrentlyDrawing) {
+        switch (this.mode) {
+          case "add-grid":
+            model.frame && this.createKnot();
+            break;
+          case "add-line":
+            this.finishDrawingLine(e);
+            break;
+        }
       }
+      this.isCurrentlyDrawing = false;
     }
   },
   handleMouseMove(this: Drawing, e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
     dirty = true;
-    if (this.mouseIsDown) {
+    if (this.isCurrentlyDrawing) {
       switch (this.mode) {
         case "add-grid":
           this.dragFrame(e);
@@ -133,7 +131,6 @@ const drawing: Drawing = {
     }
     const knot = makeKnot(model.frame);
     model.knot = knot;
-    this.knots.push(knot);
     dirty = true;
   },
   addNode(coords) {
@@ -141,7 +138,6 @@ const drawing: Drawing = {
     frame.lines = lines(frame.nodes, frame.adjacencyList);
     const newKnot = makeKnot(frame);
     drawKnot(newKnot);
-    this.knots.push(newKnot);
   },
   singleNodeFrame(coords) {
     const nodes = [
@@ -205,15 +201,14 @@ const drawing: Drawing = {
     );
   },
   finishDrawingLine(e) {
-    if (model.userLine === null) {
-      throw new Error("userLine is null");
-    }
-    const lineStart = model.userLine.startNode;
-    model.userLine = null;
-    const coords = relativeCoords(e);
-    const lineEnd = this.nodeAt(coords);
-    if (lineStart && lineEnd && this.newLineIsValid(lineStart, lineEnd)) {
-      this.makeNewLine(lineStart, lineEnd);
+    if (model.userLine) {
+      const lineStart = model.userLine.startNode;
+      model.userLine = null;
+      const coords = relativeCoords(e);
+      const lineEnd = this.nodeAt(coords);
+      if (lineStart && lineEnd && this.newLineIsValid(lineStart, lineEnd)) {
+        this.makeNewLine(lineStart, lineEnd);
+      }
     }
   },
   makeNewLine(lineStart, lineEnd) {
@@ -221,47 +216,18 @@ const drawing: Drawing = {
     if (currentKnot === null) {
       throw new Error("currentKnot is null");
     }
-    const knotA = this.findKnotWith(lineStart);
-    const knotB = this.findKnotWith(lineEnd);
-    if (knotA && knotB && knotA !== knotB) {
-      this.mergeKnots(knotA, knotB, lineStart, lineEnd);
-    } else {
-      addLineBetween(currentKnot, lineStart, lineEnd);
-      dirty = true;
-    }
-  },
-  mergeKnots(knotA, knotB, startNode, endNode) {
-    // need to merge two frames...
-    const knot = mergeKnots(knotA, knotB, startNode, endNode);
-    model.knot = knot;
-    model.frame = knot.frame;
-    this.knots.push(knot);
+    addLineBetween(currentKnot, lineStart, lineEnd);
+    dirty = true;
   },
   nodeAt(coords: Vector) {
-    let result;
-    this.knots.some((knot) => {
-      result = findProximalNode(coords, knot.frame.nodes);
-      if (result) {
-        return true;
-      }
-      return false;
-    });
-    return result || null;
-  },
-  findKnotWith(node) {
-    return (
-      this.knots.find((knot) => {
-        return knot.frame.nodes.includes(node);
-      }) || null
-    );
+    const nodes = model.knot?.frame.nodes;
+    return nodes ? findProximalNode(coords, nodes) : null;
   },
   startDrawingLine(coords: Vector) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
-      const foundKnot = this.findKnotWith(lineStart);
+      const foundKnot = model.knot?.frame.nodes.includes(lineStart);
       if (foundKnot) {
-        model.knot = foundKnot;
-        model.frame = foundKnot.frame;
         this.drawUserLine(lineStart, coords);
       }
     }

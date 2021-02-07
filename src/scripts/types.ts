@@ -85,19 +85,12 @@ export interface Drawing {
   createKnot(): void;
   updateFrame(): void;
   drawUserLine(startNode: FrameNode, coords: Vector): void;
-  findKnotWith(node: FrameNode): Knot | null;
   finishDrawingLine(e: MouseEvent): void;
   handleMouseDown(this: Drawing, e: MouseEvent): void;
   handleMouseMove(this: Drawing, e: MouseEvent): void;
   handleMouseUp(this: Drawing, e: MouseEvent): void;
   isNodeOverlapping(pixelCoords: Vector): boolean;
   makeNewLine(startNode: FrameNode, endNode: FrameNode): void;
-  mergeKnots(
-    knotA: Knot,
-    knotB: Knot,
-    lineStart: FrameNode,
-    lineEnd: FrameNode
-  ): void;
   newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
   nodeAt(coords: Vector): FrameNode | null;
   placeNode(e: MouseEvent): void;
@@ -110,7 +103,7 @@ export interface Drawing {
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
-  mouseIsDown: boolean;
+  isCurrentlyDrawing: boolean;
 }
 
 export type OnscreenWebglContext = WebGL2RenderingContext & {
