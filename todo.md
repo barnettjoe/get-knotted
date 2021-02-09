@@ -1,5 +1,10 @@
 # TODO
 
+### The yak stack
+
+- build nicely encapsulated state-waterfall package
+- data pipeline should be based on a setDirty waterfall
+
 The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
 Currently, we only have a concept of setting the drawing to dirty. But this is just the final stage of our pipeline.
 

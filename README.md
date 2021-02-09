@@ -6,7 +6,6 @@
 
 A web app for drawing celtic-style knots
 
-
 # To Do
 
 - perf investigation
