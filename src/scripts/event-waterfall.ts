@@ -1,20 +1,19 @@
+type StageName = "frame" | "strands" | "contour" | "offsets" | "primitives";
 interface PipelineStage {
   // TODO - this should update the state for this stage, and then propagate the update down the topologically-sorted DAG
   update(): void;
 }
 
 // this is difficult to type...I think it's related to this issue - https://github.com/microsoft/TypeScript/issues/30134
-type DependencyMatrix<StageNames extends string> = {
-  [stageName in StageNames]: { dependencies: StageNames[] };
+type DependencyMatrix = {
+  [stageName in StageName]: { dependencies: StageName[] };
 };
-type Pipeline<Stages extends string> = { [stageName in Stages]: PipelineStage };
+type Pipeline = { [stageName in StageName]: PipelineStage };
 
 // TODO - createPipeline should check for cycles, and compute the topological ordering of the dependency DAG
-declare function createPipeline<StageNames extends string>(
-  dependencyMatrix: DependencyMatrix<StageNames>
-): Pipeline<StageNames>;
+declare function createPipeline(dependencyMatrix: DependencyMatrix): Pipeline;
 
-const { frame, strands, contour, offsets, primitives } = createPipeline({
+const dependencyMatrix = {
   frame: { dependencies: [] },
   // when the frame updates, the strand should update
   strands: { dependencies: ["frame"] },
@@ -24,6 +23,9 @@ const { frame, strands, contour, offsets, primitives } = createPipeline({
   offsets: { dependencies: ["contour"] },
   // when the offsets or frame updates, the primitives should update
   primitives: { dependencies: ["offsets", "frame"] },
-});
+};
 
+const { frame, strands, contour, offsets, primitives } = createPipeline(
+  dependencyMatrix
+);
 console.log(frame, strands, contour, offsets, primitives);
