@@ -2,11 +2,10 @@ interface PipelineStage {
   // TODO - this should update the state for this stage, and then propagate the update down the topologically-sorted DAG
   update(): void;
 }
-type Dependencies<T> = {
-  dependencies: T[];
-};
+
+// this is difficult to type...I think it's related to this issue - https://github.com/microsoft/TypeScript/issues/30134
 type DependencyMatrix<StageNames extends string> = {
-  [stageName in StageNames]: Dependencies<StageNames>;
+  [stageName in StageNames]: { dependencies: StageNames[] };
 };
 type Pipeline<Stages extends string> = { [stageName in Stages]: PipelineStage };
 
