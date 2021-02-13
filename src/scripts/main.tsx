@@ -11,7 +11,7 @@ import drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
 import { options, setOptions } from "./options";
-
+import "./data-pipeline/topological-sort";
 const { offsetContour: initialOffsetContour } = options;
 
 function changeDrawingMode(newMode: Mode) {
