@@ -52,3 +52,5 @@ I can pop things onto the "yak stack"
 e.g. I can take a week out learning about something in the js ecosystem - I can change my setup to use a different framework or a different language, even...explore new langauge features...wasm, webgl etc etc, explore different algorithms etc
 
 of course, getting things done is fun too...and when I feel like getting things done, I can do that...
+
+// reinventing the observer pattern
