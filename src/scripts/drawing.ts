@@ -18,15 +18,7 @@ import { identicalObjects } from "./general-utils";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
-import {
-  Frame,
-  Knot,
-  Mode,
-  Vector,
-  FrameNode,
-  GridSystem,
-  isOnscreenWebglContext,
-} from "./types";
+import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
@@ -53,18 +45,6 @@ class Drawing {
     this.knots = [];
     this.mode = "add-grid";
     this.isCurrentlyDrawing = false;
-  }
-  setupWebglContext() {
-    const webglCanvas = document.getElementById("webgl-surface");
-    if (!(webglCanvas instanceof HTMLCanvasElement)) {
-      throw new Error("no canvas for webgl");
-    }
-    const webglContext = webglCanvas.getContext("webgl2");
-    if (isOnscreenWebglContext(webglContext)) {
-      webgl.start(webglContext);
-    } else {
-      throw new Error("failed to get webgl context");
-    }
   }
   setDirty() {
     dirty = true;

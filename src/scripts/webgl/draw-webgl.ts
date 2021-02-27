@@ -1,4 +1,4 @@
-import { OnscreenWebglContext } from "../types";
+import { OnscreenWebglContext, isOnscreenWebglContext } from "../types";
 import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
@@ -137,8 +137,17 @@ function setupAttribute(
   );
 }
 
-export function start(context: OnscreenWebglContext): void {
-  gl = context;
+export function start(): void {
+  const webglCanvas = document.getElementById("webgl-surface");
+  if (!(webglCanvas instanceof HTMLCanvasElement)) {
+    throw new Error("no canvas for webgl");
+  }
+  const webglContext = webglCanvas.getContext("webgl2");
+  if (!isOnscreenWebglContext(webglContext)) {
+    throw new Error("failed to get webgl context");
+  }
+
+  gl = webglContext;
   program = initShaders(gl, { vertexShader, fragmentShader });
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.useProgram(program);
