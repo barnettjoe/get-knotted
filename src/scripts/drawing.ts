@@ -36,12 +36,36 @@ function drawLoop() {
   }
   requestAnimationFrame(drawLoop);
 }
+
+class Interaction {
+  drawing: Drawing;
+  constructor(drawing: Drawing) {
+    this.drawing = drawing;
+  }
+  handleMouseDown(e: MouseEvent) {
+    this.drawing.isCurrentlyDrawing = true;
+    switch (this.drawing.mode) {
+      case "add-grid":
+        this.drawing.startDrawingGrid(e);
+        break;
+      case "add-line":
+        this.drawing.startDrawingLine(relativeCoords(e));
+        break;
+      case "add-node":
+        this.drawing.placeNode(e);
+        break;
+    }
+  }
+}
+
 class Drawing {
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
   isCurrentlyDrawing: boolean;
+  interaction: Interaction;
   constructor() {
+    this.interaction = new Interaction(this);
     this.knots = [];
     this.mode = "add-grid";
     this.isCurrentlyDrawing = false;
@@ -50,20 +74,6 @@ class Drawing {
   }
   setDirty() {
     dirty = true;
-  }
-  handleMouseDown(this: Drawing, e: MouseEvent) {
-    this.isCurrentlyDrawing = true;
-    switch (this.mode) {
-      case "add-grid":
-        this.startDrawingGrid(e);
-        break;
-      case "add-line":
-        this.startDrawingLine(relativeCoords(e));
-        break;
-      case "add-node":
-        this.placeNode(e);
-        break;
-    }
   }
   handleMouseUp(this: Drawing, e: MouseEvent) {
     if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
@@ -100,7 +110,7 @@ class Drawing {
     if (wrapper) {
       wrapper.addEventListener(
         "mousedown",
-        this.handleMouseDown.bind(this),
+        this.interaction.handleMouseDown.bind(this.interaction),
         false
       );
       wrapper.addEventListener(
