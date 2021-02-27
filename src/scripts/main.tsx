@@ -24,8 +24,6 @@ async function doSetup() {
   await setupWasm();
   webgl.start();
   drawing = new Drawing();
-  drawing.addMouseListeners();
-  drawing.startDrawLoop();
 }
 
 function App() {

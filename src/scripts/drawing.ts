@@ -45,6 +45,8 @@ class Drawing {
     this.knots = [];
     this.mode = "add-grid";
     this.isCurrentlyDrawing = false;
+    this.addMouseListeners();
+    this.startDrawLoop();
   }
   setDirty() {
     dirty = true;
