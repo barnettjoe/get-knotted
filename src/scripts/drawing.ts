@@ -56,6 +56,39 @@ class Interaction {
         break;
     }
   }
+  handleMouseUp(e: MouseEvent) {
+    if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
+      if (this.drawing.isCurrentlyDrawing) {
+        switch (this.drawing.mode) {
+          case "add-grid":
+            model.frame && this.drawing.createKnot();
+            break;
+          case "add-line":
+            this.drawing.finishDrawingLine(e);
+            break;
+        }
+      }
+      this.drawing.isCurrentlyDrawing = false;
+    }
+  }
+  handleMouseMove(e: MouseEvent) {
+    model.mouseTracker = relativeCoords(e);
+    this.drawing.setDirty();
+    if (this.drawing.isCurrentlyDrawing)
+      switch (this.drawing.mode) {
+        case "add-grid":
+          this.drawing.dragFrame(e);
+          break;
+        case "add-line":
+          if (model.userLine?.startNode) {
+            this.drawing.drawUserLine(
+              model.userLine.startNode,
+              relativeCoords(e)
+            );
+          }
+          break;
+      }
+  }
 }
 
 class Drawing {
@@ -75,36 +108,6 @@ class Drawing {
   setDirty() {
     dirty = true;
   }
-  handleMouseUp(this: Drawing, e: MouseEvent) {
-    if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
-      if (this.isCurrentlyDrawing) {
-        switch (this.mode) {
-          case "add-grid":
-            model.frame && this.createKnot();
-            break;
-          case "add-line":
-            this.finishDrawingLine(e);
-            break;
-        }
-      }
-      this.isCurrentlyDrawing = false;
-    }
-  }
-  handleMouseMove(this: Drawing, e: MouseEvent) {
-    model.mouseTracker = relativeCoords(e);
-    this.setDirty();
-    if (this.isCurrentlyDrawing)
-      switch (this.mode) {
-        case "add-grid":
-          this.dragFrame(e);
-          break;
-        case "add-line":
-          if (model.userLine?.startNode) {
-            this.drawUserLine(model.userLine.startNode, relativeCoords(e));
-          }
-          break;
-      }
-  }
   addMouseListeners() {
     const wrapper = document.getElementById("webgl-surface");
     if (wrapper) {
@@ -115,13 +118,17 @@ class Drawing {
       );
       wrapper.addEventListener(
         "mousemove",
-        this.handleMouseMove.bind(this),
+        this.interaction.handleMouseMove.bind(this.interaction),
         false
       );
     } else {
       // TODO - throw error
     }
-    window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
+    window.addEventListener(
+      "mouseup",
+      this.interaction.handleMouseUp.bind(this.interaction),
+      false
+    );
   }
   startDrawLoop() {
     // TODO - why is the requestAnimationFrame necessary here??
