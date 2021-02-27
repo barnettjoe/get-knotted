@@ -43,7 +43,7 @@ class Interaction {
     this.drawing = drawing;
   }
   handleMouseDown(e: MouseEvent) {
-    this.drawing.isCurrentlyDrawing = true;
+    this.drawing.isDragging = true;
     switch (this.drawing.mode) {
       case "add-grid":
         this.drawing.startDrawingGrid(e);
@@ -58,7 +58,7 @@ class Interaction {
   }
   handleMouseUp(e: MouseEvent) {
     if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
-      if (this.drawing.isCurrentlyDrawing) {
+      if (this.drawing.isDragging) {
         switch (this.drawing.mode) {
           case "add-grid":
             model.frame && this.drawing.createKnot();
@@ -68,13 +68,13 @@ class Interaction {
             break;
         }
       }
-      this.drawing.isCurrentlyDrawing = false;
+      this.drawing.isDragging = false;
     }
   }
   handleMouseMove(e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
     this.drawing.setDirty();
-    if (this.drawing.isCurrentlyDrawing)
+    if (this.drawing.isDragging)
       switch (this.drawing.mode) {
         case "add-grid":
           this.drawing.dragFrame(e);
@@ -95,13 +95,13 @@ class Drawing {
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
-  isCurrentlyDrawing: boolean;
+  isDragging: boolean;
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
     this.knots = [];
     this.mode = "add-grid";
-    this.isCurrentlyDrawing = false;
+    this.isDragging = false;
     this.addMouseListeners();
     this.startDrawLoop();
   }
