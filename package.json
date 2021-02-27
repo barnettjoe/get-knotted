@@ -17,7 +17,8 @@
     "lint": "eslint . --max-warnings 0",
     "build:netlify": "webpack --config webpack.prod.js",
     "build:full": "yarn build:wasm && webpack --config webpack.prod.js",
-    "start": "webpack serve --open --config webpack.dev.js"
+    "start": "webpack serve --open --config webpack.dev.js",
+    "postinstall": "husky install"
   },
   "dependencies": {
     "mobx": "^6.1.7"
@@ -46,6 +47,7 @@
     "eslint-plugin-react-hooks": "^4.0.8",
     "esm": "^3.2.25",
     "html-webpack-plugin": "^5.0.0-alpha.10",
+    "husky": "^5.1.1",
     "jest": "^26.6.3",
     "lodash": "^4.17.20",
     "madge": "^4.0.0",
