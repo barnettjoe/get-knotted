@@ -41,6 +41,25 @@ class Interaction {
   drawing: Drawing;
   constructor(drawing: Drawing) {
     this.drawing = drawing;
+    this.addMouseListeners();
+  }
+  addMouseListeners() {
+    const wrapper = document.getElementById("webgl-surface");
+    if (wrapper) {
+      wrapper.addEventListener(
+        "mousedown",
+        this.handleMouseDown.bind(this),
+        false
+      );
+      wrapper.addEventListener(
+        "mousemove",
+        this.handleMouseMove.bind(this),
+        false
+      );
+    } else {
+      // TODO - throw error
+    }
+    window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
   handleMouseDown(e: MouseEvent) {
     this.drawing.isDragging = true;
@@ -102,33 +121,10 @@ class Drawing {
     this.knots = [];
     this.mode = "add-grid";
     this.isDragging = false;
-    this.addMouseListeners();
     this.startDrawLoop();
   }
   setDirty() {
     dirty = true;
-  }
-  addMouseListeners() {
-    const wrapper = document.getElementById("webgl-surface");
-    if (wrapper) {
-      wrapper.addEventListener(
-        "mousedown",
-        this.interaction.handleMouseDown.bind(this.interaction),
-        false
-      );
-      wrapper.addEventListener(
-        "mousemove",
-        this.interaction.handleMouseMove.bind(this.interaction),
-        false
-      );
-    } else {
-      // TODO - throw error
-    }
-    window.addEventListener(
-      "mouseup",
-      this.interaction.handleMouseUp.bind(this.interaction),
-      false
-    );
   }
   startDrawLoop() {
     // TODO - why is the requestAnimationFrame necessary here??
