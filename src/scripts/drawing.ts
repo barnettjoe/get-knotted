@@ -42,13 +42,11 @@ class Drawing {
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
-  isDragging: boolean;
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
     this.knots = [];
     this.mode = "add-grid";
-    this.isDragging = false;
     this.startDrawLoop();
   }
   setDirty() {

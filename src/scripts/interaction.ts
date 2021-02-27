@@ -4,8 +4,10 @@ import model from "./model";
 
 export default class Interaction {
   drawing: Drawing;
+  isDragging: boolean;
   constructor(drawing: Drawing) {
     this.drawing = drawing;
+    this.isDragging = false;
     this.addMouseListeners();
   }
   addMouseListeners() {
@@ -27,7 +29,7 @@ export default class Interaction {
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
   handleMouseDown(e: MouseEvent) {
-    this.drawing.isDragging = true;
+    this.isDragging = true;
     switch (this.drawing.mode) {
       case "add-grid":
         this.drawing.startDrawingGrid(e);
@@ -42,7 +44,7 @@ export default class Interaction {
   }
   handleMouseUp(e: MouseEvent) {
     if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
-      if (this.drawing.isDragging) {
+      if (this.isDragging) {
         switch (this.drawing.mode) {
           case "add-grid":
             model.frame && this.drawing.createKnot();
@@ -52,13 +54,13 @@ export default class Interaction {
             break;
         }
       }
-      this.drawing.isDragging = false;
+      this.isDragging = false;
     }
   }
   handleMouseMove(e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
     this.drawing.setDirty();
-    if (this.drawing.isDragging)
+    if (this.isDragging)
       switch (this.drawing.mode) {
         case "add-grid":
           this.drawing.dragFrame(e);

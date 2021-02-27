@@ -1,5 +1,11 @@
 # TODO
 
+- [ ] what should the interaction class really expose?
+- [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
+- [ ] GRADUALLY introduce mobx and remove explicit "updating" code
+- [ ] fix the offset button
+- [ ] build a test harness for measuring performance of different contouring algorithms
+
 The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
 Currently, we only have a concept of setting the drawing to dirty. But this is just the final stage of our pipeline.
 
