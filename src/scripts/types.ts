@@ -78,35 +78,6 @@ export type Strand = StrandElement[];
 export const MODES = ["add-grid", "add-node", "add-line"] as const;
 export type Mode = typeof MODES[number];
 
-export interface Drawing {
-  addMouseListeners(): void;
-  addNode(coords: Vector): void;
-  dragFrame(e: MouseEvent): void;
-  createKnot(): void;
-  updateFrame(): void;
-  drawUserLine(startNode: FrameNode, coords: Vector): void;
-  finishDrawingLine(e: MouseEvent): void;
-  handleMouseDown(this: Drawing, e: MouseEvent): void;
-  handleMouseMove(this: Drawing, e: MouseEvent): void;
-  handleMouseUp(this: Drawing, e: MouseEvent): void;
-  isNodeOverlapping(pixelCoords: Vector): boolean;
-  makeNewLine(startNode: FrameNode, endNode: FrameNode): void;
-  newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
-  nodeAt(coords: Vector): FrameNode | null;
-  placeNode(e: MouseEvent): void;
-  setDirty(): void;
-  setupWebglContext(): void;
-  singleNodeFrame(coords: Vector): Frame;
-  startDrawLoop(): void;
-  startDrawingGrid(e: MouseEvent): void;
-  startDrawingLine(coords: Vector): void;
-  startDrawingLine(coords: Vector): void;
-  frame?: Frame;
-  knots: Knot[];
-  mode: Mode;
-  isCurrentlyDrawing: boolean;
-}
-
 export type OnscreenWebglContext = WebGL2RenderingContext & {
   canvas: HTMLCanvasElement;
 };

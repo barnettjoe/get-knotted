@@ -19,8 +19,10 @@ import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
 import {
+  Frame,
+  Knot,
+  Mode,
   Vector,
-  Drawing,
   FrameNode,
   GridSystem,
   isOnscreenWebglContext,
@@ -42,10 +44,16 @@ function drawLoop() {
   }
   requestAnimationFrame(drawLoop);
 }
-const drawing: Drawing = {
-  knots: [],
-  mode: "add-grid",
-  isCurrentlyDrawing: false,
+class Drawing {
+  frame?: Frame;
+  knots: Knot[];
+  mode: Mode;
+  isCurrentlyDrawing: boolean;
+  constructor() {
+    this.knots = [];
+    this.mode = "add-grid";
+    this.isCurrentlyDrawing = false;
+  }
   setupWebglContext() {
     const webglCanvas = document.getElementById("webgl-surface");
     if (!(webglCanvas instanceof HTMLCanvasElement)) {
@@ -57,10 +65,10 @@ const drawing: Drawing = {
     } else {
       throw new Error("failed to get webgl context");
     }
-  },
+  }
   setDirty() {
     dirty = true;
-  },
+  }
   handleMouseDown(this: Drawing, e: MouseEvent) {
     this.isCurrentlyDrawing = true;
     switch (this.mode) {
@@ -74,7 +82,7 @@ const drawing: Drawing = {
         this.placeNode(e);
         break;
     }
-  },
+  }
   handleMouseUp(this: Drawing, e: MouseEvent) {
     if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
       if (this.isCurrentlyDrawing) {
@@ -89,11 +97,11 @@ const drawing: Drawing = {
       }
       this.isCurrentlyDrawing = false;
     }
-  },
+  }
   handleMouseMove(this: Drawing, e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
     this.setDirty();
-    if (this.isCurrentlyDrawing) {
+    if (this.isCurrentlyDrawing)
       switch (this.mode) {
         case "add-grid":
           this.dragFrame(e);
@@ -104,8 +112,7 @@ const drawing: Drawing = {
           }
           break;
       }
-    }
-  },
+  }
   addMouseListeners() {
     const wrapper = document.getElementById("webgl-surface");
     if (wrapper) {
@@ -123,11 +130,11 @@ const drawing: Drawing = {
       // TODO - throw error
     }
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
-  },
+  }
   startDrawLoop() {
     // TODO - why is the requestAnimationFrame necessary here??
     requestAnimationFrame(drawLoop);
-  },
+  }
   createKnot() {
     if (model.frame === null) {
       throw new Error("tried to create a knot with null frame");
@@ -135,14 +142,14 @@ const drawing: Drawing = {
     const knot = makeKnot(model.frame);
     model.knot = knot;
     this.setDirty();
-  },
-  addNode(coords) {
+  }
+  addNode(coords: Vector) {
     const frame = this.singleNodeFrame(coords);
     frame.lines = lines(frame.nodes, frame.adjacencyList);
     const newKnot = makeKnot(frame);
     drawKnot(newKnot);
-  },
-  singleNodeFrame(coords) {
+  }
+  singleNodeFrame(coords: Vector): Frame {
     const nodes = [
       node({
         x: coords[0],
@@ -151,28 +158,28 @@ const drawing: Drawing = {
       }),
     ];
     return { nodes, adjacencyList: [[]], lines: [] };
-  },
-  placeNode(e) {
+  }
+  placeNode(e: MouseEvent) {
     const coords = closestGraphCoords(e);
     const pxCoords = pixelCoords(coords);
     if (!this.isNodeOverlapping(pxCoords)) {
       this.addNode(coords);
     }
-  },
-  isNodeOverlapping(coords) {
+  }
+  isNodeOverlapping(coords: Vector) {
     return this.knots.some((knot) => {
       return overlapsExistingNode(...coords, knot.frame.nodes);
     });
-  },
+  }
   updateFrame() {
     model.frame = fromExtrema(dragStart, dragEnd);
     this.setDirty();
-  },
-  startDrawingGrid(e) {
+  }
+  startDrawingGrid(e: MouseEvent) {
     dragStart = rowAndCol(e);
     dragEnd = dragStart;
     doIfInGraph(dragStart, this.updateFrame.bind(this));
-  },
+  }
   dragFrame(e: MouseEvent) {
     const previousBox = dragEnd;
     dragEnd = rowAndCol(e);
@@ -185,14 +192,14 @@ const drawing: Drawing = {
         model.frame = fromExtrema(dragStart, dragEnd);
       });
     }
-  },
-  drawUserLine(lineStart: FrameNode, toCoords) {
+  }
+  drawUserLine(lineStart: FrameNode, toCoords: Vector) {
     model.userLine = {
       startNode: lineStart,
       toCoords,
     };
-  },
-  newLineIsValid(lineStart, lineEnd) {
+  }
+  newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode) {
     const currentFrame = model.frame;
     if (currentFrame === null) {
       throw new Error("current frame is null");
@@ -202,8 +209,8 @@ const drawing: Drawing = {
       lineEnd !== lineStart &&
       !lineExistsBetween(lineStart, lineEnd, currentFrame.lines)
     );
-  },
-  finishDrawingLine(e) {
+  }
+  finishDrawingLine(e: MouseEvent) {
     if (model.userLine) {
       const lineStart = model.userLine.startNode;
       model.userLine = null;
@@ -213,19 +220,19 @@ const drawing: Drawing = {
         this.makeNewLine(lineStart, lineEnd);
       }
     }
-  },
-  makeNewLine(lineStart, lineEnd) {
+  }
+  makeNewLine(lineStart: FrameNode, lineEnd: FrameNode) {
     const currentKnot = model.knot;
     if (currentKnot === null) {
       throw new Error("currentKnot is null");
     }
     addLineBetween(currentKnot, lineStart, lineEnd);
     this.setDirty();
-  },
+  }
   nodeAt(coords: Vector) {
     const nodes = model.knot?.frame.nodes;
     return nodes ? findProximalNode(coords, nodes) : null;
-  },
+  }
   startDrawingLine(coords: Vector) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
@@ -234,7 +241,9 @@ const drawing: Drawing = {
         this.drawUserLine(lineStart, coords);
       }
     }
-  },
-};
+  }
+}
+
+const drawing = new Drawing();
 
 export default drawing;
