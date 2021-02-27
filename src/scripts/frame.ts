@@ -6,14 +6,15 @@ import node, {
   distanceFromPoint,
   isAdjacentTo,
 } from "./node";
-import {
-  GridSystem,
-  Frame,
-  FrameLine,
-  FrameNode,
-  Matrix,
-  Vector,
-} from "./types";
+import { GridSystem, FrameLine, FrameNode, Matrix, Vector } from "./types";
+
+import type { Model } from "./model";
+class Frame {
+  model: Model;
+  constructor(model: Model) {
+    this.model = model;
+  }
+}
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
   return arr1.reduce((acc, x) => {

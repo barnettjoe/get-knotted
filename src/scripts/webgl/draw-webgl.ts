@@ -1,4 +1,4 @@
-import { OnscreenWebglContext } from "../types";
+import { OnscreenWebglContext, isOnscreenWebglContext } from "../types";
 import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
@@ -57,6 +57,7 @@ function setGrid() {
 }
 
 export function draw(): void {
+  if (!gl) return;
   setCanvasSize();
   setGrid();
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -137,7 +138,15 @@ function setupAttribute(
   );
 }
 
-export function start(context: OnscreenWebglContext): void {
+export function start() {
+  const webglCanvas = document.getElementById("webgl-surface");
+  if (!(webglCanvas instanceof HTMLCanvasElement)) {
+    throw new Error("no canvas for webgl");
+  }
+  const context = webglCanvas.getContext("webgl2");
+  if (!isOnscreenWebglContext(context)) {
+    throw new Error("failed to get webgl context");
+  }
   gl = context;
   program = initShaders(gl, { vertexShader, fragmentShader });
   gl.clearColor(1.0, 1.0, 1.0, 1.0);

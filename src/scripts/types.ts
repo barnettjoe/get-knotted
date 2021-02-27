@@ -92,10 +92,8 @@ export interface Drawing {
   makeNewLine(startNode: FrameNode, endNode: FrameNode): void;
   newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
   nodeAt(coords: Vector): FrameNode | null;
-  setDirty(): void;
   setupWebglContext(): void;
   singleNodeFrame(coords: Vector): Frame;
-  startDrawLoop(): void;
   startDrawingGrid(e: MouseEvent): void;
   startDrawingLine(coords: Vector): void;
   startDrawingLine(coords: Vector): void;

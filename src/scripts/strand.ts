@@ -1,6 +1,6 @@
 import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
-import { angleOutFrom, angleOutCP } from "./line";
+import { angleOutFrom, angleOutCP, uncrossed } from "./line";
 import { sameNode } from "./node";
 import {
   Vector,
@@ -58,6 +58,15 @@ export function makeStrand(frame: Frame): Strand {
   addAllElements.call(result, frame);
   return result;
 }
+
+export function makeStrands(frame: Frame): Strand[] {
+  const strands = [];
+  while (frame.lines.some(uncrossed)) {
+    strands.push(makeStrand(frame));
+  }
+  return strands;
+}
+
 export function pointFollowing(
   index: number,
   strand: Strand

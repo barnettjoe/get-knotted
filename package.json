@@ -7,7 +7,7 @@
   "license": "ISC",
   "author": "",
   "scripts": {
-    "dep-graph": "out=dependency-graph.svg && yarn madge --image $out src/scripts/main.tsx && open -a 'Google Chrome' $out",
+    "dep-graph": "out=dependency-graph.svg && yarn madge --exclude 'types|config.ts'  --image $out src/scripts/main.tsx && open -a 'Google Chrome' $out",
     "test": "yarn build:wasm && yarn lint && yarn test:typescript && yarn test:wasm",
     "test:typescript": "yarn tsc -p tsconfig.json --noEmit",
     "test:wasm": "./shell-scripts/test-wasm",

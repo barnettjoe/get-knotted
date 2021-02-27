@@ -21,8 +21,7 @@ import { options } from "./options";
 
 console.log("executing knot module");
 
-export default function makeKnot(frame: Frame): Knot {
-  const strands = makeStrands(frame);
+export default function makeKnot(frame: Frame, strands: Strand[]): Knot {
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
   // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
   const contours = compactStrands.map(([strandTopology, strandPoints], idx) =>
@@ -59,15 +58,6 @@ export function merge(
   );
   mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
   return makeKnot(mergedFrame);
-}
-
-function makeStrands(frame: Frame): Strand[] {
-  const strands = [];
-  // TODO - mobx errors if you pass uncrossed directly to some (wtf...)
-  while (frame.lines.some(uncrossed)) {
-    strands.push(makeStrand(frame));
-  }
-  return strands;
 }
 
 export function addLineBetween(

@@ -1,11 +1,13 @@
-import { computed, makeObservable, observable, autorun } from "mobx";
+import { makeObservable, autorun, action } from "mobx";
 import config from "./config";
-import makeKnot from "./knot";
-import { Frame, UserLine, Line, Vector } from "./types";
+import { fromExtrema } from "./frame";
+import Drawing from "./drawing";
+import Mouse from "./mouse";
+import { makeStrands } from "./strand";
+import makeKnot, { knotPolylines as drawKnot } from "./knot";
+import { Frame, FrameLine, UserLine, Line, Vector } from "./types";
 
-console.log("executing model module");
 class Model {
-  frame: Frame;
   userLine: UserLine | null = null;
   gridLines: Line[] | null = null;
   mouseTracker: Vector | null = null;
@@ -14,30 +16,47 @@ class Model {
   columns: number = 0;
   rows: number = 0;
   squareSize: number;
+  drawing: Drawing;
+  mouse: Mouse;
   constructor() {
     this.squareSize = config.targetSquareSize;
-    this.frame = {
-      nodes: [],
-      adjacencyList: [],
-      lines: [],
-    };
+    this.drawing = new Drawing(this);
+    this.mouse = new Mouse(this);
     makeObservable(this, {
-      frame: observable,
-      knot: computed,
+      updateFrame: action,
+      updateFrameLines: action,
     });
   }
 
+  get frame() {
+    if (this.drawing.dragStart && this.drawing.dragEnd) {
+      return fromExtrema(this.drawing.dragStart, this.drawing.dragEnd);
+    }
+    return null;
+  }
+
+  get strands() {
+    return makeStrands(this.frame);
+  }
+
   get knot() {
-    return makeKnot(this.frame);
+    return makeKnot(this.frame, this.strands);
+  }
+
+  updateFrame(newFrame: Frame) {
+    this.frame = newFrame;
+  }
+
+  updateFrameLines(newLines: FrameLine[]) {
+    this.frame.lines = newLines;
   }
 }
 
-const modelInstance = new Model();
-
 function init() {
+  const modelInstance = new Model();
   autorun(() => {
-    console.log(modelInstance.knot);
+    console.log(modelInstance.frame);
   });
 }
 
-export { modelInstance, Model, init };
+export { Model, init };

@@ -1,14 +1,14 @@
-import { pixelCoords } from "./mouse";
 import config from "./config";
 import { identicalObjects, distanceBetween } from "./general-utils";
 import { NodeOptions, GridSystem, Vector, FrameNode } from "./types";
+import type Mouse from "./mouse";
 
-export default function node(options: NodeOptions): FrameNode {
+export default function node(options: NodeOptions, mouse: Mouse): FrameNode {
   if (options.gridSystem !== GridSystem.square) {
     throw new Error("only square grid systems are currently supported");
   }
   const { x: gridX, y: gridY } = options;
-  const [x, y] = pixelCoords([gridX, gridY]);
+  const [x, y] = mouse.pixelCoords([gridX, gridY]);
   return { gridX, gridY, x, y };
 }
 
