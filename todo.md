@@ -1,5 +1,9 @@
 # TODO
 
+- after converting to use topx, should be able to remove setDirty etc
+- dynamic creation of data cells and editing of dependency graph
+- should each individual strand be a separate data cell?
+
 ### The yak stack
 
 - build nicely encapsulated state-waterfall package

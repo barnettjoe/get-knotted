@@ -1,5 +1,5 @@
 {
-  "extends": ["react-app", "prettier"],
+  "extends": ["react-app", "plugin:import/typescript", "prettier"],
   "plugins": ["jest"],
   "env": {
     "browser": true,
@@ -16,7 +16,8 @@
     "no-constant-condition": "off",
     "linebreak-style": ["error", "unix"],
     "no-debugger": "off",
-    "@typescript-eslint/no-var-requires": "off"
+    "@typescript-eslint/no-var-requires": "off",
+    "import/no-cycle": ["error"]
   },
   "settings": {
     "react": {

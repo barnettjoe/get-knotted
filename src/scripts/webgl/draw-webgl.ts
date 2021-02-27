@@ -4,7 +4,7 @@ import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
 import getPrimitives from "../primitives";
-import model from "../model";
+import { modelInstance as model } from "../model";
 import graphLines from "../graph";
 
 let gl: OnscreenWebglContext;

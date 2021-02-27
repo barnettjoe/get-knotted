@@ -1,17 +1,43 @@
+import { computed, makeObservable, observable, autorun } from "mobx";
 import config from "./config";
-import { Model } from "./types";
+import makeKnot from "./knot";
+import { Frame, UserLine, Line, Vector } from "./types";
 
-const model: Model = {
-  frame: null,
-  knot: null,
-  userLine: null,
-  gridLines: null,
-  mouseTracker: null,
-  canvasWidth: 0,
-  canvasHeight: 0,
-  columns: 0,
-  rows: 0,
-  squareSize: config.targetSquareSize,
-};
+console.log("executing model module");
+class Model {
+  frame: Frame;
+  userLine: UserLine | null = null;
+  gridLines: Line[] | null = null;
+  mouseTracker: Vector | null = null;
+  canvasWidth: number = 0;
+  canvasHeight: number = 0;
+  columns: number = 0;
+  rows: number = 0;
+  squareSize: number;
+  constructor() {
+    this.squareSize = config.targetSquareSize;
+    this.frame = {
+      nodes: [],
+      adjacencyList: [],
+      lines: [],
+    };
+    makeObservable(this, {
+      frame: observable,
+      knot: computed,
+    });
+  }
 
-export default model;
+  get knot() {
+    return makeKnot(this.frame);
+  }
+}
+
+const modelInstance = new Model();
+
+function init() {
+  autorun(() => {
+    console.log(modelInstance.knot);
+  });
+}
+
+export { modelInstance, Model, init };

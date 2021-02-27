@@ -19,6 +19,8 @@ import {
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 import { options } from "./options";
 
+console.log("executing knot module");
+
 export default function makeKnot(frame: Frame): Knot {
   const strands = makeStrands(frame);
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
@@ -61,6 +63,7 @@ export function merge(
 
 function makeStrands(frame: Frame): Strand[] {
   const strands = [];
+  // TODO - mobx errors if you pass uncrossed directly to some (wtf...)
   while (frame.lines.some(uncrossed)) {
     strands.push(makeStrand(frame));
   }

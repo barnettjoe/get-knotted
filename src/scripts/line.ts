@@ -9,6 +9,8 @@ import {
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
 
+console.log("executing line module");
+
 export default function frameLine({
   startNode,
   endNode,

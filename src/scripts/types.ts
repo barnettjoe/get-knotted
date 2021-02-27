@@ -80,7 +80,6 @@ export type Mode = typeof MODES[number];
 
 export interface Drawing {
   addMouseListeners(): void;
-  addNode(coords: Vector): void;
   dragFrame(e: MouseEvent): void;
   createKnot(): void;
   updateFrame(): void;
@@ -93,7 +92,6 @@ export interface Drawing {
   makeNewLine(startNode: FrameNode, endNode: FrameNode): void;
   newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode): boolean;
   nodeAt(coords: Vector): FrameNode | null;
-  placeNode(e: MouseEvent): void;
   setDirty(): void;
   setupWebglContext(): void;
   singleNodeFrame(coords: Vector): Frame;
@@ -188,7 +186,7 @@ export interface Knot {
   polylines: Set<PolyLine>;
 }
 
-interface UserLine {
+export interface UserLine {
   startNode: FrameNode;
   toCoords: Vector;
 }

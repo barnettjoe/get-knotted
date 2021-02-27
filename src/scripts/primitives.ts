@@ -1,4 +1,4 @@
-import model from "./model";
+import { modelInstance as model } from "./model";
 import { Primitives } from "./types";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
 import { knotPolylines } from "./knot";

@@ -1,21 +1,14 @@
-import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
+import { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
-  lines,
   findProximalNode,
   lineExistsBetween,
   overlapsExistingNode,
 } from "./frame";
 import node from "./node";
-import {
-  rowAndCol,
-  doIfInGraph,
-  relativeCoords,
-  closestGraphCoords,
-  pixelCoords,
-} from "./mouse";
+import { rowAndCol, doIfInGraph, relativeCoords } from "./mouse";
 import { identicalObjects } from "./general-utils";
-import model from "./model";
+import { modelInstance as model, init as initModel } from "./model";
 import * as webgl from "./webgl/draw-webgl";
 
 import {
@@ -26,6 +19,8 @@ import {
   isOnscreenWebglContext,
 } from "./types";
 
+initModel();
+
 // for keeping track of where we started a drag on the grid
 let dragStart: [number, number];
 let dragEnd: [number, number];
@@ -34,8 +29,9 @@ let dirty = true;
 
 function drawLoop() {
   if (dirty) {
-    if (model.knot) {
-      drawKnot(model.knot);
+    const knot = model.knot;
+    if (knot) {
+      drawKnot(knot);
     }
     webgl.draw();
     dirty = false;
@@ -70,9 +66,6 @@ const drawing: Drawing = {
       case "add-line":
         this.startDrawingLine(relativeCoords(e));
         break;
-      case "add-node":
-        this.placeNode(e);
-        break;
     }
   },
   handleMouseUp(this: Drawing, e: MouseEvent) {
@@ -80,7 +73,7 @@ const drawing: Drawing = {
       if (this.isCurrentlyDrawing) {
         switch (this.mode) {
           case "add-grid":
-            model.frame && this.createKnot();
+            this.createKnot();
             break;
           case "add-line":
             this.finishDrawingLine(e);
@@ -128,20 +121,6 @@ const drawing: Drawing = {
     // TODO - why is the requestAnimationFrame necessary here??
     requestAnimationFrame(drawLoop);
   },
-  createKnot() {
-    if (model.frame === null) {
-      throw new Error("tried to create a knot with null frame");
-    }
-    const knot = makeKnot(model.frame);
-    model.knot = knot;
-    this.setDirty();
-  },
-  addNode(coords) {
-    const frame = this.singleNodeFrame(coords);
-    frame.lines = lines(frame.nodes, frame.adjacencyList);
-    const newKnot = makeKnot(frame);
-    drawKnot(newKnot);
-  },
   singleNodeFrame(coords) {
     const nodes = [
       node({
@@ -151,13 +130,6 @@ const drawing: Drawing = {
       }),
     ];
     return { nodes, adjacencyList: [[]], lines: [] };
-  },
-  placeNode(e) {
-    const coords = closestGraphCoords(e);
-    const pxCoords = pixelCoords(coords);
-    if (!this.isNodeOverlapping(pxCoords)) {
-      this.addNode(coords);
-    }
   },
   isNodeOverlapping(coords) {
     return this.knots.some((knot) => {

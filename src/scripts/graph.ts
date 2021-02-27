@@ -1,6 +1,6 @@
 import { Line } from "./types";
 import { pixelCoords } from "./mouse";
-import model from "./model";
+import { modelInstance as model } from "./model";
 
 function verticalLines(): Line[] {
   return Array.from(Array(model.columns + 1), (_, idx) => idx).map((i) => {

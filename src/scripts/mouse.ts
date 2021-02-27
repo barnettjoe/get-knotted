@@ -1,5 +1,5 @@
 import config from "./config";
-import model from "./model";
+import { modelInstance as model } from "./model";
 import { Vector } from "./types";
 
 // for getting coords relative to graph area from absolute coords...
@@ -32,14 +32,6 @@ export function rowAndCol(event: MouseEvent): Vector {
   function pxToBox(num: number) {
     const shifted = num - 0.5 * config.maxStrokeWidth();
     return Math.floor(shifted / model.squareSize);
-  }
-  return relativeCoords(event).map(pxToBox) as Vector;
-}
-
-export function closestGraphCoords(event: MouseEvent): Vector {
-  function pxToBox(num: number) {
-    const shifted = num - 0.5 * config.maxStrokeWidth();
-    return Math.round(shifted / config.squareHeight);
   }
   return relativeCoords(event).map(pxToBox) as Vector;
 }
