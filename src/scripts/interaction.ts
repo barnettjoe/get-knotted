@@ -22,7 +22,7 @@ export default class Interaction {
         false
       );
     } else {
-      // TODO - throw error
+      throw new Error("could not find element for attaching event handlers");
     }
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
