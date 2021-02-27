@@ -224,6 +224,4 @@ class Drawing {
   }
 }
 
-const drawing = new Drawing();
-
-export default drawing;
+export default Drawing;

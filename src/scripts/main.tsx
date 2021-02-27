@@ -7,7 +7,7 @@ import FormControl from "react-bootstrap/FormControl";
 import Button from "react-bootstrap/Button";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ReactDOM from "react-dom";
-import drawing from "./drawing";
+import Drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
 import { options, setOptions } from "./options";
@@ -15,12 +15,15 @@ import * as webgl from "./webgl/draw-webgl";
 
 const { offsetContour: initialOffsetContour } = options;
 
+let drawing: Drawing;
+
 function changeDrawingMode(newMode: Mode) {
   drawing.mode = newMode;
 }
 async function doSetup() {
   await setupWasm();
   webgl.start();
+  drawing = new Drawing();
   drawing.addMouseListeners();
   drawing.startDrawLoop();
 }
@@ -31,7 +34,9 @@ function App() {
     doSetup();
   }, []);
   useEffect(() => {
-    setOptions({ offsetContour });
+    if (drawing) {
+      setOptions({ offsetContour }, drawing);
+    }
   }, [offsetContour]);
   return (
     <>
