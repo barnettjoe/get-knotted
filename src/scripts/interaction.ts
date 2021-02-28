@@ -70,7 +70,7 @@ export default class Interaction {
       this.isDragging = false;
     }
   }
-  onGridDrag(cb: DragListener) {
+  onDragOverGridLine(cb: DragListener) {
     this.listeners.push(cb);
   }
   handleMouseMove(e: MouseEvent) {

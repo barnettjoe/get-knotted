@@ -39,7 +39,7 @@ class Drawing {
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
-    this.interaction.onGridDrag(this.updateFrameOnDrag);
+    this.interaction.onDragOverGridLine(this.updateFrameOnDrag);
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -95,7 +95,7 @@ class Drawing {
     this.setDirty();
   }
   startDrawingGrid() {
-    doIfInGraph(this.dragStart, this.updateFrame.bind(this));
+    doIfInGraph(this.interaction.dragStart, this.updateFrame.bind(this));
   }
   updateFrameOnDrag(dragStart: Vector, dragEnd: Vector) {
     doIfInGraph(dragEnd, () => {
