@@ -112,16 +112,12 @@ export default class Interaction {
       this.listeners["drag-move"].forEach((listener) =>
         listener(relativeCoords(e))
       );
-      switch (this.drawing.mode) {
-        case "add-grid":
-          const previousBox = this.dragEnd;
-          this.dragEnd = rowAndCol(e);
-          if (!identicalObjects(previousBox, this.dragEnd)) {
-            this.listeners["drag-over-grid-line"].forEach((listener) =>
-              listener(this.dragStart, this.dragEnd)
-            );
-          }
-          break;
+      const previousBox = this.dragEnd;
+      this.dragEnd = rowAndCol(e);
+      if (!identicalObjects(previousBox, this.dragEnd)) {
+        this.listeners["drag-over-grid-line"].forEach((listener) =>
+          listener(this.dragStart, this.dragEnd)
+        );
       }
     }
     model.mouseTracker = relativeCoords(e);
