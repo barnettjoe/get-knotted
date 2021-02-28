@@ -39,6 +39,7 @@ class Drawing {
     this.interaction.on("click", this.handleClick.bind(this));
     this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
     this.interaction.on("drag-move", this.handleDragMove.bind(this));
+    this.interaction.on("mouse-move", this.handleMouseMove.bind(this));
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -88,13 +89,16 @@ class Drawing {
   }
   updateFrame() {
     model.frame = fromExtrema(
-      this.interaction.dragStart,
-      this.interaction.dragEnd
+      this.interaction.dragStartGridCoords,
+      this.interaction.dragEndGridCoords
     );
     this.setDirty();
   }
   startDrawingGrid() {
-    doIfInGraph(this.interaction.dragStart, this.updateFrame.bind(this));
+    doIfInGraph(
+      this.interaction.dragStartGridCoords,
+      this.updateFrame.bind(this)
+    );
   }
   updateFrameOnDrag(dragStart: Vector, dragEnd: Vector) {
     doIfInGraph(dragEnd, () => {
@@ -173,6 +177,10 @@ class Drawing {
         this.finishDrawingLine(dragEndCoords);
         break;
     }
+  }
+  handleMouseMove(mouseMoveCoords: Vector) {
+    model.mouseTracker = mouseMoveCoords;
+    this.setDirty();
   }
   handleClick() {
     switch (this.mode) {

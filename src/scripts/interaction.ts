@@ -1,39 +1,35 @@
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { identicalObjects } from "./general-utils";
-import model from "./model";
 import { ArrayElement, Vector } from "./types";
 
-type DragEndHandler = (dragEndCoords: Vector) => void;
-type DragMoveHandler = (dragCoords: Vector) => void;
-type DragOverGridLineHandler = (dragStart: Vector, dragEnd: Vector) => void;
 type ClickHandler = () => void;
-type MouseDownHandler = (mouseDownCoords: Vector) => void;
+type MouseEventHandler = (mouseDownCoords: Vector) => void;
+type DragEndHandler = (dragStartCoords: Vector, dragEndCoords: Vector) => void;
+type DragOverGridLineHandler = (
+  dragStartGridCoords: Vector,
+  dragCurrentGridCoords: Vector
+) => void;
+
 interface Listeners {
   "drag-end": DragEndHandler[];
-  "drag-move": DragMoveHandler[];
+  "drag-move": MouseEventHandler[];
   "drag-over-grid-line": DragOverGridLineHandler[];
   click: ClickHandler[];
-  "mouse-down": MouseDownHandler[];
+  "mouse-down": MouseEventHandler[];
+  "mouse-move": MouseEventHandler[];
 }
 
 export default class Interaction {
   canvas: HTMLCanvasElement | null;
   drawing: Drawing;
-  lastMouseDownTarget: EventTarget | null;
   mouseIsDown: boolean;
   listeners: Listeners;
-  /**
-   * Position in relative coordinates of the last mousedown event.
-   */
-  mouseDown: Vector;
-  /**
-   * Whether we are currently dragging
-   */
+  lastMouseDownCoords: Vector;
+  lastMouseDownTarget: EventTarget | null;
   isDragging: boolean;
-  // drag tracking, in grid coordinates
-  dragStart: Vector;
-  dragEnd: Vector;
+  dragStartGridCoords: Vector;
+  dragEndGridCoords: Vector;
   constructor(drawing: Drawing) {
     this.canvas = null;
     this.lastMouseDownTarget = null;
@@ -46,11 +42,11 @@ export default class Interaction {
       "drag-over-grid-line": [],
       click: [],
       "mouse-down": [],
+      "mouse-move": [],
     };
-    this.mouseDown = [0, 0];
-    // TODO - these are grid-coordinates - should rename to make that clear
-    this.dragStart = [0, 0];
-    this.dragEnd = [0, 0];
+    this.lastMouseDownCoords = [0, 0];
+    this.dragStartGridCoords = [0, 0];
+    this.dragEndGridCoords = [0, 0];
     this.addMouseListeners();
   }
   addMouseListeners() {
@@ -75,10 +71,10 @@ export default class Interaction {
   handleMouseDown(e: MouseEvent) {
     this.mouseIsDown = true;
     this.lastMouseDownTarget = e.target;
-    this.mouseDown = relativeCoords(e);
+    this.lastMouseDownCoords = relativeCoords(e);
     if (this.lastMouseDownTarget === this.canvas) {
-      this.dragStart = rowAndCol(e);
-      this.dragEnd = this.dragStart;
+      this.dragStartGridCoords = rowAndCol(e);
+      this.dragEndGridCoords = this.dragStartGridCoords;
       this.listeners["mouse-down"].forEach((listener) =>
         listener(relativeCoords(e))
       );
@@ -90,7 +86,7 @@ export default class Interaction {
       this.isDragging = false;
       if (this.lastMouseDownTarget === this.canvas) {
         this.listeners["drag-end"].forEach((listener) =>
-          listener(relativeCoords(e))
+          listener(this.lastMouseDownCoords, relativeCoords(e))
         );
       }
     } else {
@@ -107,20 +103,18 @@ export default class Interaction {
     listeners.push(handler);
   }
   handleMouseMove(e: MouseEvent) {
+    const coords = relativeCoords(e);
     if (this.mouseIsDown) {
       this.isDragging = true;
-      this.listeners["drag-move"].forEach((listener) =>
-        listener(relativeCoords(e))
-      );
-      const previousBox = this.dragEnd;
-      this.dragEnd = rowAndCol(e);
-      if (!identicalObjects(previousBox, this.dragEnd)) {
+      this.listeners["drag-move"].forEach((listener) => listener(coords));
+      const previousBox = this.dragEndGridCoords;
+      this.dragEndGridCoords = rowAndCol(e);
+      if (!identicalObjects(previousBox, this.dragEndGridCoords)) {
         this.listeners["drag-over-grid-line"].forEach((listener) =>
-          listener(this.dragStart, this.dragEnd)
+          listener(this.dragStartGridCoords, this.dragEndGridCoords)
         );
       }
     }
-    model.mouseTracker = relativeCoords(e);
-    this.drawing.setDirty();
+    this.listeners["mouse-move"].forEach((listener) => listener(coords));
   }
 }
