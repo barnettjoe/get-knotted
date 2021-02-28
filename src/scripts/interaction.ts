@@ -10,10 +10,15 @@ export default class Interaction {
   drawing: Drawing;
   isDragging: boolean;
   listeners: DragListener[];
+  // drag tracking, in grid coordinates
+  dragStart: [number, number];
+  dragEnd: [number, number];
   constructor(drawing: Drawing) {
     this.drawing = drawing;
     this.isDragging = false;
     this.listeners = [];
+    this.dragStart = [0, 0];
+    this.dragEnd = [0, 0];
     this.addMouseListeners();
   }
   addMouseListeners() {
@@ -38,9 +43,9 @@ export default class Interaction {
     this.isDragging = true;
     switch (this.drawing.mode) {
       case "add-grid":
-        this.drawing.dragStart = rowAndCol(e);
-        this.drawing.dragEnd = this.drawing.dragStart;
-        this.drawing.startDrawingGrid(e);
+        this.dragStart = rowAndCol(e);
+        this.dragEnd = this.dragStart;
+        this.drawing.startDrawingGrid();
         break;
       case "add-line":
         this.drawing.startDrawingLine(relativeCoords(e));
@@ -74,11 +79,11 @@ export default class Interaction {
     if (this.isDragging)
       switch (this.drawing.mode) {
         case "add-grid":
-          const previousBox = this.drawing.dragEnd;
-          this.drawing.dragEnd = rowAndCol(e);
-          if (!identicalObjects(previousBox, this.drawing.dragEnd)) {
+          const previousBox = this.dragEnd;
+          this.dragEnd = rowAndCol(e);
+          if (!identicalObjects(previousBox, this.dragEnd)) {
             this.listeners.forEach((listener) =>
-              listener(this.drawing.dragStart, this.drawing.dragEnd)
+              listener(this.dragStart, this.dragEnd)
             );
           }
           break;

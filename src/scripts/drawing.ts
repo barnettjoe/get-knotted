@@ -33,9 +33,6 @@ function drawLoop() {
 }
 
 class Drawing {
-  // for keeping track of where we started a drag on the grid
-  dragStart: [number, number];
-  dragEnd: [number, number];
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
@@ -45,8 +42,6 @@ class Drawing {
     this.interaction.onGridDrag(this.updateFrameOnDrag);
     this.knots = [];
     this.mode = "add-grid";
-    this.dragStart = [0, 0];
-    this.dragEnd = [0, 0];
     this.startDrawLoop();
   }
   setDirty() {
@@ -93,7 +88,10 @@ class Drawing {
     });
   }
   updateFrame() {
-    model.frame = fromExtrema(this.dragStart, this.dragEnd);
+    model.frame = fromExtrema(
+      this.interaction.dragStart,
+      this.interaction.dragEnd
+    );
     this.setDirty();
   }
   startDrawingGrid() {
