@@ -5,11 +5,13 @@ import model from "./model";
 import { ArrayElement, Vector } from "./types";
 
 type DragEndHandler = (dragEndCoords: Vector) => void;
+type DragMoveHandler = (dragCoords: Vector) => void;
 type DragOverGridLineHandler = (dragStart: Vector, dragEnd: Vector) => void;
 type ClickHandler = () => void;
 type MouseDownHandler = (mouseDownCoords: Vector) => void;
 interface Listeners {
   "drag-end": DragEndHandler[];
+  "drag-move": DragMoveHandler[];
   "drag-over-grid-line": DragOverGridLineHandler[];
   click: ClickHandler[];
   "mouse-down": MouseDownHandler[];
@@ -40,6 +42,7 @@ export default class Interaction {
     this.isDragging = false;
     this.listeners = {
       "drag-end": [],
+      "drag-move": [],
       "drag-over-grid-line": [],
       click: [],
       "mouse-down": [],
@@ -98,18 +101,17 @@ export default class Interaction {
   }
   on<EventName extends keyof Listeners>(
     eventName: EventName,
-    cb: ArrayElement<Listeners[EventName]>
+    handler: ArrayElement<Listeners[EventName]>
   ) {
-    const listeners = this.listeners[eventName] as typeof cb[];
-    listeners.push(cb);
+    const listeners = this.listeners[eventName] as typeof handler[];
+    listeners.push(handler);
   }
   handleMouseMove(e: MouseEvent) {
     if (this.mouseIsDown) {
       this.isDragging = true;
-    }
-    model.mouseTracker = relativeCoords(e);
-    this.drawing.setDirty();
-    if (this.mouseIsDown)
+      this.listeners["drag-move"].forEach((listener) =>
+        listener(relativeCoords(e))
+      );
       switch (this.drawing.mode) {
         case "add-grid":
           const previousBox = this.dragEnd;
@@ -120,14 +122,9 @@ export default class Interaction {
             );
           }
           break;
-        case "add-line":
-          if (model.userLine?.startNode) {
-            this.drawing.drawUserLine(
-              model.userLine.startNode,
-              relativeCoords(e)
-            );
-          }
-          break;
       }
+    }
+    model.mouseTracker = relativeCoords(e);
+    this.drawing.setDirty();
   }
 }

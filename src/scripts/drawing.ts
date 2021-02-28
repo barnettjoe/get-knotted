@@ -38,6 +38,7 @@ class Drawing {
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.interaction.on("click", this.handleClick.bind(this));
     this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
+    this.interaction.on("drag-move", this.handleDragMove.bind(this));
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -154,6 +155,13 @@ class Drawing {
       case "add-node":
         this.placeNode(mouseDownCoords);
         break;
+    }
+  }
+  handleDragMove(dragCoords: Vector) {
+    if (this.mode === "add-line") {
+      if (model.userLine?.startNode) {
+        this.drawUserLine(model.userLine.startNode, dragCoords);
+      }
     }
   }
   handleDragEnd(dragEndCoords: Vector) {
