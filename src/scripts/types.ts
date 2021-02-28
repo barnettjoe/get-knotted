@@ -2,6 +2,10 @@ import { Bezier } from "bezier-js";
 
 export type Matrix = number[][];
 
+export type ArrayElement<A extends unknown[]> = A extends (infer T)[]
+  ? T
+  : never;
+
 export interface FrameNode {
   x: number;
   y: number;

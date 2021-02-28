@@ -7,12 +7,7 @@ import {
   overlapsExistingNode,
 } from "./frame";
 import node from "./node";
-import {
-  doIfInGraph,
-  relativeCoords,
-  closestGraphCoords,
-  pixelCoords,
-} from "./mouse";
+import { doIfInGraph, closestGraphCoords, pixelCoords } from "./mouse";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 import Interaction from "./interaction";
@@ -39,7 +34,8 @@ class Drawing {
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
-    this.interaction.onDragOverGridLine(this.updateFrameOnDrag);
+    this.interaction.on("drag-over-grid-line", this.updateFrameOnDrag);
+    this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -123,11 +119,10 @@ class Drawing {
       !lineExistsBetween(lineStart, lineEnd, currentFrame.lines)
     );
   }
-  finishDrawingLine(e: MouseEvent) {
+  finishDrawingLine(coords: Vector) {
     if (model.userLine) {
       const lineStart = model.userLine.startNode;
       model.userLine = null;
-      const coords = relativeCoords(e);
       const lineEnd = this.nodeAt(coords);
       if (lineStart && lineEnd && this.newLineIsValid(lineStart, lineEnd)) {
         this.makeNewLine(lineStart, lineEnd);
@@ -145,6 +140,16 @@ class Drawing {
   nodeAt(coords: Vector) {
     const nodes = model.knot?.frame.nodes;
     return nodes ? findProximalNode(coords, nodes) : null;
+  }
+  handleDragEnd(dragEndCoords: Vector) {
+    switch (this.mode) {
+      case "add-grid":
+        model.frame && this.createKnot();
+        break;
+      case "add-line":
+        this.finishDrawingLine(dragEndCoords);
+        break;
+    }
   }
   startDrawingLine(coords: Vector) {
     const lineStart = this.nodeAt(coords);
