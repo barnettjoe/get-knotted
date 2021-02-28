@@ -8,13 +8,11 @@ import {
 } from "./frame";
 import node from "./node";
 import {
-  rowAndCol,
   doIfInGraph,
   relativeCoords,
   closestGraphCoords,
   pixelCoords,
 } from "./mouse";
-import { identicalObjects } from "./general-utils";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 import Interaction from "./interaction";
@@ -36,18 +34,19 @@ function drawLoop() {
 
 class Drawing {
   // for keeping track of where we started a drag on the grid
-  dragStart: [number, number] | null;
-  dragEnd: [number, number] | null;
+  dragStart: [number, number];
+  dragEnd: [number, number];
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
+    this.interaction.onGridDrag(this.updateFrameOnDrag);
     this.knots = [];
     this.mode = "add-grid";
-    this.dragStart = null;
-    this.dragEnd = null;
+    this.dragStart = [0, 0];
+    this.dragEnd = [0, 0];
     this.startDrawLoop();
   }
   setDirty() {
@@ -94,31 +93,20 @@ class Drawing {
     });
   }
   updateFrame() {
-    if (this.dragStart === null) throw new Error("dragStart is null");
-    if (this.dragEnd === null) throw new Error("dragEnd is null");
     model.frame = fromExtrema(this.dragStart, this.dragEnd);
     this.setDirty();
   }
-  startDrawingGrid(e: MouseEvent) {
-    this.dragStart = rowAndCol(e);
-    this.dragEnd = this.dragStart;
+  startDrawingGrid() {
     doIfInGraph(this.dragStart, this.updateFrame.bind(this));
   }
-  dragFrame(e: MouseEvent) {
-    if (this.dragEnd === null) throw new Error("dragEnd is null");
-    const previousBox = this.dragEnd;
-    this.dragEnd = rowAndCol(e);
-    if (!identicalObjects(previousBox, this.dragEnd)) {
-      doIfInGraph(this.dragEnd, () => {
-        if (this.dragStart === null) throw new Error("dragStart is null");
-        if (this.dragEnd === null) throw new Error("dragEnd is null");
-        const currentFrame = model.frame;
-        if (currentFrame) {
-          currentFrame.lines = [];
-        }
-        model.frame = fromExtrema(this.dragStart, this.dragEnd);
-      });
-    }
+  updateFrameOnDrag(dragStart: Vector, dragEnd: Vector) {
+    doIfInGraph(dragEnd, () => {
+      const currentFrame = model.frame;
+      if (currentFrame) {
+        currentFrame.lines = [];
+      }
+      model.frame = fromExtrema(dragStart, dragEnd);
+    });
   }
   drawUserLine(lineStart: FrameNode, toCoords: Vector) {
     model.userLine = {

@@ -1,13 +1,19 @@
 import Drawing from "./drawing";
-import { relativeCoords } from "./mouse";
+import { relativeCoords, rowAndCol } from "./mouse";
+import { identicalObjects } from "./general-utils";
 import model from "./model";
+import { Vector } from "./types";
+
+type DragListener = (dragStart: Vector, dragEnd: Vector) => void;
 
 export default class Interaction {
   drawing: Drawing;
   isDragging: boolean;
+  listeners: DragListener[];
   constructor(drawing: Drawing) {
     this.drawing = drawing;
     this.isDragging = false;
+    this.listeners = [];
     this.addMouseListeners();
   }
   addMouseListeners() {
@@ -32,6 +38,8 @@ export default class Interaction {
     this.isDragging = true;
     switch (this.drawing.mode) {
       case "add-grid":
+        this.drawing.dragStart = rowAndCol(e);
+        this.drawing.dragEnd = this.drawing.dragStart;
         this.drawing.startDrawingGrid(e);
         break;
       case "add-line":
@@ -57,13 +65,22 @@ export default class Interaction {
       this.isDragging = false;
     }
   }
+  onGridDrag(cb: DragListener) {
+    this.listeners.push(cb);
+  }
   handleMouseMove(e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
     this.drawing.setDirty();
     if (this.isDragging)
       switch (this.drawing.mode) {
         case "add-grid":
-          this.drawing.dragFrame(e);
+          const previousBox = this.drawing.dragEnd;
+          this.drawing.dragEnd = rowAndCol(e);
+          if (!identicalObjects(previousBox, this.drawing.dragEnd)) {
+            this.listeners.forEach((listener) =>
+              listener(this.drawing.dragStart, this.drawing.dragEnd)
+            );
+          }
           break;
         case "add-line":
           if (model.userLine?.startNode) {
