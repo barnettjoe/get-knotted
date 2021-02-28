@@ -36,6 +36,7 @@ class Drawing {
     this.interaction = new Interaction(this);
     this.interaction.on("drag-over-grid-line", this.updateFrameOnDrag);
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
+    this.interaction.on("click", this.handleClick.bind(this));
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -148,6 +149,13 @@ class Drawing {
         break;
       case "add-line":
         this.finishDrawingLine(dragEndCoords);
+        break;
+    }
+  }
+  handleClick() {
+    switch (this.mode) {
+      case "add-grid":
+        model.frame && this.createKnot();
         break;
     }
   }

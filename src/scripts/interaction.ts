@@ -5,14 +5,18 @@ import model from "./model";
 import { ArrayElement, Vector } from "./types";
 
 type DragEndHandler = (dragEndCoords: Vector) => void;
-type DragOverGridLineListener = (dragStart: Vector, dragEnd: Vector) => void;
+type DragOverGridLineHandler = (dragStart: Vector, dragEnd: Vector) => void;
+type ClickHandler = () => void;
 interface Listeners {
   "drag-end": DragEndHandler[];
-  "drag-over-grid-line": DragOverGridLineListener[];
+  "drag-over-grid-line": DragOverGridLineHandler[];
+  click: ClickHandler[];
 }
 
 export default class Interaction {
+  canvas: HTMLCanvasElement | null;
   drawing: Drawing;
+  lastMouseDownTarget: EventTarget | null;
   mouseIsDown: boolean;
   listeners: Listeners;
   /**
@@ -27,12 +31,15 @@ export default class Interaction {
   dragStart: Vector;
   dragEnd: Vector;
   constructor(drawing: Drawing) {
+    this.canvas = null;
+    this.lastMouseDownTarget = null;
     this.drawing = drawing;
     this.mouseIsDown = false;
     this.isDragging = false;
     this.listeners = {
       "drag-end": [],
       "drag-over-grid-line": [],
+      click: [],
     };
     this.mouseDown = [0, 0];
     // TODO - these are grid-coordinates - should rename to make that clear
@@ -41,14 +48,10 @@ export default class Interaction {
     this.addMouseListeners();
   }
   addMouseListeners() {
-    const wrapper = document.getElementById("webgl-surface");
-    if (wrapper) {
-      wrapper.addEventListener(
-        "mousedown",
-        this.handleMouseDown.bind(this),
-        false
-      );
-      wrapper.addEventListener(
+    const canvas = document.getElementById("webgl-surface");
+    if (canvas instanceof HTMLCanvasElement) {
+      this.canvas = canvas;
+      canvas.addEventListener(
         "mousemove",
         this.handleMouseMove.bind(this),
         false
@@ -56,46 +59,47 @@ export default class Interaction {
     } else {
       throw new Error("could not find element for attaching event handlers");
     }
+    window.addEventListener(
+      "mousedown",
+      this.handleMouseDown.bind(this),
+      false
+    );
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
   handleMouseDown(e: MouseEvent) {
     this.mouseIsDown = true;
+    this.lastMouseDownTarget = e.target;
     this.mouseDown = relativeCoords(e);
-    switch (this.drawing.mode) {
-      case "add-grid":
-        this.dragStart = rowAndCol(e);
-        this.dragEnd = this.dragStart;
-        this.drawing.startDrawingGrid();
-        break;
-      case "add-line":
-        this.drawing.startDrawingLine(relativeCoords(e));
-        break;
-      case "add-node":
-        this.drawing.placeNode(e);
-        break;
+    if (this.lastMouseDownTarget === this.canvas) {
+      switch (this.drawing.mode) {
+        case "add-grid":
+          this.dragStart = rowAndCol(e);
+          this.dragEnd = this.dragStart;
+          this.drawing.startDrawingGrid();
+          break;
+        case "add-line":
+          this.drawing.startDrawingLine(relativeCoords(e));
+          break;
+        case "add-node":
+          this.drawing.placeNode(e);
+          break;
+      }
     }
   }
 
-  handleClick(e: MouseEvent) {
-    if (e.target instanceof Element && e.target.tagName !== "BUTTON") {
-      if (this.mouseIsDown) {
-        switch (this.drawing.mode) {
-          case "add-grid":
-            model.frame && this.drawing.createKnot();
-            break;
-        }
-      }
-      this.mouseIsDown = false;
-    }
-  }
   handleMouseUp(e: MouseEvent) {
     this.mouseIsDown = false;
     if (this.isDragging) {
-      this.listeners["drag-end"].forEach((listener) => {
-        listener(relativeCoords(e));
-      });
+      this.isDragging = false;
+      if (this.lastMouseDownTarget === this.canvas) {
+        this.listeners["drag-end"].forEach((listener) => {
+          listener(relativeCoords(e));
+        });
+      }
     } else {
-      this.handleClick(e);
+      if (this.lastMouseDownTarget === this.canvas) {
+        this.listeners["click"].forEach((listener) => listener());
+      }
     }
   }
   on<EventName extends keyof Listeners>(
