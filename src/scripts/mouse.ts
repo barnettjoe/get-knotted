@@ -36,12 +36,12 @@ export function rowAndCol(event: MouseEvent): Vector {
   return relativeCoords(event).map(pxToBox) as Vector;
 }
 
-export function closestGraphCoords(event: MouseEvent): Vector {
+export function closestGraphCoords(mouseCoords: Vector): Vector {
   function pxToBox(num: number) {
     const shifted = num - 0.5 * config.maxStrokeWidth();
     return Math.round(shifted / config.squareHeight);
   }
-  return relativeCoords(event).map(pxToBox) as Vector;
+  return mouseCoords.map(pxToBox) as Vector;
 }
 
 // for getting pixel coords from [row, col]

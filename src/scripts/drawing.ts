@@ -37,6 +37,7 @@ class Drawing {
     this.interaction.on("drag-over-grid-line", this.updateFrameOnDrag);
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.interaction.on("click", this.handleClick.bind(this));
+    this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
@@ -72,8 +73,8 @@ class Drawing {
     ];
     return { nodes, adjacencyList: [[]], lines: [] };
   }
-  placeNode(e: MouseEvent) {
-    const coords = closestGraphCoords(e);
+  placeNode(mouseCoords: Vector) {
+    const coords = closestGraphCoords(mouseCoords);
     const pxCoords = pixelCoords(coords);
     if (!this.isNodeOverlapping(pxCoords)) {
       this.addNode(coords);
@@ -141,6 +142,19 @@ class Drawing {
   nodeAt(coords: Vector) {
     const nodes = model.knot?.frame.nodes;
     return nodes ? findProximalNode(coords, nodes) : null;
+  }
+  handleMouseDown(mouseDownCoords: Vector) {
+    switch (this.mode) {
+      case "add-grid":
+        this.startDrawingGrid();
+        break;
+      case "add-line":
+        this.startDrawingLine(mouseDownCoords);
+        break;
+      case "add-node":
+        this.placeNode(mouseDownCoords);
+        break;
+    }
   }
   handleDragEnd(dragEndCoords: Vector) {
     switch (this.mode) {
