@@ -3,8 +3,7 @@ import { relativeCoords, rowAndCol } from "./mouse";
 import { identicalObjects } from "./general-utils";
 import { ArrayElement, Vector } from "./types";
 
-type ClickHandler = () => void;
-type MouseEventHandler = (mouseDownCoords: Vector) => void;
+type MouseEventHandler = (mouseEventCoords: Vector) => void;
 type DragEndHandler = (dragStartCoords: Vector, dragEndCoords: Vector) => void;
 type DragOverGridLineHandler = (
   dragStartGridCoords: Vector,
@@ -12,10 +11,11 @@ type DragOverGridLineHandler = (
 ) => void;
 
 interface Listeners {
+  "drag-start": MouseEventHandler[];
   "drag-end": DragEndHandler[];
   "drag-move": MouseEventHandler[];
   "drag-over-grid-line": DragOverGridLineHandler[];
-  click: ClickHandler[];
+  click: MouseEventHandler[];
   "mouse-down": MouseEventHandler[];
   "mouse-move": MouseEventHandler[];
 }
@@ -37,6 +37,7 @@ export default class Interaction {
     this.mouseIsDown = false;
     this.isDragging = false;
     this.listeners = {
+      "drag-start": [],
       "drag-end": [],
       "drag-move": [],
       "drag-over-grid-line": [],
@@ -81,17 +82,18 @@ export default class Interaction {
     }
   }
   handleMouseUp(e: MouseEvent) {
+    const coords = relativeCoords(e);
     this.mouseIsDown = false;
     if (this.isDragging) {
       this.isDragging = false;
       if (this.lastMouseDownTarget === this.canvas) {
         this.listeners["drag-end"].forEach((listener) =>
-          listener(this.lastMouseDownCoords, relativeCoords(e))
+          listener(coords, relativeCoords(e))
         );
       }
     } else {
       if (this.lastMouseDownTarget === this.canvas) {
-        this.listeners["click"].forEach((listener) => listener());
+        this.listeners["click"].forEach((listener) => listener(coords));
       }
     }
   }

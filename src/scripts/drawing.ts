@@ -34,7 +34,10 @@ class Drawing {
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
-    this.interaction.on("drag-over-grid-line", this.updateFrameOnDrag);
+    this.interaction.on(
+      "drag-over-grid-line",
+      this.updateFrameOnDrag.bind(this)
+    );
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.interaction.on("click", this.handleClick.bind(this));
     this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
@@ -101,13 +104,15 @@ class Drawing {
     );
   }
   updateFrameOnDrag(dragStart: Vector, dragEnd: Vector) {
-    doIfInGraph(dragEnd, () => {
-      const currentFrame = model.frame;
-      if (currentFrame) {
-        currentFrame.lines = [];
-      }
-      model.frame = fromExtrema(dragStart, dragEnd);
-    });
+    if (this.mode === "add-grid") {
+      doIfInGraph(dragEnd, () => {
+        const currentFrame = model.frame;
+        if (currentFrame) {
+          currentFrame.lines = [];
+        }
+        model.frame = fromExtrema(dragStart, dragEnd);
+      });
+    }
   }
   drawUserLine(lineStart: FrameNode, toCoords: Vector) {
     model.userLine = {
@@ -156,9 +161,6 @@ class Drawing {
       case "add-line":
         this.startDrawingLine(mouseDownCoords);
         break;
-      case "add-node":
-        this.placeNode(mouseDownCoords);
-        break;
     }
   }
   handleDragMove(dragCoords: Vector) {
@@ -182,11 +184,11 @@ class Drawing {
     model.mouseTracker = mouseMoveCoords;
     this.setDirty();
   }
-  handleClick() {
-    switch (this.mode) {
-      case "add-grid":
-        model.frame && this.createKnot();
-        break;
+  handleClick(clickCoords: Vector) {
+    if (this.mode === "add-grid") {
+      model.frame && this.createKnot();
+    } else if (this.mode === "add-node") {
+      this.placeNode(clickCoords);
     }
   }
   startDrawingLine(coords: Vector) {
