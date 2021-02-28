@@ -43,7 +43,7 @@
     "esm": "^3.2.25",
     "html-webpack-plugin": "^5.0.0-alpha.10",
     "jest": "^26.6.3",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "numeric": "^1.2.6",
     "prettier": "^2.2.1",
     "raw-loader": "^4.0.2",

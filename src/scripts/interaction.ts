@@ -1,22 +1,28 @@
+import zipObject from "lodash/zipObject";
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { identicalObjects } from "./general-utils";
 import model from "./model";
 import { Vector } from "./types";
+const eventNames = ["drag-start", "drag-end", "drag-over-grid-line"] as const;
 
 type DragListener = (dragStart: Vector, dragEnd: Vector) => void;
-
+type EventType = typeof eventNames[number];
+type Listeners = { [key in EventType]: DragListener[] };
 export default class Interaction {
   drawing: Drawing;
   isDragging: boolean;
-  listeners: DragListener[];
+  listeners: { [key in EventType]: DragListener[] };
   // drag tracking, in grid coordinates
   dragStart: [number, number];
   dragEnd: [number, number];
   constructor(drawing: Drawing) {
     this.drawing = drawing;
     this.isDragging = false;
-    this.listeners = [];
+    this.listeners = zipObject(
+      eventNames,
+      eventNames.map(() => [] as DragListener[])
+    ) as Listeners;
     this.dragStart = [0, 0];
     this.dragEnd = [0, 0];
     this.addMouseListeners();
@@ -26,7 +32,7 @@ export default class Interaction {
     if (wrapper) {
       wrapper.addEventListener(
         "mousedown",
-        this.handleMouseDown.bind(this),
+        this.handleDragStart.bind(this),
         false
       );
       wrapper.addEventListener(
@@ -39,7 +45,7 @@ export default class Interaction {
     }
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
-  handleMouseDown(e: MouseEvent) {
+  handleDragStart(e: MouseEvent) {
     this.isDragging = true;
     switch (this.drawing.mode) {
       case "add-grid":
@@ -71,7 +77,7 @@ export default class Interaction {
     }
   }
   onDragOverGridLine(cb: DragListener) {
-    this.listeners.push(cb);
+    this.listeners["drag-over-grid-line"].push(cb);
   }
   handleMouseMove(e: MouseEvent) {
     model.mouseTracker = relativeCoords(e);
@@ -82,7 +88,7 @@ export default class Interaction {
           const previousBox = this.dragEnd;
           this.dragEnd = rowAndCol(e);
           if (!identicalObjects(previousBox, this.dragEnd)) {
-            this.listeners.forEach((listener) =>
+            this.listeners["drag-over-grid-line"].forEach((listener) =>
               listener(this.dragStart, this.dragEnd)
             );
           }
