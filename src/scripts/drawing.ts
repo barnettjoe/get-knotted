@@ -21,10 +21,6 @@ import Interaction from "./interaction";
 
 import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 
-// for keeping track of where we started a drag on the grid
-let dragStart: [number, number];
-let dragEnd: [number, number];
-
 let dirty = true;
 
 function drawLoop() {
@@ -39,6 +35,9 @@ function drawLoop() {
 }
 
 class Drawing {
+  // for keeping track of where we started a drag on the grid
+  dragStart: [number, number] | null;
+  dragEnd: [number, number] | null;
   frame?: Frame;
   knots: Knot[];
   mode: Mode;
@@ -47,6 +46,8 @@ class Drawing {
     this.interaction = new Interaction(this);
     this.knots = [];
     this.mode = "add-grid";
+    this.dragStart = null;
+    this.dragEnd = null;
     this.startDrawLoop();
   }
   setDirty() {
@@ -93,24 +94,29 @@ class Drawing {
     });
   }
   updateFrame() {
-    model.frame = fromExtrema(dragStart, dragEnd);
+    if (this.dragStart === null) throw new Error("dragStart is null");
+    if (this.dragEnd === null) throw new Error("dragEnd is null");
+    model.frame = fromExtrema(this.dragStart, this.dragEnd);
     this.setDirty();
   }
   startDrawingGrid(e: MouseEvent) {
-    dragStart = rowAndCol(e);
-    dragEnd = dragStart;
-    doIfInGraph(dragStart, this.updateFrame.bind(this));
+    this.dragStart = rowAndCol(e);
+    this.dragEnd = this.dragStart;
+    doIfInGraph(this.dragStart, this.updateFrame.bind(this));
   }
   dragFrame(e: MouseEvent) {
-    const previousBox = dragEnd;
-    dragEnd = rowAndCol(e);
-    if (!identicalObjects(previousBox, dragEnd)) {
-      doIfInGraph(dragEnd, () => {
+    if (this.dragEnd === null) throw new Error("dragEnd is null");
+    const previousBox = this.dragEnd;
+    this.dragEnd = rowAndCol(e);
+    if (!identicalObjects(previousBox, this.dragEnd)) {
+      doIfInGraph(this.dragEnd, () => {
+        if (this.dragStart === null) throw new Error("dragStart is null");
+        if (this.dragEnd === null) throw new Error("dragEnd is null");
         const currentFrame = model.frame;
         if (currentFrame) {
           currentFrame.lines = [];
         }
-        model.frame = fromExtrema(dragStart, dragEnd);
+        model.frame = fromExtrema(this.dragStart, this.dragEnd);
       });
     }
   }
