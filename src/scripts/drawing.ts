@@ -54,10 +54,25 @@ class Drawing {
       },
       { equals: comparer.structural }
     );
-    this.interaction.on("drag-end", this.handleDragEnd.bind(this));
-    this.interaction.on("click", this.handleClick.bind(this));
-    this.interaction.on("drag-move", this.handleDragMove.bind(this));
-    this.interaction.on("mouse-move", this.handleMouseMove.bind(this));
+    reaction(
+      () => this.interaction.lastMouseUpCoords,
+      (isDragging) => {
+        if (isDragging) {
+          this.handleDragEnd(this.interaction.lastMouseUpCoords);
+        } else {
+          this.handleClick(this.interaction.lastMouseUpCoords);
+        }
+      }
+    );
+    reaction(
+      () => this.interaction.lastMouseMoveCoords,
+      (mouseCoords) => {
+        if (this.interaction.isDragging) {
+          this.handleDragMove(mouseCoords);
+        }
+        this.handleMouseMove(mouseCoords);
+      }
+    );
     this.knots = [];
     this.mode = "add-grid";
     this.startDrawLoop();
