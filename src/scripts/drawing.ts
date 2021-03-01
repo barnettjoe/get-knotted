@@ -1,4 +1,4 @@
-import { reaction } from "mobx";
+import { comparer, reaction } from "mobx";
 import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
@@ -35,12 +35,7 @@ class Drawing {
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
-    this.interaction.on(
-      "drag-over-grid-line",
-      this.handleDragOverGridLine.bind(this)
-    );
     this.handleMouseDown = this.handleMouseDown.bind(this);
-    // this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
     reaction(
       () => this.interaction.lastMouseDownCoords,
       (coords) => {
@@ -48,6 +43,16 @@ class Drawing {
           this.handleMouseDown(coords);
         }
       }
+    );
+    reaction(
+      () => [
+        this.interaction.dragStartGridCoords,
+        this.interaction.dragEndGridCoords,
+      ],
+      ([dragStartGridCoords, dragEndGridCoords]) => {
+        this.handleDragOverGridLine(dragStartGridCoords, dragEndGridCoords);
+      },
+      { equals: comparer.structural }
     );
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.interaction.on("click", this.handleClick.bind(this));

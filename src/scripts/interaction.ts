@@ -52,9 +52,11 @@ export default class Interaction {
     makeObservable(this, {
       mouseIsDown: observable,
       lastMouseDownCoords: observable,
+      dragStartGridCoords: observable,
+      dragEndGridCoords: observable,
       handleMouseDown: action.bound,
-      handleMouseUp: action,
-      handleMouseMove: action,
+      handleMouseUp: action.bound,
+      handleMouseMove: action.bound,
     });
     this.addMouseListeners();
   }
@@ -62,16 +64,12 @@ export default class Interaction {
     const canvas = document.getElementById("webgl-surface");
     if (canvas instanceof HTMLCanvasElement) {
       this.canvas = canvas;
-      canvas.addEventListener(
-        "mousemove",
-        this.handleMouseMove.bind(this),
-        false
-      );
+      canvas.addEventListener("mousemove", this.handleMouseMove, false);
     } else {
       throw new Error("could not find element for attaching event handlers");
     }
     window.addEventListener("mousedown", this.handleMouseDown, false);
-    window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
+    window.addEventListener("mouseup", this.handleMouseUp, false);
   }
   handleMouseDown(e: MouseEvent) {
     this.mouseIsDown = true;
@@ -110,13 +108,7 @@ export default class Interaction {
     if (this.mouseIsDown) {
       this.isDragging = true;
       this.listeners["drag-move"].forEach((listener) => listener(coords));
-      const previousBox = this.dragEndGridCoords;
       this.dragEndGridCoords = rowAndCol(e);
-      if (!identicalObjects(previousBox, this.dragEndGridCoords)) {
-        this.listeners["drag-over-grid-line"].forEach((listener) =>
-          listener(this.dragStartGridCoords, this.dragEndGridCoords)
-        );
-      }
     }
     this.listeners["mouse-move"].forEach((listener) => listener(coords));
   }
