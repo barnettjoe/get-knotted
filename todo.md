@@ -1,7 +1,5 @@
 # TODO
 
-- [ ] finish moving stuff from Interaction class into Drawing
-- [ ] what should the Interaction class really expose?
 - [ ] GRADUALLY introduce mobx and remove explicit "updating" code between interaction and drawing
 - [ ] then repeat for drawing <--> frame connection?
 - [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
