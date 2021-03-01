@@ -1,3 +1,4 @@
+import { makeObservable, observable, action } from "mobx";
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { identicalObjects } from "./general-utils";
@@ -48,6 +49,13 @@ export default class Interaction {
     this.lastMouseDownCoords = [0, 0];
     this.dragStartGridCoords = [0, 0];
     this.dragEndGridCoords = [0, 0];
+    makeObservable(this, {
+      mouseIsDown: observable,
+      lastMouseDownCoords: observable,
+      handleMouseDown: action.bound,
+      handleMouseUp: action,
+      handleMouseMove: action,
+    });
     this.addMouseListeners();
   }
   addMouseListeners() {
@@ -62,11 +70,7 @@ export default class Interaction {
     } else {
       throw new Error("could not find element for attaching event handlers");
     }
-    window.addEventListener(
-      "mousedown",
-      this.handleMouseDown.bind(this),
-      false
-    );
+    window.addEventListener("mousedown", this.handleMouseDown, false);
     window.addEventListener("mouseup", this.handleMouseUp.bind(this), false);
   }
   handleMouseDown(e: MouseEvent) {
@@ -76,9 +80,6 @@ export default class Interaction {
     if (this.lastMouseDownTarget === this.canvas) {
       this.dragStartGridCoords = rowAndCol(e);
       this.dragEndGridCoords = this.dragStartGridCoords;
-      this.listeners["mouse-down"].forEach((listener) =>
-        listener(relativeCoords(e))
-      );
     }
   }
   handleMouseUp(e: MouseEvent) {

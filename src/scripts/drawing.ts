@@ -1,3 +1,4 @@
+import { reaction } from "mobx";
 import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
@@ -36,11 +37,20 @@ class Drawing {
     this.interaction = new Interaction(this);
     this.interaction.on(
       "drag-over-grid-line",
-      this.updateFrameOnDrag.bind(this)
+      this.handleDragOverGridLine.bind(this)
+    );
+    this.handleMouseDown = this.handleMouseDown.bind(this);
+    // this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
+    reaction(
+      () => this.interaction.lastMouseDownCoords,
+      (coords) => {
+        if (this.interaction.mouseIsDown) {
+          this.handleMouseDown(coords);
+        }
+      }
     );
     this.interaction.on("drag-end", this.handleDragEnd.bind(this));
     this.interaction.on("click", this.handleClick.bind(this));
-    this.interaction.on("mouse-down", this.handleMouseDown.bind(this));
     this.interaction.on("drag-move", this.handleDragMove.bind(this));
     this.interaction.on("mouse-move", this.handleMouseMove.bind(this));
     this.knots = [];
@@ -103,14 +113,17 @@ class Drawing {
       this.updateFrame.bind(this)
     );
   }
-  updateFrameOnDrag(dragStart: Vector, dragEnd: Vector) {
+  handleDragOverGridLine(
+    dragStartGridCoords: Vector,
+    dragEndGridCoords: Vector
+  ) {
     if (this.mode === "add-grid") {
-      doIfInGraph(dragEnd, () => {
+      doIfInGraph(dragEndGridCoords, () => {
         const currentFrame = model.frame;
         if (currentFrame) {
           currentFrame.lines = [];
         }
-        model.frame = fromExtrema(dragStart, dragEnd);
+        model.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
       });
     }
   }
