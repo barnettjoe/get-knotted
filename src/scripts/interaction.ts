@@ -1,33 +1,22 @@
-import { makeObservable, observable, action, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { Vector } from "./types";
 
 export default class Interaction {
-  canvas: HTMLCanvasElement | null;
   drawing: Drawing;
-  mouseIsDown: boolean;
-  lastMouseMoveCoords: Vector;
-  lastMouseDownCoords: Vector;
-  lastMouseUpCoords: Vector;
-  lastMouseDownTarget: EventTarget | null;
-  isDragging: boolean;
-  dragStartGridCoords: Vector;
-  dragEndGridCoords: Vector;
+  canvas: HTMLCanvasElement | null = null;
+  lastMouseDownTarget: EventTarget | null = null;
+  mouseIsDown = false;
+  isDragging = false;
+  lastMouseMoveCoords: Vector = [0, 0];
+  lastMouseDownCoords: Vector = [0, 0];
+  lastMouseUpCoords: Vector = [0, 0];
+  dragStartGridCoords: Vector = [0, 0];
+  dragEndGridCoords: Vector = [0, 0];
   constructor(drawing: Drawing) {
     this.canvas = null;
-    this.lastMouseDownTarget = null;
     this.drawing = drawing;
-    this.mouseIsDown = false;
-    this.isDragging = false;
-    this.lastMouseDownCoords = [0, 0];
-    this.lastMouseMoveCoords = [0, 0];
-    this.lastMouseUpCoords = [0, 0];
-    this.dragStartGridCoords = [0, 0];
-    this.dragEndGridCoords = [0, 0];
-    this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleMouseUp = this.handleMouseUp.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
     makeAutoObservable(this);
     this.addMouseListeners();
   }
@@ -42,7 +31,7 @@ export default class Interaction {
     window.addEventListener("mousedown", this.handleMouseDown, false);
     window.addEventListener("mouseup", this.handleMouseUp, false);
   }
-  handleMouseDown(e: MouseEvent) {
+  handleMouseDown = (e: MouseEvent) => {
     this.mouseIsDown = true;
     this.lastMouseDownTarget = e.target;
     this.lastMouseDownCoords = relativeCoords(e);
@@ -50,19 +39,19 @@ export default class Interaction {
       this.dragStartGridCoords = rowAndCol(e);
       this.dragEndGridCoords = this.dragStartGridCoords;
     }
-  }
-  handleMouseUp(e: MouseEvent) {
+  };
+  handleMouseUp = (e: MouseEvent) => {
     this.lastMouseUpCoords = relativeCoords(e);
     this.mouseIsDown = false;
     if (this.isDragging) {
       this.isDragging = false;
     }
-  }
-  handleMouseMove(e: MouseEvent) {
+  };
+  handleMouseMove = (e: MouseEvent) => {
     this.lastMouseMoveCoords = relativeCoords(e);
     if (this.mouseIsDown) {
       this.isDragging = true;
       this.dragEndGridCoords = rowAndCol(e);
     }
-  }
+  };
 }
