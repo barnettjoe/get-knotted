@@ -1,5 +1,10 @@
 # TODO
 
+- it feels a bit like we have two models at the moment...there is the drawing, which makes changes to the model...
+  and then there is the actual model. We should clarify the roles of each of these. Maybe we should turn the drawing
+  into the actual model.
+- The first step might be to make the frame a property of the drawing instead of having it on the model.
+- Then, turn the frame into a computed property - this should allow us to remove some of the reactions from the drawing
 - [ ] GRADUALLY introduce mobx and remove explicit "updating" code between interaction and drawing
 - [ ] then repeat for drawing <--> frame connection?
 - [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
