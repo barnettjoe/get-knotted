@@ -6,6 +6,7 @@ import vertexShader from "./vertex-shader.glsl";
 import getPrimitives from "../primitives";
 import model from "../model";
 import graphLines from "../graph";
+import Drawing from "../drawing";
 
 let gl: OnscreenWebglContext;
 let program: WebGLProgram;
@@ -56,11 +57,11 @@ function setGrid() {
   );
 }
 
-export function draw(): void {
+export function draw(drawing: Drawing): void {
   setCanvasSize();
   setGrid();
   gl.clear(gl.COLOR_BUFFER_BIT);
-  const { singlePixelLines, lines, circles } = getPrimitives();
+  const { singlePixelLines, lines, circles } = getPrimitives(drawing);
   if (singlePixelLines.length > 0) {
     gl.bindVertexArray(linesVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);

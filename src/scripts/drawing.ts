@@ -17,24 +17,14 @@ import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 
 let dirty = true;
 
-function drawLoop() {
-  if (dirty) {
-    if (model.knot) {
-      drawKnot(model.knot);
-    }
-    webgl.draw();
-    dirty = false;
-  }
-  requestAnimationFrame(drawLoop);
-}
-
 class Drawing {
-  frame?: Frame;
+  frame: Frame | null = null;
   knots: Knot[];
   mode: Mode;
   interaction: Interaction;
   constructor() {
     this.interaction = new Interaction(this);
+    this.drawLoop = this.drawLoop.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     reaction(
       () => this.interaction.lastMouseDownCoords,
@@ -77,18 +67,29 @@ class Drawing {
     this.mode = "add-grid";
     this.startDrawLoop();
   }
+  drawLoop() {
+    if (dirty) {
+      if (model.knot) {
+        drawKnot(model.knot);
+      }
+      webgl.draw(this);
+      dirty = false;
+    }
+    requestAnimationFrame(this.drawLoop);
+  }
+
   setDirty() {
     dirty = true;
   }
   startDrawLoop() {
     // TODO - why is the requestAnimationFrame necessary here??
-    requestAnimationFrame(drawLoop);
+    requestAnimationFrame(this.drawLoop);
   }
   createKnot() {
-    if (model.frame === null) {
+    if (this.frame === null) {
       throw new Error("tried to create a knot with null frame");
     }
-    const knot = makeKnot(model.frame);
+    const knot = makeKnot(this.frame);
     model.knot = knot;
     this.setDirty();
   }
@@ -121,7 +122,7 @@ class Drawing {
     });
   }
   updateFrame() {
-    model.frame = fromExtrema(
+    this.frame = fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
@@ -139,11 +140,11 @@ class Drawing {
   ) {
     if (this.mode === "add-grid") {
       doIfInGraph(dragEndGridCoords, () => {
-        const currentFrame = model.frame;
+        const currentFrame = this.frame;
         if (currentFrame) {
           currentFrame.lines = [];
         }
-        model.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
+        this.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
       });
     }
   }
@@ -154,7 +155,7 @@ class Drawing {
     };
   }
   newLineIsValid(lineStart: FrameNode, lineEnd: FrameNode) {
-    const currentFrame = model.frame;
+    const currentFrame = this.frame;
     if (currentFrame === null) {
       throw new Error("current frame is null");
     }
@@ -206,7 +207,7 @@ class Drawing {
   handleDragEnd(dragEndCoords: Vector) {
     switch (this.mode) {
       case "add-grid":
-        model.frame && this.createKnot();
+        this.frame && this.createKnot();
         break;
       case "add-line":
         this.finishDrawingLine(dragEndCoords);
@@ -219,7 +220,7 @@ class Drawing {
   }
   handleClick(clickCoords: Vector) {
     if (this.mode === "add-grid") {
-      model.frame && this.createKnot();
+      this.frame && this.createKnot();
     } else if (this.mode === "add-node") {
       this.placeNode(clickCoords);
     }

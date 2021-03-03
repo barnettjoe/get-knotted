@@ -3,6 +3,7 @@ import { Primitives } from "./types";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
 import { knotPolylines } from "./knot";
 import config from "./config";
+import Drawing from "./drawing";
 
 let lines: number[][] = [];
 let circles: number[][] = [];
@@ -44,12 +45,12 @@ function addCircle(x: number, y: number, radius: number) {
   });
 }
 
-export default function getPrimitives(): Primitives {
+export default function getPrimitives(drawing: Drawing): Primitives {
   lines = [];
   singlePixelLines = [];
   circles = [];
-  if (model.frame) {
-    model.frame.lines.forEach((line) => {
+  if (drawing.frame) {
+    drawing.frame.lines.forEach((line) => {
       addLine(line);
     });
   }
