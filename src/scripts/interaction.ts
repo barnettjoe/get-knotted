@@ -1,9 +1,8 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, observable } from "mobx";
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { Vector } from "./types";
 import { doIfInGraph } from "./mouse";
-import { join } from "lodash";
 
 export default class Interaction {
   drawing: Drawing;
@@ -19,7 +18,13 @@ export default class Interaction {
   constructor(drawing: Drawing) {
     this.canvas = null;
     this.drawing = drawing;
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      dragStartGridCoords: observable.struct,
+      dragEndGridCoords: observable.struct,
+      lastMouseMoveCoords: observable.struct,
+      lastMouseDownCoords: observable.struct,
+      lastMouseUpCoords: observable.struct,
+    });
     this.addMouseListeners();
   }
   addMouseListeners() {

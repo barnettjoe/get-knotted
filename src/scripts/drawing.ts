@@ -1,4 +1,4 @@
-import { comparer, reaction } from "mobx";
+import { computed, makeObservable, reaction, trace } from "mobx";
 import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
@@ -17,7 +17,6 @@ import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 
 class Drawing {
   dirty = true;
-  frame: Frame | null = null;
   knots: Knot[];
   mode: Mode;
   interaction: Interaction;
@@ -33,16 +32,16 @@ class Drawing {
         }
       }
     );
-    reaction(
-      () => [
-        this.interaction.dragStartGridCoords,
-        this.interaction.dragEndGridCoords,
-      ],
-      ([dragStartGridCoords, dragEndGridCoords]) => {
-        this.handleDragOverGridLine(dragStartGridCoords, dragEndGridCoords);
-      },
-      { equals: comparer.structural }
-    );
+    // reaction(
+    //   () => [
+    //     this.interaction.dragStartGridCoords,
+    //     this.interaction.dragEndGridCoords,
+    //   ],
+    //   ([dragStartGridCoords, dragEndGridCoords]) => {
+    //     this.handleDragOverGridLine(dragStartGridCoords, dragEndGridCoords);
+    //   },
+    //   { equals: comparer.structural }
+    // );
     reaction(
       () => this.interaction.lastMouseUpCoords,
       (isDragging) => {
@@ -64,7 +63,16 @@ class Drawing {
     );
     this.knots = [];
     this.mode = "add-grid";
+    makeObservable(this, {
+      frame: computed,
+    });
     this.startDrawLoop();
+  }
+  get frame(): Frame | null {
+    return fromExtrema(
+      this.interaction.dragStartGridCoords,
+      this.interaction.dragEndGridCoords
+    );
   }
   drawLoop() {
     if (this.dirty) {
@@ -118,19 +126,11 @@ class Drawing {
     });
   }
   startDrawingGrid() {
-    this.frame = fromExtrema(
+    fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
     this.dirty = true;
-  }
-  handleDragOverGridLine(
-    dragStartGridCoords: Vector,
-    dragEndGridCoords: Vector
-  ) {
-    if (this.mode === "add-grid") {
-      this.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
-    }
   }
   drawUserLine(lineStart: FrameNode, toCoords: Vector) {
     model.userLine = {
