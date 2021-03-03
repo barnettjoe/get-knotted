@@ -13,5 +13,5 @@ export function setOptions(
   drawing: Drawing
 ): void {
   Object.assign(options, newOptions);
-  drawing.setDirty();
+  drawing.dirty = true;
 }

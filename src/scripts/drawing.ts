@@ -15,9 +15,8 @@ import Interaction from "./interaction";
 
 import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 
-let dirty = true;
-
 class Drawing {
+  dirty = true;
   frame: Frame | null = null;
   knots: Knot[];
   mode: Mode;
@@ -68,19 +67,16 @@ class Drawing {
     this.startDrawLoop();
   }
   drawLoop() {
-    if (dirty) {
+    if (this.dirty) {
       if (model.knot) {
         drawKnot(model.knot);
       }
       webgl.draw(this);
-      dirty = false;
+      this.dirty = false;
     }
     requestAnimationFrame(this.drawLoop);
   }
 
-  setDirty() {
-    dirty = true;
-  }
   startDrawLoop() {
     // TODO - why is the requestAnimationFrame necessary here??
     requestAnimationFrame(this.drawLoop);
@@ -91,7 +87,7 @@ class Drawing {
     }
     const knot = makeKnot(this.frame);
     model.knot = knot;
-    this.setDirty();
+    this.dirty = true;
   }
   addNode(coords: Vector) {
     const frame = this.singleNodeFrame(coords);
@@ -126,7 +122,7 @@ class Drawing {
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
-    this.setDirty();
+    this.dirty = true;
   }
   startDrawingGrid() {
     doIfInGraph(
@@ -181,7 +177,7 @@ class Drawing {
       throw new Error("currentKnot is null");
     }
     addLineBetween(currentKnot, lineStart, lineEnd);
-    this.setDirty();
+    this.dirty = true;
   }
   nodeAt(coords: Vector) {
     const nodes = model.knot?.frame.nodes;
@@ -216,7 +212,7 @@ class Drawing {
   }
   handleMouseMove(mouseMoveCoords: Vector) {
     model.mouseTracker = mouseMoveCoords;
-    this.setDirty();
+    this.dirty = true;
   }
   handleClick(clickCoords: Vector) {
     if (this.mode === "add-grid") {
