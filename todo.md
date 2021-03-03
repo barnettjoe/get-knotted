@@ -1,5 +1,6 @@
 # TODO
 
+- turn primitives into class, and use mobx reaction to drawing.frame...?
 - it feels a bit like we have two models at the moment...there is the drawing, which makes changes to the model...
   and then there is the actual model. We should clarify the roles of each of these. Maybe we should turn the drawing
   into the actual model.
