@@ -2,6 +2,8 @@ import { makeAutoObservable } from "mobx";
 import Drawing from "./drawing";
 import { relativeCoords, rowAndCol } from "./mouse";
 import { Vector } from "./types";
+import { doIfInGraph } from "./mouse";
+import { join } from "lodash";
 
 export default class Interaction {
   drawing: Drawing;
@@ -36,8 +38,11 @@ export default class Interaction {
     this.lastMouseDownTarget = e.target;
     this.lastMouseDownCoords = relativeCoords(e);
     if (this.lastMouseDownTarget === this.canvas) {
-      this.dragStartGridCoords = rowAndCol(e);
-      this.dragEndGridCoords = this.dragStartGridCoords;
+      const coords = rowAndCol(e);
+      doIfInGraph(coords, () => {
+        this.dragStartGridCoords = coords;
+        this.dragEndGridCoords = coords;
+      });
     }
   };
   handleMouseUp = (e: MouseEvent) => {
@@ -51,7 +56,10 @@ export default class Interaction {
     this.lastMouseMoveCoords = relativeCoords(e);
     if (this.mouseIsDown) {
       this.isDragging = true;
-      this.dragEndGridCoords = rowAndCol(e);
+      const coords = rowAndCol(e);
+      doIfInGraph(coords, () => {
+        this.dragEndGridCoords = coords;
+      });
     }
   };
 }

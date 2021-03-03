@@ -10,6 +10,7 @@
 - [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
 - [ ] fix the offset button
 - [ ] build a test harness for measuring performance of different contouring algorithms
+- what is the point of doIfInGraph? can it just be removed or wha?
 
 The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
 Currently, we only have a concept of setting the drawing to dirty. But this is just the final stage of our pipeline.

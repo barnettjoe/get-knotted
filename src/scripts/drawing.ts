@@ -8,7 +8,7 @@ import {
   overlapsExistingNode,
 } from "./frame";
 import node from "./node";
-import { doIfInGraph, closestGraphCoords, pixelCoords } from "./mouse";
+import { closestGraphCoords, pixelCoords } from "./mouse";
 import model from "./model";
 import * as webgl from "./webgl/draw-webgl";
 import Interaction from "./interaction";
@@ -117,27 +117,19 @@ class Drawing {
       return overlapsExistingNode(...coords, knot.frame.nodes);
     });
   }
-  updateFrame() {
+  startDrawingGrid() {
     this.frame = fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
     this.dirty = true;
   }
-  startDrawingGrid() {
-    doIfInGraph(
-      this.interaction.dragStartGridCoords,
-      this.updateFrame.bind(this)
-    );
-  }
   handleDragOverGridLine(
     dragStartGridCoords: Vector,
     dragEndGridCoords: Vector
   ) {
     if (this.mode === "add-grid") {
-      doIfInGraph(dragEndGridCoords, () => {
-        this.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
-      });
+      this.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
     }
   }
   drawUserLine(lineStart: FrameNode, toCoords: Vector) {
