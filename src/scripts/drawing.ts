@@ -136,10 +136,6 @@ class Drawing {
   ) {
     if (this.mode === "add-grid") {
       doIfInGraph(dragEndGridCoords, () => {
-        const currentFrame = this.frame;
-        if (currentFrame) {
-          currentFrame.lines = [];
-        }
         this.frame = fromExtrema(dragStartGridCoords, dragEndGridCoords);
       });
     }
