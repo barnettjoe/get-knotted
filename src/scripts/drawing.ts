@@ -1,4 +1,4 @@
-import { computed, makeObservable, reaction, trace } from "mobx";
+import { computed, makeObservable, reaction } from "mobx";
 import makeKnot, { addLineBetween, knotPolylines as drawKnot } from "./knot";
 import {
   fromExtrema,
@@ -10,7 +10,7 @@ import {
 import node from "./node";
 import { closestGraphCoords, pixelCoords } from "./mouse";
 import model from "./model";
-import * as webgl from "./webgl/draw-webgl";
+import Renderer from "./webgl/draw-webgl";
 import Interaction from "./interaction";
 
 import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
@@ -19,9 +19,9 @@ class Drawing {
   dirty = true;
   knots: Knot[];
   mode: Mode;
-  interaction: Interaction;
+  interaction = new Interaction(this);
+  renderer = new Renderer(this);
   constructor() {
-    this.interaction = new Interaction(this);
     this.drawLoop = this.drawLoop.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     reaction(
@@ -79,7 +79,7 @@ class Drawing {
       if (model.knot) {
         drawKnot(model.knot);
       }
-      webgl.draw(this);
+      this.renderer.draw();
       this.dirty = false;
     }
     requestAnimationFrame(this.drawLoop);

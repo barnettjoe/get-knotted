@@ -57,34 +57,6 @@ function setGrid() {
   );
 }
 
-export function draw(drawing: Drawing): void {
-  setCanvasSize();
-  setGrid();
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  const { singlePixelLines, lines, circles } = getPrimitives(drawing);
-  if (singlePixelLines.length > 0) {
-    gl.bindVertexArray(linesVAO);
-    gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
-    const data = flatten(singlePixelLines);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.drawArrays(gl.LINES, 0, data.length / arrayElementsPerVertex);
-  }
-  if (lines.length > 0) {
-    gl.bindVertexArray(trianglesVAO);
-    gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
-    const data = flatten(lines);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
-  }
-  if (circles.length > 0) {
-    gl.bindVertexArray(circlesVAO);
-    gl.bindBuffer(gl.ARRAY_BUFFER, circlesBuffer);
-    const data = flatten(circles);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
-  }
-}
-
 function flatten(arr: number[][]) {
   const result: number[] = [];
   arr.forEach((subArray) => {
@@ -138,54 +110,83 @@ function setupAttribute(
   );
 }
 
-export function start(): void {
-  const webglCanvas = document.getElementById("webgl-surface");
-  if (!(webglCanvas instanceof HTMLCanvasElement)) {
-    throw new Error("no canvas for webgl");
-  }
-  const webglContext = webglCanvas.getContext("webgl2");
-  if (!isOnscreenWebglContext(webglContext)) {
-    throw new Error("failed to get webgl context");
-  }
+export default class Renderer {
+  constructor(public drawing: Drawing) {
+    const webglCanvas = document.getElementById("webgl-surface");
+    if (!(webglCanvas instanceof HTMLCanvasElement)) {
+      throw new Error("no canvas for webgl");
+    }
+    const webglContext = webglCanvas.getContext("webgl2");
+    if (!isOnscreenWebglContext(webglContext)) {
+      throw new Error("failed to get webgl context");
+    }
 
-  gl = webglContext;
-  program = initShaders(gl, { vertexShader, fragmentShader });
-  gl.clearColor(1.0, 1.0, 1.0, 1.0);
-  gl.useProgram(program);
-  linesVAO = createVAO(gl);
-  trianglesVAO = createVAO(gl);
-  circlesVAO = createVAO(gl);
-  linesBuffer = createBuffer(gl);
-  singlePixelLinesBuffer = createBuffer(gl);
-  circlesBuffer = createBuffer(gl);
-  // We have two separate VAOs for drawing the single-pixel grid lines and the
-  // frame lines, which have some width. Both VAOs use the same shader attribute
-  // vPosition, but in each VAO the attribute is bound to a different buffer.
-  setupAttribute(
-    gl,
-    program,
-    "vPosition",
-    linesVAO,
-    singlePixelLinesBuffer,
-    2,
-    gl.FLOAT
-  );
-  setupAttribute(
-    gl,
-    program,
-    "vPosition",
-    trianglesVAO,
-    linesBuffer,
-    2,
-    gl.FLOAT
-  );
-  setupAttribute(
-    gl,
-    program,
-    "vPosition",
-    circlesVAO,
-    circlesBuffer,
-    2,
-    gl.FLOAT
-  );
+    gl = webglContext;
+    program = initShaders(gl, { vertexShader, fragmentShader });
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.useProgram(program);
+    linesVAO = createVAO(gl);
+    trianglesVAO = createVAO(gl);
+    circlesVAO = createVAO(gl);
+    linesBuffer = createBuffer(gl);
+    singlePixelLinesBuffer = createBuffer(gl);
+    circlesBuffer = createBuffer(gl);
+    // We have two separate VAOs for drawing the single-pixel grid lines and the
+    // frame lines, which have some width. Both VAOs use the same shader attribute
+    // vPosition, but in each VAO the attribute is bound to a different buffer.
+    setupAttribute(
+      gl,
+      program,
+      "vPosition",
+      linesVAO,
+      singlePixelLinesBuffer,
+      2,
+      gl.FLOAT
+    );
+    setupAttribute(
+      gl,
+      program,
+      "vPosition",
+      trianglesVAO,
+      linesBuffer,
+      2,
+      gl.FLOAT
+    );
+    setupAttribute(
+      gl,
+      program,
+      "vPosition",
+      circlesVAO,
+      circlesBuffer,
+      2,
+      gl.FLOAT
+    );
+  }
+  draw() {
+    setCanvasSize();
+    setGrid();
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    const { singlePixelLines, lines, circles } = getPrimitives(this.drawing);
+    if (singlePixelLines.length > 0) {
+      gl.bindVertexArray(linesVAO);
+      gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
+      const data = flatten(singlePixelLines);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+      gl.drawArrays(gl.LINES, 0, data.length / arrayElementsPerVertex);
+    }
+    if (lines.length > 0) {
+      gl.bindVertexArray(trianglesVAO);
+      gl.bindBuffer(gl.ARRAY_BUFFER, linesBuffer);
+      const data = flatten(lines);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+      gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
+    }
+    if (circles.length > 0) {
+      gl.bindVertexArray(circlesVAO);
+      gl.bindBuffer(gl.ARRAY_BUFFER, circlesBuffer);
+      const data = flatten(circles);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+      gl.drawArrays(gl.TRIANGLES, 0, data.length / arrayElementsPerVertex);
+    }
+  }
 }

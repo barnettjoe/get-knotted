@@ -11,7 +11,6 @@ import Drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
 import { options, setOptions } from "./options";
-import * as webgl from "./webgl/draw-webgl";
 
 const { offsetContour: initialOffsetContour } = options;
 
@@ -22,7 +21,6 @@ function changeDrawingMode(newMode: Mode) {
 }
 async function doSetup() {
   await setupWasm();
-  webgl.start();
   drawing = new Drawing();
 }
 
