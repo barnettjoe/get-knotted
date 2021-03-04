@@ -2,8 +2,6 @@ import config from "./config";
 import { Model } from "./types";
 
 const model: Model = {
-  frame: null,
-  knot: null,
   userLine: null,
   gridLines: null,
   mouseTracker: null,

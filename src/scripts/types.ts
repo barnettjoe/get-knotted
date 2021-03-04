@@ -190,8 +190,6 @@ interface FrameLineWithOffsetInfo extends FrameLine {
 }
 
 export interface Model {
-  frame: Frame | null;
-  knot: Knot | null;
   userLine: UserLine | null;
   gridLines: Line[] | null;
   mouseTracker: Vector | null;

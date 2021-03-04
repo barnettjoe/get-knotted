@@ -18,6 +18,7 @@ import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 class Drawing {
   dirty = true;
   knots: Knot[];
+  knot: Knot | null = null;
   mode: Mode;
   interaction = new Interaction(this);
   renderer = new Renderer(this);
@@ -32,16 +33,6 @@ class Drawing {
         }
       }
     );
-    // reaction(
-    //   () => [
-    //     this.interaction.dragStartGridCoords,
-    //     this.interaction.dragEndGridCoords,
-    //   ],
-    //   ([dragStartGridCoords, dragEndGridCoords]) => {
-    //     this.handleDragOverGridLine(dragStartGridCoords, dragEndGridCoords);
-    //   },
-    //   { equals: comparer.structural }
-    // );
     reaction(
       () => this.interaction.lastMouseUpCoords,
       (isDragging) => {
@@ -76,8 +67,8 @@ class Drawing {
   }
   drawLoop() {
     if (this.dirty) {
-      if (model.knot) {
-        drawKnot(model.knot);
+      if (this.knot) {
+        drawKnot(this.knot);
       }
       this.renderer.draw();
       this.dirty = false;
@@ -94,7 +85,7 @@ class Drawing {
       throw new Error("tried to create a knot with null frame");
     }
     const knot = makeKnot(this.frame);
-    model.knot = knot;
+    this.knot = knot;
     this.dirty = true;
   }
   addNode(coords: Vector) {
@@ -160,7 +151,7 @@ class Drawing {
     }
   }
   makeNewLine(lineStart: FrameNode, lineEnd: FrameNode) {
-    const currentKnot = model.knot;
+    const currentKnot = this.knot;
     if (currentKnot === null) {
       throw new Error("currentKnot is null");
     }
@@ -168,7 +159,7 @@ class Drawing {
     this.dirty = true;
   }
   nodeAt(coords: Vector) {
-    const nodes = model.knot?.frame.nodes;
+    const nodes = this.knot?.frame.nodes;
     return nodes ? findProximalNode(coords, nodes) : null;
   }
   handleMouseDown(mouseDownCoords: Vector) {
@@ -212,7 +203,7 @@ class Drawing {
   startDrawingLine(coords: Vector) {
     const lineStart = this.nodeAt(coords);
     if (lineStart) {
-      const foundKnot = model.knot?.frame.nodes.includes(lineStart);
+      const foundKnot = this.knot?.frame.nodes.includes(lineStart);
       if (foundKnot) {
         this.drawUserLine(lineStart, coords);
       }
