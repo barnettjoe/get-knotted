@@ -10,9 +10,6 @@ import ReactDOM from "react-dom";
 import Drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
-import { options, setOptions } from "./options";
-
-const { offsetContour: initialOffsetContour } = options;
 
 let drawing: Drawing;
 
@@ -25,13 +22,13 @@ async function doSetup() {
 }
 
 function App() {
-  const [offsetContour, setOffsetContour] = useState(initialOffsetContour);
+  const [offsetContour, setOffsetContour] = useState(false);
   useEffect(() => {
     doSetup();
   }, []);
   useEffect(() => {
     if (drawing) {
-      setOptions({ offsetContour }, drawing);
+      drawing.options.set({ offsetContour });
     }
   }, [offsetContour]);
   return (

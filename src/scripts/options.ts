@@ -1,17 +1,11 @@
+import { makeAutoObservable } from "mobx";
 import Drawing from "./drawing";
-
-interface Options {
-  offsetContour: boolean;
-}
-
-export const options = {
-  offsetContour: false,
-};
-
-export function setOptions(
-  newOptions: Partial<Options>,
-  drawing: Drawing
-): void {
-  Object.assign(options, newOptions);
-  drawing.dirty = true;
+export default class Options {
+  offsetContour = false;
+  constructor(public drawing: Drawing) {
+    makeAutoObservable(this);
+  }
+  set(newOptions: Partial<Options>): void {
+    Object.assign(this, newOptions);
+  }
 }

@@ -3,7 +3,7 @@ import { pointFollowing } from "./strand";
 import { Contour, ContourElement, PolyLine, Point } from "./types";
 import { Bezier } from "bezier-js";
 import { normal, lineVector, addVectors, scaleVector } from "./general-utils";
-import { options } from "./options";
+import Drawing from "./drawing";
 
 const offset = (config.knot.strokeWidth + config.knot.borderWidth) / 2;
 
@@ -90,10 +90,11 @@ function addContourDrawingInfo(
 
 export default function addDrawingInfoToCrossingPoints(
   contour: Contour,
-  polylines: Set<PolyLine>
+  polylines: Set<PolyLine>,
+  drawing: Drawing
 ): void {
   contour.forEach((strandElement, index) => {
-    if (options.offsetContour) {
+    if (drawing.options.offsetContour) {
       addOffsetDrawingInfo(contour, strandElement, index, polylines);
     } else {
       addContourDrawingInfo(strandElement, polylines);

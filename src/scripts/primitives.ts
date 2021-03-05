@@ -56,7 +56,7 @@ export default function getPrimitives(drawing: Drawing): Primitives {
   }
 
   if (drawing.knot) {
-    const polylines = knotPolylines(drawing.knot);
+    const polylines = knotPolylines(drawing.knot, drawing);
     if (polylines) {
       polylines.forEach((polyline) => {
         for (let i = 0; i < polyline.length - 4; i += 2) {

@@ -17,9 +17,9 @@ import {
   CrossingPointWithOffsetInfo,
 } from "./types";
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
-import { options } from "./options";
+import Drawing from "./drawing";
 
-export default function makeKnot(frame: Frame): Knot {
+export default function makeKnot(frame: Frame, drawing: Drawing): Knot {
   const strands = makeStrands(frame);
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
   // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
@@ -28,11 +28,11 @@ export default function makeKnot(frame: Frame): Knot {
   );
   const polylines = new Set<PolyLine>();
   contours.forEach((contour) => {
-    addDrawingInfoToCrossingPoints(contour, polylines);
+    addDrawingInfoToCrossingPoints(contour, polylines, drawing);
   });
   const contoursWithOffsetInfo = contours as ContourWithOffsetInfo[];
   const frameWithOffsetInfo = frame as FrameWithOffsetInfo;
-  if (options.offsetContour) {
+  if (drawing.options.offsetContour) {
     trimUnders(frameWithOffsetInfo);
   }
   return {
@@ -46,7 +46,8 @@ export function merge(
   knot: Knot,
   otherKnot: Knot,
   lineStart: FrameNode,
-  lineEnd: FrameNode
+  lineEnd: FrameNode,
+  drawing: Drawing
 ): Knot {
   const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
   mergedFrame.adjacencyList = markAsAdjacent(
@@ -56,7 +57,7 @@ export function merge(
     mergedFrame.adjacencyList
   );
   mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
-  return makeKnot(mergedFrame);
+  return makeKnot(mergedFrame, drawing);
 }
 
 function makeStrands(frame: Frame): Strand[] {
@@ -70,7 +71,8 @@ function makeStrands(frame: Frame): Strand[] {
 export function addLineBetween(
   knot: Knot,
   nodeA: FrameNode,
-  nodeB: FrameNode
+  nodeB: FrameNode,
+  drawing: Drawing
 ): void {
   const { frame } = knot;
   frame.adjacencyList = markAsAdjacent(
@@ -80,7 +82,7 @@ export function addLineBetween(
     frame.adjacencyList
   );
   frame.lines = lines(frame.nodes, frame.adjacencyList);
-  Object.assign(knot, makeKnot(frame));
+  Object.assign(knot, makeKnot(frame, drawing));
 }
 function getUnder(
   point: CrossingPointWithOffsetInfo,
@@ -148,10 +150,10 @@ function trimPointedReturns(contours: ContourWithOffsetInfo[]) {
   });
 }
 
-export function knotPolylines(knot: Knot): PolyLines | null {
+export function knotPolylines(knot: Knot, drawing: Drawing) {
   // TODO - from its name it feels like knotPolylines should be a pure function,
   // but here we're doing some trimming - feels like this should be done in makeKnot instead
-  if (options.offsetContour) {
+  if (drawing.options.offsetContour) {
     trimPointedReturns(knot.contours);
   }
   const result = [] as PolyLines;
