@@ -18,7 +18,6 @@ import { Frame, Knot, Mode, Vector, FrameNode, GridSystem } from "./types";
 class Drawing {
   dirty = true;
   knots: Knot[];
-  knot: Knot | null = null;
   mode: Mode;
   interaction = new Interaction(this);
   renderer = new Renderer(this);
@@ -56,6 +55,7 @@ class Drawing {
     this.mode = "add-grid";
     makeObservable(this, {
       frame: computed,
+      knot: computed,
     });
     this.startDrawLoop();
   }
@@ -80,14 +80,17 @@ class Drawing {
     // TODO - why is the requestAnimationFrame necessary here??
     requestAnimationFrame(this.drawLoop);
   }
-  createKnot() {
-    if (this.frame === null) {
-      throw new Error("tried to create a knot with null frame");
-    }
-    const knot = makeKnot(this.frame);
-    this.knot = knot;
-    this.dirty = true;
+  get knot() {
+    if (this.frame === null) return null;
+    return makeKnot(this.frame);
   }
+  // createKnot() {
+  //   if (this.frame === null) {
+  //     throw new Error("tried to create a knot with null frame");
+  //   }
+  //   this.knot = makeKnot(this.frame);
+  //   this.dirty = true;
+  // }
   addNode(coords: Vector) {
     const frame = this.singleNodeFrame(coords);
     frame.lines = lines(frame.nodes, frame.adjacencyList);
