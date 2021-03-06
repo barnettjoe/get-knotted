@@ -1,4 +1,6 @@
 import { makeAutoObservable, reaction } from "mobx";
+import { uncrossed } from "./line";
+import { makeStrand } from "./strand";
 import makeKnot from "./knot";
 import { fromExtrema } from "./frame";
 import getPrimitives from "./primitives";
@@ -41,6 +43,14 @@ class Drawing {
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
+  }
+  get strands() {
+    if (this.frame === null) return null;
+    const strands = [];
+    while (this.frame.lines.some(uncrossed)) {
+      strands.push(makeStrand(this.frame));
+    }
+    return strands;
   }
   get knot() {
     if (this.frame === null) return null;

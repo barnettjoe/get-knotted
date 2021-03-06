@@ -1,6 +1,5 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
-import { uncrossed } from "./line";
-import { makeStrand, pointPreceding, compactRepresentation } from "./strand";
+import { pointPreceding, compactRepresentation } from "./strand";
 import PointedReturn from "./pointed-return";
 import { makeContour } from "./contour";
 import addDrawingInfoToCrossingPoints from "./offset-sketch";
@@ -8,7 +7,6 @@ import {
   ContourWithOffsetInfo,
   Frame,
   FrameNode,
-  Strand,
   Knot,
   PolyLines,
   CollectionIntersectionResult,
@@ -19,8 +17,14 @@ import {
 import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 import Drawing from "./drawing";
 
+function assertNotNullable<T>(val: T): asserts val is NonNullable<T> {
+  if (val === null || val === undefined)
+    throw new Error("unexpected nullable value");
+}
+
 export default function makeKnot(frame: Frame, drawing: Drawing): Knot {
-  const strands = makeStrands(frame);
+  const { strands } = drawing;
+  assertNotNullable(strands);
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
   // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
   const contours = compactStrands.map(([strandTopology, strandPoints], idx) =>
@@ -58,14 +62,6 @@ export function merge(
   );
   mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
   return makeKnot(mergedFrame, drawing);
-}
-
-function makeStrands(frame: Frame): Strand[] {
-  const strands = [];
-  while (frame.lines.some(uncrossed)) {
-    strands.push(makeStrand(frame));
-  }
-  return strands;
 }
 
 export function addLineBetween(
