@@ -23,7 +23,6 @@ class Drawing {
     makeAutoObservable(this);
   }
   get frame(): Frame | null {
-    console.log("computing frame");
     return fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
@@ -34,12 +33,10 @@ class Drawing {
     return computeStrands(this.frame);
   }
   get knot() {
-    console.log("computing knot");
     if (this.frame === null) return null;
     return makeKnot(this.frame, this);
   }
   get primitives() {
-    console.log("computing primitives");
     return getPrimitives(this);
   }
 }
