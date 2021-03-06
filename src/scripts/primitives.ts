@@ -45,8 +45,7 @@ function addCircle(x: number, y: number, radius: number) {
   });
 }
 
-export default function getPrimitives(drawing: Drawing): Primitives {
-  console.log("getPrimitives");
+export default function computePrimitives(drawing: Drawing): Primitives {
   lines = [];
   singlePixelLines = [];
   circles = [];

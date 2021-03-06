@@ -1,8 +1,8 @@
 import { makeAutoObservable, autorun } from "mobx";
 import { computeStrands } from "./strand";
-import makeKnot from "./knot";
+import computeKnot from "./knot";
 import { fromExtrema } from "./frame";
-import getPrimitives from "./primitives";
+import computePrimitives from "./primitives";
 import Renderer from "./webgl/draw-webgl";
 import Interaction from "./interaction";
 import Options from "./options";
@@ -34,10 +34,10 @@ class Drawing {
   }
   get knot() {
     if (this.frame === null) return null;
-    return makeKnot(this.frame, this);
+    return computeKnot(this.frame, this);
   }
   get primitives() {
-    return getPrimitives(this);
+    return computePrimitives(this);
   }
 }
 

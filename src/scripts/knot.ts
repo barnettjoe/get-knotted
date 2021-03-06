@@ -6,7 +6,6 @@ import addDrawingInfoToCrossingPoints from "./offset-sketch";
 import {
   ContourWithOffsetInfo,
   Frame,
-  FrameNode,
   Knot,
   PolyLines,
   CollectionIntersectionResult,
@@ -14,7 +13,6 @@ import {
   FrameWithOffsetInfo,
   CrossingPointWithOffsetInfo,
 } from "./types";
-import { lines, markAsAdjacent, merge as mergeFrame } from "./frame";
 import Drawing from "./drawing";
 
 function assertNotNullable<T>(val: T): asserts val is NonNullable<T> {
@@ -22,7 +20,7 @@ function assertNotNullable<T>(val: T): asserts val is NonNullable<T> {
     throw new Error("unexpected nullable value");
 }
 
-export default function makeKnot(frame: Frame, drawing: Drawing): Knot {
+export default function computeKnot(frame: Frame, drawing: Drawing): Knot {
   const { strands } = drawing;
   assertNotNullable(strands);
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
@@ -46,40 +44,6 @@ export default function makeKnot(frame: Frame, drawing: Drawing): Knot {
   };
 }
 
-export function merge(
-  knot: Knot,
-  otherKnot: Knot,
-  lineStart: FrameNode,
-  lineEnd: FrameNode,
-  drawing: Drawing
-): Knot {
-  const mergedFrame = mergeFrame(knot.frame, otherKnot.frame);
-  mergedFrame.adjacencyList = markAsAdjacent(
-    lineStart,
-    lineEnd,
-    mergedFrame.nodes,
-    mergedFrame.adjacencyList
-  );
-  mergedFrame.lines = lines(mergedFrame.nodes, mergedFrame.adjacencyList);
-  return makeKnot(mergedFrame, drawing);
-}
-
-export function addLineBetween(
-  knot: Knot,
-  nodeA: FrameNode,
-  nodeB: FrameNode,
-  drawing: Drawing
-): void {
-  const { frame } = knot;
-  frame.adjacencyList = markAsAdjacent(
-    nodeA,
-    nodeB,
-    frame.nodes,
-    frame.adjacencyList
-  );
-  frame.lines = lines(frame.nodes, frame.adjacencyList);
-  Object.assign(knot, makeKnot(frame, drawing));
-}
 function getUnder(
   point: CrossingPointWithOffsetInfo,
   direction: "L" | "R",
