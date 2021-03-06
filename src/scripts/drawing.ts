@@ -1,6 +1,5 @@
-import { makeAutoObservable, reaction } from "mobx";
-import { uncrossed } from "./line";
-import { makeStrand } from "./strand";
+import { makeAutoObservable, autorun } from "mobx";
+import { computeStrands } from "./strand";
 import makeKnot from "./knot";
 import { fromExtrema } from "./frame";
 import getPrimitives from "./primitives";
@@ -17,28 +16,14 @@ class Drawing {
   renderer = new Renderer(this);
   options = new Options(this);
   constructor() {
-    reaction(
-      () => this.interaction.lastMouseDownCoords,
-      () => {
-        if (this.interaction.mouseIsDown) {
-          this.renderer.draw();
-        }
-      }
-    );
-    reaction(
-      () => this.interaction.lastMouseMoveCoords,
-      () => {
-        this.renderer.draw();
-      }
-    );
-    reaction(
-      () => this.options.offsetContour,
-      () => this.renderer.draw()
-    );
+    autorun(() => {
+      this.renderer.draw();
+    });
     this.mode = "add-grid";
     makeAutoObservable(this);
   }
   get frame(): Frame | null {
+    console.log("computing frame");
     return fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
@@ -46,17 +31,15 @@ class Drawing {
   }
   get strands() {
     if (this.frame === null) return null;
-    const strands = [];
-    while (this.frame.lines.some(uncrossed)) {
-      strands.push(makeStrand(this.frame));
-    }
-    return strands;
+    return computeStrands(this.frame);
   }
   get knot() {
+    console.log("computing knot");
     if (this.frame === null) return null;
     return makeKnot(this.frame, this);
   }
   get primitives() {
+    console.log("computing primitives");
     return getPrimitives(this);
   }
 }

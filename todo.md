@@ -1,5 +1,6 @@
 # TODO
 
+- refactor frame into a class
 - turn primitives into class, and use mobx reaction to drawing.frame...?
 - it feels a bit like we have two models at the moment...there is the drawing, which makes changes to the model...
   and then there is the actual model. We should clarify the roles of each of these. Maybe we should turn the drawing
@@ -94,6 +95,8 @@ Our extra constraints will be to set the angle of the beziers at the splitting-p
 - split large strands before constructing matrix/doing LU decomposition? e.g. by identifying straight-line
   areas to use for split-points?
 - we're currently setting C2 constriants at the pointed returns, basically just to make the numbers up, to get a fully-determined set of equations...but are these constraints actually useful? If not, we could look into keeping the system under-determined, and seeing it as an LP-type optimization problem, to be solved e.g. by the simplex method. The objective function might be based on minimizing deviation from C3 continuity at crossing points?
+- if simplex works - an interesting point would be whether its effiency is what you would expect from its theoretical big-O effieicnecy. simplex algo is well-known for looking bad in terms of big-O but actually behaving rather well...just like you have galactic algos that are very
+  efficient in big-O terms but never actually applicable in practice...you can have the opposite...
 - efficient updating of LU decomposition when points are moved? there seems to be a lot of literature on this
 - is my LUP-decomp algo optimized for sparse matrices?
 - use multi-threading with a thread per strand

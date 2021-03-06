@@ -1,3 +1,4 @@
+import { configure } from "mobx";
 import React, { useEffect, useState } from "react";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
@@ -10,6 +11,10 @@ import ReactDOM from "react-dom";
 import Drawing from "./drawing";
 import { Mode } from "./types";
 import { setup as setupWasm } from "./wasm-interface";
+
+configure({
+  computedRequiresReaction: true,
+});
 
 let drawing: Drawing;
 

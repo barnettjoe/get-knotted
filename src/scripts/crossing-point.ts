@@ -1,26 +1,36 @@
-import { CrossingPoint, Direction } from "./types";
+import { assertNotNullable } from "./general-utils";
+import { CrossingPoint, CrossingState, Direction, FrameLine } from "./types";
 
 export function isCrossed(
-  crossingPoint: CrossingPoint,
-  direction: Direction
+  line: FrameLine,
+  direction: Direction,
+  crossingState: CrossingState
 ): boolean {
+  const lineCrossingState = crossingState.get(line);
+  assertNotNullable(lineCrossingState);
   if (direction === "L") {
-    return crossingPoint.crossedLeft;
+    return lineCrossingState.crossedLeft;
   } else {
-    return crossingPoint.crossedRight;
+    return lineCrossingState.crossedRight;
   }
 }
 
-export function fullyCrossed(crossingPoint: CrossingPoint): boolean {
-  return isCrossed(crossingPoint, "R") && isCrossed(crossingPoint, "L");
+export function fullyCrossed(
+  line: FrameLine,
+  crossingState: CrossingState
+): boolean {
+  return (
+    isCrossed(line, "R", crossingState) && isCrossed(line, "L", crossingState)
+  );
 }
 
 export function uncrossedDirection(
-  crossingPoint: CrossingPoint
+  line: FrameLine,
+  crossingState: CrossingState
 ): Direction | null {
-  if (fullyCrossed(crossingPoint)) {
+  if (fullyCrossed(line, crossingState)) {
     return null;
-  } else if (isCrossed(crossingPoint, "L")) {
+  } else if (isCrossed(line, "L", crossingState)) {
     return "R";
   } else {
     return "L";
@@ -34,8 +44,6 @@ export function makeCrossingPoint(
   endY: number
 ): CrossingPoint {
   return {
-    crossedLeft: false,
-    crossedRight: false,
     coords: [(startX + endX) / 2, (startY + endY) / 2],
   };
 }

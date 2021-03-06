@@ -98,8 +98,6 @@ export function isOnscreenWebglContext(
 export type Polygon = number[][];
 
 export interface CrossingPoint {
-  crossedLeft: boolean;
-  crossedRight: boolean;
   coords: Vector;
 }
 
@@ -223,4 +221,18 @@ export enum PointType {
   LeftPointedReturn = 0,
   RightPointedReturn,
   CrossingPoint,
+}
+
+export interface LineCrossingState {
+  crossedLeft: boolean;
+  crossedRight: boolean;
+}
+
+export type CrossingState = Map<FrameLine, LineCrossingState>;
+
+export interface StrandState {
+  frame: Frame;
+  currentLine: FrameLine;
+  direction: Direction;
+  targetNode: FrameNode;
 }

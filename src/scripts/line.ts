@@ -5,6 +5,7 @@ import {
   FrameLine,
   Direction,
   FrameLineOptions,
+  CrossingState,
 } from "./types";
 import { rotateAboutOrigin } from "./knot-utils";
 import { sameNode } from "./node";
@@ -29,8 +30,11 @@ export default function frameLine({
   };
 }
 
-export function uncrossed(line: FrameLine): boolean {
-  return !fullyCrossed(line.crossingPoint);
+export function uncrossed(
+  line: FrameLine,
+  crossingState: CrossingState
+): boolean {
+  return !fullyCrossed(line, crossingState);
 }
 
 function vector(line: FrameLine): Vector {

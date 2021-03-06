@@ -1,25 +1,19 @@
 import { isCrossed, uncrossedDirection } from "./crossing-point";
 import { linesOutFrom, firstUncrossedLine } from "./frame";
-import { angleOutFrom, angleOutCP } from "./line";
+import { assertNotNullable } from "./general-utils";
+import { angleOutFrom, angleOutCP, uncrossed } from "./line";
 import { sameNode } from "./node";
 import {
   Vector,
-  Direction,
-  FrameNode,
+  StrandState,
   Frame,
   FrameLine,
   Strand,
   StrandElement as StrandElementType,
   StrandElement,
   PointType,
+  CrossingState,
 } from "./types";
-
-interface StrandState {
-  frame: Frame;
-  currentLine: FrameLine;
-  direction: Direction;
-  targetNode: FrameNode;
-}
 
 let strandState: StrandState | null = null;
 
@@ -53,9 +47,9 @@ export function compactRepresentation(
   return [topology, points];
 }
 
-export function makeStrand(frame: Frame): Strand {
+export function makeStrand(frame: Frame, crossingState: CrossingState): Strand {
   const result: Strand = [];
-  addAllElements.call(result, frame);
+  addAllElements.call(result, frame, crossingState);
   return result;
 }
 export function pointFollowing(
@@ -69,34 +63,54 @@ export function pointPreceding<T>(index: number, elementList: T[]): T {
   return elementList[index - 1] || elementList[elementList.length - 1];
 }
 
-function initialStrandState(frame: Frame) {
-  const currentLine = firstUncrossedLine(frame.lines);
+function initializeCrossingState(lines: FrameLine[]): CrossingState {
+  const result = new Map();
+  lines.forEach((line) => {
+    result.set(line, { crossedLeft: false, crossedRight: false });
+  });
+  return result;
+}
+
+function initialStrandState(
+  frame: Frame,
+  crossingState: CrossingState
+): StrandState {
+  const currentLine = firstUncrossedLine(frame.lines, crossingState);
   if (currentLine === null) {
     throw new Error("no uncrossed line to initialize strand state");
   }
-  const direction = uncrossedDirection(currentLine.crossingPoint);
+  const direction = uncrossedDirection(currentLine, crossingState);
   if (direction === null) {
     throw new Error(
       "could not find uncrossed direction for initializing strand state"
     );
   }
   const targetNode = currentLine.endNode;
-  return { currentLine, direction, targetNode, frame };
+  return {
+    currentLine,
+    direction,
+    targetNode,
+    frame,
+  };
 }
 
-function addAllElements(this: Strand, frame: Frame) {
-  strandState = initialStrandState(frame);
+function addAllElements(
+  this: Strand,
+  frame: Frame,
+  crossingState: CrossingState
+) {
+  strandState = initialStrandState(frame, crossingState);
 
-  addElement.call(this);
+  addElement.call(this, crossingState);
 
-  while (!endOfStrand()) {
+  while (!endOfStrand(crossingState)) {
     strandState.currentLine = nextLine();
     strandState.direction = oppositeDirection();
     strandState.targetNode = nextTargetNode();
-    addElement.call(this);
+    addElement.call(this, crossingState);
   }
 }
-function addElement(this: Strand) {
+function addElement(this: Strand, crossingState: CrossingState) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
@@ -119,7 +133,7 @@ function addElement(this: Strand) {
       pr: oppositeDirection(),
     });
   }
-  logCrossing();
+  logCrossing(crossingState);
 }
 function currentBearing() {
   if (strandState === null) {
@@ -136,14 +150,17 @@ function oppositeDirection() {
   }
   return strandState.direction === "R" ? "L" : "R";
 }
-function logCrossing() {
+function logCrossing(crossingState: CrossingState) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
-  if (strandState.direction === "R") {
-    strandState.currentLine.crossingPoint.crossedRight = true;
+  const { direction, currentLine } = strandState;
+  const lineCrossingState = crossingState.get(currentLine);
+  assertNotNullable(lineCrossingState);
+  if (direction === "R") {
+    lineCrossingState.crossedRight = true;
   } else {
-    strandState.currentLine.crossingPoint.crossedLeft = true;
+    lineCrossingState.crossedLeft = true;
   }
 }
 function traverseNextBackwards(): boolean {
@@ -175,11 +192,11 @@ function nextTargetNode() {
     return strandState.currentLine.startNode;
   }
 }
-function endOfStrand() {
+function endOfStrand(crossingState: CrossingState) {
   if (strandState === null) {
     throw new Error("strand state is uninitialized");
   }
-  return isCrossed(nextLine().crossingPoint, oppositeDirection());
+  return isCrossed(nextLine(), oppositeDirection(), crossingState);
 }
 function getApexCoords(startPoint: Vector, endPoint: Vector): Vector {
   if (strandState === null) {
@@ -235,4 +252,13 @@ function pointedReturn() {
   const angleDelta = Math.abs(currentBearing() - nextBearing());
   const smallerAngle = Math.min(angleDelta, Math.PI * 2 - angleDelta);
   return smallerAngle > 1.6;
+}
+
+export function computeStrands(frame: Frame) {
+  const crossingState = initializeCrossingState(frame.lines);
+  const strands = [];
+  while (frame.lines.some((line) => uncrossed(line, crossingState))) {
+    strands.push(makeStrand(frame, crossingState));
+  }
+  return strands;
 }

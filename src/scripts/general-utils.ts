@@ -40,3 +40,9 @@ export function addVectors(vector1: Vector, vector2: Vector): Vector {
 export function scaleVector(vector: Vector, factor: number): Vector {
   return [vector[0] * factor, vector[1] * factor];
 }
+
+export function assertNotNullable<T>(val: T): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) {
+    throw new Error("unexpected null value");
+  }
+}

@@ -13,6 +13,7 @@ import {
   FrameNode,
   Matrix,
   Vector,
+  CrossingState,
 } from "./types";
 
 function cartesianProduct(arr1: number[], arr2: number[]): Matrix {
@@ -173,8 +174,11 @@ export function merge(frame: Frame, otherFrame: Frame): Frame {
   };
 }
 
-export function firstUncrossedLine(lines: FrameLine[]): FrameLine | null {
-  return lines.find(uncrossed) || null;
+export function firstUncrossedLine(
+  lines: FrameLine[],
+  lineCrossingState: CrossingState
+): FrameLine | null {
+  return lines.find((line) => uncrossed(line, lineCrossingState)) || null;
 }
 
 export function lines(nodes: FrameNode[], adjacencyList: Matrix): FrameLine[] {
