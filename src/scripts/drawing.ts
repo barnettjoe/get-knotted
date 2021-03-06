@@ -1,15 +1,15 @@
-import { computed, makeObservable, reaction } from "mobx";
+import { makeAutoObservable, reaction } from "mobx";
 import makeKnot from "./knot";
 import { fromExtrema } from "./frame";
+import getPrimitives from "./primitives";
 import Renderer from "./webgl/draw-webgl";
 import Interaction from "./interaction";
 import Options from "./options";
 
-import { Frame, Knot, Mode } from "./types";
+import { Frame, Mode } from "./types";
 
 class Drawing {
   dirty = true;
-  knots: Knot[];
   mode: Mode;
   interaction = new Interaction(this);
   renderer = new Renderer(this);
@@ -33,12 +33,8 @@ class Drawing {
       () => this.options.offsetContour,
       () => this.renderer.draw()
     );
-    this.knots = [];
     this.mode = "add-grid";
-    makeObservable(this, {
-      frame: computed,
-      knot: computed,
-    });
+    makeAutoObservable(this);
   }
   get frame(): Frame | null {
     return fromExtrema(
@@ -49,6 +45,9 @@ class Drawing {
   get knot() {
     if (this.frame === null) return null;
     return makeKnot(this.frame, this);
+  }
+  get primitives() {
+    return getPrimitives(this);
   }
 }
 

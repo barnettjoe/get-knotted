@@ -3,7 +3,6 @@ import config from "../config";
 import initShaders from "./init-shaders";
 import fragmentShader from "./fragment-shader.glsl";
 import vertexShader from "./vertex-shader.glsl";
-import getPrimitives from "../primitives";
 import model from "../model";
 import graphLines from "../graph";
 import Drawing from "../drawing";
@@ -166,7 +165,7 @@ export default class Renderer {
     setCanvasSize();
     setGrid();
     gl.clear(gl.COLOR_BUFFER_BIT);
-    const { singlePixelLines, lines, circles } = getPrimitives(this.drawing);
+    const { singlePixelLines, lines, circles } = this.drawing.primitives;
     if (singlePixelLines.length > 0) {
       gl.bindVertexArray(linesVAO);
       gl.bindBuffer(gl.ARRAY_BUFFER, singlePixelLinesBuffer);
