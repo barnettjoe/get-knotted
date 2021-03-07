@@ -53,7 +53,7 @@
   involved in this calculation.
 */
 import { Bezier } from "bezier-js";
-import { pointFollowing } from "./strand";
+import { pointFollowing, compactRepresentation } from "./strand";
 import {
   Contour,
   Strand,
@@ -71,7 +71,7 @@ const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
  */
-export function makeContour(
+function makeContour(
   topology: Int8Array,
   points: Float32Array,
   strand: Strand
@@ -300,4 +300,12 @@ function constructMatrixEquation(
     }
   }
   return { A: matrix, b };
+}
+
+export default function computeContours(strands: Strand[]) {
+  const compactStrands = strands.map((strand) => compactRepresentation(strand));
+  // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
+  return compactStrands.map(([strandTopology, strandPoints], idx) => {
+    return makeContour(strandTopology, strandPoints, strands[idx]);
+  });
 }

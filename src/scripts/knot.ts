@@ -1,33 +1,25 @@
 import { collectionIntersect, mutate, flatten } from "./knot-utils";
-import { pointPreceding, compactRepresentation } from "./strand";
+import { pointPreceding } from "./strand";
 import PointedReturn from "./pointed-return";
-import { makeContour } from "./contour";
 import addDrawingInfoToCrossingPoints from "./offset-sketch";
 import {
   ContourWithOffsetInfo,
-  Frame,
   Knot,
   PolyLines,
   CollectionIntersectionResult,
   PolyLine,
   FrameWithOffsetInfo,
   CrossingPointWithOffsetInfo,
+  Contour,
+  Frame,
 } from "./types";
 import Drawing from "./drawing";
 
-function assertNotNullable<T>(val: T): asserts val is NonNullable<T> {
-  if (val === null || val === undefined)
-    throw new Error("unexpected nullable value");
-}
-
-export default function computeKnot(frame: Frame, drawing: Drawing): Knot {
-  const { strands } = drawing;
-  assertNotNullable(strands);
-  const compactStrands = strands.map((strand) => compactRepresentation(strand));
-  // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
-  const contours = compactStrands.map(([strandTopology, strandPoints], idx) =>
-    makeContour(strandTopology, strandPoints, strands[idx])
-  );
+export default function computeOffsets(
+  frame: Frame,
+  contours: Contour[],
+  drawing: Drawing
+): Knot {
   const polylines = new Set<PolyLine>();
   contours.forEach((contour) => {
     addDrawingInfoToCrossingPoints(contour, polylines, drawing);

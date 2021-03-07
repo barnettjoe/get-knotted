@@ -1,18 +1,19 @@
 import { makeAutoObservable, autorun } from "mobx";
-import { computeStrands } from "./strand";
-import computeKnot from "./knot";
 import { fromExtrema } from "./frame";
-import computePrimitives from "./primitives";
 import Renderer from "./webgl/draw-webgl";
-import Interaction from "./interaction";
+import InteractionManager from "./interaction";
 import Options from "./options";
-
 import { Frame, Mode } from "./types";
+import { assertNotNullable } from "./general-utils";
+import { computeStrands } from "./strand";
+import computeContours from "./contour";
+import computeOffsets from "./knot";
+import computePrimitives from "./primitives";
 
 class Drawing {
   dirty = true;
   mode: Mode;
-  interaction = new Interaction(this);
+  interaction = new InteractionManager(this);
   renderer = new Renderer(this);
   options = new Options(this);
   constructor() {
@@ -32,9 +33,13 @@ class Drawing {
     if (this.frame === null) return null;
     return computeStrands(this.frame);
   }
+  get contours() {
+    assertNotNullable(this.strands);
+    return computeContours(this.strands);
+  }
   get knot() {
     if (this.frame === null) return null;
-    return computeKnot(this.frame, this);
+    return computeOffsets(this.frame, this.contours, this);
   }
   get primitives() {
     return computePrimitives(this);

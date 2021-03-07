@@ -4,7 +4,7 @@ import { relativeCoords, rowAndCol } from "./mouse";
 import { Vector } from "./types";
 import { doIfInGraph } from "./mouse";
 
-export default class Interaction {
+export default class InteractionManager {
   drawing: Drawing;
   canvas: HTMLCanvasElement | null = null;
   lastMouseDownTarget: EventTarget | null = null;
