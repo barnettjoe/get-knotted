@@ -7,6 +7,7 @@ import { Strand } from "../../../src/scripts/types";
 import { assertNotNullable } from "../../../src/scripts/general-utils";
 
 const root = document.getElementById("root");
+assertNotNullable(root);
 root.style.height = "100vh";
 const canvas = document.createElement("canvas");
 root.appendChild(canvas);
