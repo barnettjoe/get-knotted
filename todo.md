@@ -1,6 +1,7 @@
 # TODO
 
-- refactor frame into a class
+- [ ] build test harness for comparing performance of different contouring algorithms - https://bl.ocks.org/bricedev/0d95074b6d83a77dc3ad
+- refactor frame into a class?
 - turn primitives into class, and use mobx reaction to drawing.frame...?
 - it feels a bit like we have two models at the moment...there is the drawing, which makes changes to the model...
   and then there is the actual model. We should clarify the roles of each of these. Maybe we should turn the drawing
@@ -11,7 +12,6 @@
 - [ ] then repeat for drawing <--> frame connection?
 - [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
 - [ ] fix the offset button
-- [ ] build a test harness for measuring performance of different contouring algorithms
 - what is the point of doIfInGraph? can it just be removed or wha?
 
 The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
