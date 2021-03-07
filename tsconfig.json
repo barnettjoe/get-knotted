@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "outDir": "./dist/",
     "sourceMap": true,
     "strict": true,
@@ -16,6 +17,6 @@
       "bezier-js": ["./vendor/bezier.common.js"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "test/performance/**/*.tsx"],
   "exclude": ["src/**/*.glsl"]
 }

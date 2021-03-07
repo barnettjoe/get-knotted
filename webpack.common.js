@@ -8,7 +8,7 @@ const cssLoaders = ["style-loader", { loader: "css-loader" }];
 module.exports = {
   entry: {
     main: "./src/index.ts",
-    "test-harness": "./test/performance/contour/test.ts",
+    "test-harness": "./test/performance/contour/test.tsx",
   },
   devServer: {
     contentBase: "./dist",
