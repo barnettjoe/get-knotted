@@ -4,7 +4,6 @@ import Renderer from "./webgl/draw-webgl";
 import InteractionManager from "./interaction";
 import Options from "./options";
 import { Frame, Mode } from "./types";
-import { assertNotNullable } from "./general-utils";
 import { computeStrands } from "./strand";
 import computeContours from "./contour";
 import computeOffsets from "./knot";
@@ -23,22 +22,21 @@ class Drawing {
     this.mode = "add-grid";
     makeAutoObservable(this);
   }
-  get frame(): Frame | null {
-    return fromExtrema(
+  get frame(): Frame {
+    const result = fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
+    console.log(result);
+    return result;
   }
   get strands() {
-    if (this.frame === null) return null;
     return computeStrands(this.frame);
   }
   get contours() {
-    assertNotNullable(this.strands);
     return computeContours(this.strands);
   }
   get knot() {
-    if (this.frame === null) return null;
     return computeOffsets(this.frame, this.contours, this);
   }
   get primitives() {

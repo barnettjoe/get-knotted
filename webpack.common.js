@@ -6,18 +6,28 @@ const CleanWebpackPlugin = require("clean-webpack-plugin");
 const cssLoaders = ["style-loader", { loader: "css-loader" }];
 
 module.exports = {
-  entry: "./src/index.ts",
+  entry: {
+    main: "./src/index.ts",
+    "test-harness": "./test/performance/contour/test.ts",
+  },
   devServer: {
     contentBase: "./dist",
   },
   output: {
-    filename: "bundle.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
   plugins: [
     new CleanWebpackPlugin(["dist"]),
     new HtmlWebpackPlugin({
       template: "src/index.html",
+      chunks: ["main"],
+    }),
+    // test harness
+    new HtmlWebpackPlugin({
+      filename: "harness",
+      template: "src/index.html",
+      chunks: ["test-harness"],
     }),
   ],
   module: {

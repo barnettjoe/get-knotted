@@ -15,7 +15,10 @@ module.exports = merge(common, {
         test: /\.tsx?$/,
         exclude: /node_modules/,
         use: "ts-loader",
-        include: path.resolve(__dirname, "src"),
+        include: [
+          path.resolve(__dirname, "src"),
+          path.resolve(__dirname, "test/performance"),
+        ],
       },
     ],
   },
