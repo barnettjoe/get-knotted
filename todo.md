@@ -1,5 +1,6 @@
 # TODO
 
+- remove bootstrap
 - [ ] build test harness for comparing performance of different contouring algorithms - https://bl.ocks.org/bricedev/0d95074b6d83a77dc3ad
 - refactor frame into a class?
 - turn primitives into class, and use mobx reaction to drawing.frame...?

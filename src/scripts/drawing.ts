@@ -23,12 +23,10 @@ class Drawing {
     makeAutoObservable(this);
   }
   get frame(): Frame {
-    const result = fromExtrema(
+    return fromExtrema(
       this.interaction.dragStartGridCoords,
       this.interaction.dragEndGridCoords
     );
-    console.log(result);
-    return result;
   }
   get strands() {
     return computeStrands(this.frame);

@@ -1,17 +1,13 @@
-import Chart from "chart.js";
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+import ChartJS from "chart.js";
 import "../../../src/style.css";
+import NavBar from "../../../src/scripts/navbar";
 import computeContours from "../../../src/scripts/contour";
 import strands from "./test-data/10by6strands.json";
 import { setup as setupWasm } from "../../../src/scripts/wasm-interface";
 import { Strand } from "../../../src/scripts/types";
 import { assertNotNullable } from "../../../src/scripts/general-utils";
-
-const root = document.getElementById("root");
-assertNotNullable(root);
-root.style.height = "100vh";
-const canvas = document.createElement("canvas");
-root.appendChild(canvas);
-const ctx = canvas.getContext("2d");
 
 const colorPalette = [
   "255, 99, 132",
@@ -25,54 +21,68 @@ const colorPalette = [
 const backgroundColors = colorPalette.map((color) => `rgba(${color}, 0.2)`);
 const borderColors = colorPalette.map((color) => `rgba(${color}, 1)`);
 
-function showChart(data: { label: string; value: number }[]) {
-  const chartData = {
-    labels: data.map((datum) => datum.label),
-    datasets: [
-      {
-        data: data.map((datum) => datum.value),
-        backgroundColor: backgroundColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-      },
-    ],
-  };
-  assertNotNullable(ctx);
-  new Chart(ctx, {
-    type: "bar",
-    data: chartData,
-    options: {
-      tooltips: {
-        enabled: false,
-      },
-      maintainAspectRatio: false,
-      legend: {
-        display: false,
-      },
-      scales: {
-        xAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
+type ChartData = { label: string; value: number }[];
+
+const Chart: React.FC<{ data: ChartData }> = ({ data }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const ctx = useRef<CanvasRenderingContext2D | null>(null);
+
+  useEffect(() => {
+    const chartData = {
+      labels: data.map((datum) => datum.label),
+      datasets: [
+        {
+          data: data.map((datum) => datum.value),
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
+          borderWidth: 1,
+        },
+      ],
+    };
+    const context = canvasRef.current?.getContext("2d");
+    assertNotNullable(context);
+    ctx.current = context;
+    new ChartJS(context, {
+      type: "bar",
+      data: chartData,
+      options: {
+        tooltips: {
+          enabled: false,
+        },
+        maintainAspectRatio: false,
+        legend: {
+          display: false,
+        },
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                beginAtZero: true,
+              },
             },
-          },
-        ],
-        yAxes: [
-          {
-            scaleLabel: {
-              display: true,
-              fontSize: 16,
-              labelString: "time / ms",
+          ],
+          yAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                fontSize: 16,
+                labelString: "time / ms",
+              },
+              ticks: {
+                beginAtZero: true,
+              },
             },
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
+          ],
+        },
       },
-    },
-  });
-}
+    });
+  }, [data]);
+  return (
+    <div style={{ height: "calc(100vh - 40px)" }}>
+      <canvas ref={canvasRef}></canvas>
+    </div>
+  );
+};
 
 const strategies = [
   {
@@ -104,30 +114,41 @@ async function runStrategies() {
   return result;
 }
 
-function showLoading() {
-  const loading = document.createElement("div");
-  loading.id = "loading";
-  loading.innerText = "running contour perf tests, please wait...";
-  loading.style.height = "100vh";
-  loading.style.textAlign = "center";
-  loading.style.fontSize = "2rem";
-  assertNotNullable(root);
-  root.appendChild(loading);
+function LoadingMessage() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        height: "100vh",
+        textAlign: "center",
+        fontSize: "2rem",
+      }}
+    >
+      <p>running contour perf tests, please wait...</p>
+    </div>
+  );
 }
 
-function hideLoading() {
-  const node = document.getElementById("loading");
-  assertNotNullable(node);
-  assertNotNullable(node.parentElement);
-  node.parentElement.removeChild(node);
+function Harness() {
+  const [data, setData] = useState<ChartData | null>(null);
+  async function setup() {
+    await setupWasm();
+    setData(await runStrategies());
+  }
+
+  useEffect(() => {
+    setup();
+  }, []);
+
+  return (
+    <>
+      <NavBar />
+      {data ? <Chart data={data} /> : <LoadingMessage />}
+    </>
+  );
 }
 
-async function main() {
-  showLoading();
-  await setupWasm();
-  const data = await runStrategies();
-  hideLoading();
-  showChart(data);
-}
-
-main();
+const root = document.getElementById("root");
+ReactDOM.render(<Harness />, root);
