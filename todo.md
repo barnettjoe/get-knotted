@@ -1,6 +1,5 @@
 # TODO
 
-- remove bootstrap
 - [ ] build test harness for comparing performance of different contouring algorithms - https://bl.ocks.org/bricedev/0d95074b6d83a77dc3ad
 - refactor frame into a class?
 - turn primitives into class, and use mobx reaction to drawing.frame...?
@@ -14,6 +13,7 @@
 - [ ] reorganize model, frame, strand, knot, drawing, interaction etc into a shape that would make sense with mobx
 - [ ] fix the offset button
 - what is the point of doIfInGraph? can it just be removed or wha?
+- remove bootstrap?
 
 The navbar offset option is currently broken. The fundamental problem is that the data pipeline is not being set to dirty in the right places.
 Currently, we only have a concept of setting the drawing to dirty. But this is just the final stage of our pipeline.
@@ -85,8 +85,9 @@ at C-D-E we have c1 and c2 continuity
 
 but so far this is an underdetermined set of equations...
 
-Our extra constraints will be to set the angle of the beziers at the splitting-point, **relative to the line-angles there**, to be equal to the same at the neighbouring points.
+Our extra constraints will be to set the angle of the beziers at the splitting-point, **relative to the line-angles there**, to be equal to the same at the neighbouring points. (or avg of neighboring points?)
 
+- drop C2 continuity at PRs and use optimization with simplex?
 - forget about offsetting etc for now, draw the original middle-beziers and focus on optimizing the matrix calculations
 - move more of contour.ts into wasm to avoid perf cost of copying data onto the wasm heap
 - can we use cholesky decomposition instead? should be faster. If not possible with current set of
