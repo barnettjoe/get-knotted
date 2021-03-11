@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import ChartJS from "chart.js";
 import "../../../src/style.css";
-import NavBar from "../../../src/scripts/navbar";
-import computeContours from "../../../src/scripts/contour";
+import NavBar from "../../../src/core/navbar";
+import computeContours from "../../../src/core/contour/contour";
 import strands from "./test-data/10by6strands.json";
-import { setup as setupWasm } from "../../../src/scripts/wasm-interface";
-import { Strand } from "../../../src/scripts/types";
-import { assertNotNullable } from "../../../src/scripts/general-utils";
+import { setup as setupWasm } from "../../../src/core/wasm-interface";
+import { Strand } from "../../../src/core/types";
+import { assertNotNullable } from "../../../src/core/general-utils";
 
 const colorPalette = [
   "255, 99, 132",

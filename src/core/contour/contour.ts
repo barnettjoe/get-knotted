@@ -53,7 +53,7 @@
   involved in this calculation.
 */
 import { Bezier } from "bezier-js";
-import { pointFollowing, compactRepresentation } from "./strand";
+import { pointFollowing, compactRepresentation } from "../strand";
 import {
   Contour,
   Strand,
@@ -63,8 +63,8 @@ import {
   Dimension,
   BezierControlPoint as ControlPoint,
   PointType,
-} from "./types";
-import { lup, solve } from "./wasm-interface";
+} from "../types";
+import { lup, solve } from "../wasm-interface";
 const POINTED_RETURN_THETA = 1.5;
 const rightPointedReturnAngle = POINTED_RETURN_THETA;
 const leftPointedReturnAngle = 2 * Math.PI - POINTED_RETURN_THETA;

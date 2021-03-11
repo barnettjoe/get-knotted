@@ -5,7 +5,7 @@ import InteractionManager from "./interaction";
 import Options from "./options";
 import { Frame, Mode } from "./types";
 import { computeStrands } from "./strand";
-import computeContours from "./contour";
+import computeContours from "./contour/contour";
 import computeOffsets from "./knot";
 import computePrimitives from "./primitives";
 
