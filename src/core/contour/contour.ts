@@ -54,18 +54,26 @@
 */
 import { Bezier } from "bezier-js";
 import { pointFollowing, compactRepresentation } from "../strand";
-import { Contour, Strand, Polygon, Vector } from "../types";
-import matrixSolution from "./matrix-solution";
-
+import {
+  Contour,
+  Strand,
+  Polygon,
+  Vector,
+  ContouringStrategyName,
+} from "../types";
+import contourStrategies from "./contour-strategies";
 /**
  * Take a basis strand (sequence of nodes), and add the actual beziers to it.
  */
 function makeContour(
   topology: Int8Array,
   points: Float32Array,
-  strand: Strand
+  strand: Strand,
+  contouringStrategyName: ContouringStrategyName
 ): Contour {
-  const { xControlPoints, yControlPoints } = matrixSolution(topology, points);
+  const { xControlPoints, yControlPoints } = contourStrategies[
+    contouringStrategyName
+  ](topology, points);
   return strand.map((strandElement, index) => {
     const polygon = getBezier(index, xControlPoints, yControlPoints, strand);
     return {
@@ -96,10 +104,18 @@ function getBezier(
   ];
 }
 
-export default function computeContours(strands: Strand[]) {
+export default function computeContours(
+  strands: Strand[],
+  contouringStrategyName: ContouringStrategyName
+) {
   const compactStrands = strands.map((strand) => compactRepresentation(strand));
   // TODO - for now we still have to pass the strands in in the original (i.e. non-compact) format...
   return compactStrands.map(([strandTopology, strandPoints], idx) => {
-    return makeContour(strandTopology, strandPoints, strands[idx]);
+    return makeContour(
+      strandTopology,
+      strandPoints,
+      strands[idx],
+      contouringStrategyName
+    );
   });
 }

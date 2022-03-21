@@ -236,3 +236,12 @@ export interface StrandState {
   direction: Direction;
   targetNode: FrameNode;
 }
+
+export type ContouringStrategyName =
+  | "fullMatrixSolution"
+  | "splitMatrixSolution";
+
+export type ContouringStrategy = (
+  strandTopology: Int8Array,
+  points: Float32Array
+) => { xControlPoints: number[]; yControlPoints: number[] };

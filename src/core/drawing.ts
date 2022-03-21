@@ -3,7 +3,7 @@ import { fromExtrema } from "./frame";
 import Renderer from "./webgl/draw-webgl";
 import InteractionManager from "./interaction";
 import Options from "./options";
-import { Frame, Mode } from "./types";
+import { Frame, Mode, ContouringStrategyName } from "./types";
 import { computeStrands } from "./strand";
 import computeContours from "./contour/contour";
 import computeOffsets from "./knot";
@@ -12,6 +12,7 @@ import computePrimitives from "./primitives";
 class Drawing {
   dirty = true;
   mode: Mode;
+  contouringStrategyName: ContouringStrategyName = "fullMatrixSolution";
   interaction = new InteractionManager(this);
   renderer = new Renderer(this);
   options = new Options(this);
@@ -32,7 +33,7 @@ class Drawing {
     return computeStrands(this.frame);
   }
   get contours() {
-    return computeContours(this.strands);
+    return computeContours(this.strands, this.contouringStrategyName);
   }
   get knot() {
     return computeOffsets(this.frame, this.contours, this);

@@ -88,7 +88,7 @@ const strategies = [
   {
     name: "WASM with LUP decomp",
     compute: () => {
-      return computeContours(strands as Strand[]);
+      return computeContours(strands as Strand[], "fullMatrixSolution");
     },
   },
 ];
